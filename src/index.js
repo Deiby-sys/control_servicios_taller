@@ -1,3 +1,5 @@
+//index.js se encarga de arrancar la aplicación
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

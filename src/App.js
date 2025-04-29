@@ -11,8 +11,8 @@ function App() {
             <label htmlFor="Contraseña">Contraseña: </label>
             <input type="password" id="Contraseña"/>
             <input type="submit" class="btn" value="Ingresar"/>
-            <p><a Href="#">Recuperar contraseña</a></p>
-            <p><a Href="registro_usuario.html">Registro nuevo usuario</a></p>
+            {/*<p><a href="#">Recuperar contraseña</a></p>
+            <p><a href="registro_usuario.html">Registro nuevo usuario</a></p>*/}
       </form>
         
     </div>

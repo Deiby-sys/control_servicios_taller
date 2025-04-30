@@ -14,7 +14,7 @@ root.render(
           <input type="email" id="Usuario" email="Usuario" placeholder="Email registrado"/>
           <label htmlFor="Contraseña">Contraseña: </label>
           <input type="password" id="Contraseña"/>
-          <input type="submit" class="btn" value="Ingresar"/>
+          <input type="submit" className="btn" value="Ingresar"/>
           <a
             className="link_Recuperar"
             href="http"
@@ -32,8 +32,7 @@ root.render(
           >
             Registro nuevo usuario
           </a>
-            {/*<p><a href="#">Recuperar contraseña</a></p>
-            <p><a href="registro_usuario.html">Registro nuevo usuario</a></p>*/}
+            
         </form>
     </div>
   );

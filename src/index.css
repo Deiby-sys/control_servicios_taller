@@ -8,11 +8,10 @@ body {
   background: #00416A;  /* fallback for old browsers */
   background: -webkit-linear-gradient(to left, #E4E5E6, #00416A);  /* Chrome 10-25, Safari 5.1-6 */
   background: linear-gradient(to left, #E4E5E6, #00416A); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-  display: flex;
 }
 
 .App {
-  display: flex;
+  display: block;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -36,7 +35,7 @@ input {
   text-align: left;
   font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   font-size: 14px;
-  width: 95%;
+  width: 96%;
 }
 
 .btn {

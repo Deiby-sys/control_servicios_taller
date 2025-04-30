@@ -3,17 +3,39 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+  
+    <div className="App">
+      <h1>Control Servicios Taller</h1>
+        <form>
+          <label htmlFor="Usuario">Usuario: </label>       
+          <input type="email" id="Usuario" email="Usuario" placeholder="Email registrado"/>
+          <label htmlFor="Contraseña">Contraseña: </label>
+          <input type="password" id="Contraseña"/>
+          <input type="submit" class="btn" value="Ingresar"/>
+          <a
+            className="link_Recuperar"
+            href="http"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Recuperar Contraseña
+          </a>
+          <br></br>
+          <a
+            className="link_Registro"
+            href="http"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Registro nuevo usuario
+          </a>
+            {/*<p><a href="#">Recuperar contraseña</a></p>
+            <p><a href="registro_usuario.html">Registro nuevo usuario</a></p>*/}
+        </form>
+    </div>
+  );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+

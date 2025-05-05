@@ -6,7 +6,9 @@ export default function Login() {
     return (
 
     <div className="Login">
+      <img className="emblema" src="images/emblema.png" alt="Emblema_proyecto"/>
       <h1>Control Servicios Taller</h1>
+      <br></br>
         <form>
             <label htmlFor="Usuario">Usuario: </label>       
             <input type="email" id="Usuario" email="Usuario" placeholder="Email registrado"/>

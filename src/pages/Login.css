@@ -1,3 +1,9 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
 .Login {
     display: block;
     flex-direction: column;
@@ -12,6 +18,7 @@
   label {
     display: block;
     font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    color:black;
     margin: 10px;
     text-align: left;
   }
@@ -56,4 +63,10 @@
     font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     font-size: 14px;
   }
+
+  .emblema {
+    width: 50px;
+    float: right;
+    border-radius: 50%;
+}
   

@@ -1,39 +1,18 @@
-import './App.css';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Login from './pages/Login';
+import RegistroUsuario from './pages/RegistroUsuario';
+import Notfound from './pages/Notfound';
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-        <div className="App">
-        <h1>Control Servicios Taller</h1>
-            <form>
-            <label htmlFor="Usuario">Usuario: </label>       
-            <input type="email" id="Usuario" email="Usuario" placeholder="Email registrado"/>
-            <label htmlFor="Contraseña">Contraseña: </label>
-            <input type="password" id="Contraseña"/>
-            <input type="submit" className="btn" value="Ingresar"/>
-            <a
-                className="link_Recuperar"
-                href="http"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Recuperar Contraseña
-            </a>
-            <br></br>
-            <a
-                className="link_Registro"
-                href="./registro.js"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Registro nuevo usuario
-            </a>
-                
-            </form>
-        </div>
+        <Routes>
+            <Route path="/" element={<Login/>}/>
+            <Route path="/RegistroUsuario" element={<RegistroUsuario/>}/>
+            <Route path='*' element={<Notfound/>}/>
+        </Routes>
     </BrowserRouter>
   );
 }
 
-export default App;
+

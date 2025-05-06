@@ -19,23 +19,15 @@ export default function Login() {
             <label htmlFor="Contraseña">Contraseña: </label>
             <input type="password" id="Contraseña"/>
             <input type="submit" className="btn" value="Ingresar"/>
-            <a
-                className="link_Recuperar"
-                href="http"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Recuperar Contraseña
-            </a>
-            <br></br>
-            <a
-                className="link_Registro"
-                href="./registro.js"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Registro nuevo usuario
-            </a>
+            <ul>
+                <li>
+                    <a href='/Recuperar'>Recupera Contraseña</a>
+                </li>
+                <br></br>
+                <li>
+                    <a href='/RegistroUsuario'>Registro Usuario</a>
+                </li>
+            </ul>
             
         </form>
     </div>

@@ -24,13 +24,16 @@ form {
     box-shadow: 0 0 20px rgba(0, 0, 0, 2);
     text-align: center;
     border: 1px solid blue;
-}
+}   
 
-form h2 {
-    font-size: 25px;
-    color: black;
+h2 {
+    text-align: center;
+    color: blue;
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: 24px;
     margin-bottom: 35px;
-}
+  }
+    
 
 input {
     padding: 10px;

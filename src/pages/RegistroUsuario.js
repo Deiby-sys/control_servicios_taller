@@ -1,12 +1,16 @@
 import React from 'react';
 import './RegistroUsuario.css';
+import emblema from '../images/Emblema.png'
 
 export default function RegistroUsuario() {
 
   return (
     <div className="RegistroUsuario">
       <form>
-        <h2>Registro Usuario</h2>
+        <header>
+          <img src={emblema} className="emblema" alt="emblema" />
+          <h2>Registro Usuario</h2>
+        </header>
         <input type="text" placeholder="Nombre"/>
         <input type="text" placeholder="Apellido"/>
         <input type="email" placeholder="Correo"/>

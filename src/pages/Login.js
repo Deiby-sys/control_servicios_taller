@@ -1,15 +1,19 @@
 import React from 'react';
 import './Login.css';
+import emblema from '../images/Emblema.png'
+
 
 export default function Login() {
 
     return (
 
     <div className="Login">
-      <img className="emblema" src="images/emblema.png" alt="Emblema_proyecto"/>
-      <h1>Control Servicios Taller</h1>
-      <br></br>
         <form>
+            <header>
+                <img src={emblema} className="emblema" alt="emblema" />
+                <h1>Control Servicios Taller</h1>
+            </header>
+            <br></br>
             <label htmlFor="Usuario">Usuario: </label>       
             <input type="email" id="Usuario" email="Usuario" placeholder="Email registrado"/>
             <label htmlFor="Contraseña">Contraseña: </label>

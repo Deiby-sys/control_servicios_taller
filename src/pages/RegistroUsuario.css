@@ -10,9 +10,9 @@
     align-items: center;
     justify-content: center;
     font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    font-size: 18px;
-    color: white;
-    text-align: center;
+    font-size: 14px;
+    color: black;
+    text-align: left;
   }
 
 form {
@@ -22,7 +22,7 @@ form {
     padding: 20px;
     width: 380px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 2);
-    text-align: center;
+    text-align: left;
     border: 1px solid blue;
 }   
 
@@ -50,19 +50,13 @@ input:hover {
     border: 1px solid blue;
 }
 
-.perfil {
-    padding: 10px;
-    /*border-radius: 25px;*/
-    background-color: transparent;
-    border: 1px solid black;
-    margin-bottom: 10px;
-    outline: none;
+label {
     color: black;
     font-size: 14px;
 }
 
-.perfil:hover {
-    border: 1px solid blue;
+option {
+    color: black;
 }
 
 .btn {

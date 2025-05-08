@@ -1,9 +1,19 @@
 import React from 'react';
 import './RegistroUsuario.css';
-import emblema from '../images/Emblema.png'
+import emblema from '../images/Emblema.png';
+import Select from 'react-select';
+
+
+const perfil = [
+  {label: 'Asesor', value: 'Asesor'},
+  {label: 'Bodega', value: 'Bodega'},
+  {label: 'Jefe', value: 'Jefe'},
+  {label: 'Técnico', value: 'Técnico'},
+]
 
 export default function RegistroUsuario() {
 
+  
   return (
     <div className="RegistroUsuario">
       <form>
@@ -14,13 +24,12 @@ export default function RegistroUsuario() {
         <input type="text" placeholder="Nombre"/>
         <input type="text" placeholder="Apellido"/>
         <input type="email" placeholder="Correo"/>
-        <select className="perfil"/>
-            <option>Selecciona tu perfil:</option>
-            <option>Asesor</option>
-            <option>Bodega</option>
-            <option>Jefe</option>
-            <option>Técnico</option>  
         
+        <Select 
+        defaultValue = {{ label: 'Selecciona tu perfil', value: 'empty'}}
+        options = {perfil}
+        />
+               
         <input type="password" placeholder="Contraseña"/>
         <input type="password" placeholder="Confirma Contraseña"/>
         <input type="submit" class="btn" value="Enviar"/>

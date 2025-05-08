@@ -1,6 +1,7 @@
 import React from 'react';
 import './Login.css';
-import emblema from '../images/Emblema.png'
+import emblema from '../images/Emblema.png';
+import {Link} from 'react-router-dom';
 
 
 export default function Login() {
@@ -21,11 +22,11 @@ export default function Login() {
             <input type="submit" className="btn" value="Ingresar"/>
             <ul>
                 <li>
-                    <a href='/Recuperar'>Recupera Contraseña</a>
+                    <Link to='/Recuperar'>Recupera Contraseña</Link>
                 </li>
                 <br></br>
                 <li>
-                    <a href='/RegistroUsuario'>Registro Usuario</a>
+                    <Link to='/RegistroUsuario'>Registro Usuario</Link>
                 </li>
             </ul>
             

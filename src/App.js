@@ -1,3 +1,5 @@
+//Es la primera página en ser cargada por la aplicación
+
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
 import RegistroUsuario from './pages/RegistroUsuario';

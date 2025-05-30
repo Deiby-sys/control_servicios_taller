@@ -1,5 +1,5 @@
 //con mongoose nos conectamos a la base de datos
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export const connectDB = async () => {
   try {
@@ -7,9 +7,9 @@ export const connectDB = async () => {
       //useNewUrlParser: true,
       //useUnifiedTopology: true,
     });
-    console.log('Conectado a la base de datos');
+    console.log("Conectado a la base de datos");
   } catch (error) {
-    console.log('Error de conexión:', error);
+    console.log("Error de conexión:", error);
   }
 }
 

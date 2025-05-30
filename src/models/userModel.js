@@ -1,12 +1,17 @@
 //vamos a estructurar los datos a manejar para los usuarios
-import mongoose from "mongoose";
-const userSchema = mongoose.Schema = ({
+import mongoose from 'mongoose';
+const userSchema = new mongoose.Schema ({
     name: {
         type: String,
         required: true,
         trim: true
     },
-        perfil: {
+    lastName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+        profile: {
         type: String,
         required: true,
         trim: true
@@ -28,4 +33,4 @@ const userSchema = mongoose.Schema = ({
         timestamps: true,
     });
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model('User', userSchema);

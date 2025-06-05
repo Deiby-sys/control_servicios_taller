@@ -4,7 +4,7 @@ import emblema from '../images/Emblema.png';
 import {Link} from 'react-router-dom';
 
 
-export default function Login() {
+function Login() {
 
     return (
 
@@ -22,11 +22,11 @@ export default function Login() {
             <input type="submit" className="btn" value="Ingresar"/>
             <ul>
                 <li>
-                    <Link to='/Recuperar'>Recupera Contraseña</Link>
+                    <Link to='/recuperar'>Recupera Contraseña</Link>
                 </li>
                 <br></br>
                 <li>
-                    <Link to='/RegistroUsuario'>Registro Usuario</Link>
+                    <Link to='/registerUser'>Registro Usuario</Link>
                 </li>
             </ul>
             
@@ -34,3 +34,4 @@ export default function Login() {
     </div>
     );
 }
+export default Login;

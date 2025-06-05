@@ -1,5 +1,6 @@
 //vamos a estructurar los datos a manejar para los usuarios
 import mongoose from 'mongoose';
+import { email } from 'zod/v4';
 const userSchema = new mongoose.Schema ({
     name: {
         type: String,

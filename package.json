@@ -11,6 +11,7 @@
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "express-handlebars": "^8.0.2",
     "express-session": "^1.18.1",
@@ -27,7 +28,8 @@
     "react-scripts": "5.0.1",
     "react-select": "^5.10.1",
     "web-vitals": "^2.1.4",
-    "zod": "^3.25.43"
+    "zod": "^3.25.43",
+    "type": "module"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -57,4 +59,9 @@
   "devDependencies": {
     "nodemon": "^3.1.10"
   }
+
 }
+
+
+
+

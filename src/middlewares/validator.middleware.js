@@ -1,3 +1,5 @@
+//Autenticación, validación, etc.
+
 //vamos a crear una funnción para validar un Schema
 
 export const validateSchema = (schema) => (req, res, next) => {

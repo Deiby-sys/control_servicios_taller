@@ -1,9 +1,37 @@
-//index.js se encarga de arrancar la aplicación
+//index.js se encarga de arrancar la aplicación (server)
 
-import app from './App.js';
-import connectDB from './database.js'; //importamos acceso a base de datos
 
-app.listen(4000)
-console.log('Server on port', 4000)
+// server.js
+import express from "express";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import { connectDB } from "./database.js";
+import userRoutes from "./routes/users.routes.js";
 
-//traigo dbconnect para conectar la base de datos
+// Importar rutas
+import authRoutes from "./routes/auth.routes.js";
+import workOrderRoutes from "./routes/workOrders.routes.js";
+// import userRoutes from "./routes/users.routes.js"; // opcional futuro
+
+dotenv.config(); // Cargar variables de entorno
+
+const app = express();
+
+// Middlewares
+app.use(express.json());
+app.use(cookieParser());
+
+// Conectar base de datos
+connectDB();
+
+// Rutas con prefijo
+app.use("/api/auth", authRoutes);
+app.use("/api/workorders", workOrderRoutes);
+app.use("/api/users", userRoutes);
+// app.use("/api/users", userRoutes); // opcional futuro
+
+// Puerto desde .env o por defecto 4000
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+});

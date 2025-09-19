@@ -1,0 +1,132 @@
+*{
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-image: linear-gradient(to right, #328acd 0%, #509bdc 100%);
+}
+
+.contenedor_cabeza{
+    position: fixed;
+    top: 0px;
+    width: 85%;
+    left: 15%;
+    height: 80px;
+    background-image: linear-gradient(to right, #328acd 0%, #509bdc 100%);
+}
+
+.titulo {
+    text-align: center;
+    margin-top: 30px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 24px;
+}
+
+.contenedor_menu {
+    position: fixed;
+    top: 0px;
+    width: 15%;
+    height: 100%;
+    left: 0px;
+    background-color: #f2f4fe;
+}
+
+.emblema {
+    position: fixed;
+    top: 20px;
+    left: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+   }
+
+.menu {
+    position: fixed;
+    margin-top: 100px;
+    left: 30px;
+      
+}
+
+.contenedor_modulos {
+    /*display: flex;
+    flex-wrap: wrap;*/
+    position: relative;
+    top: 80px;
+    width: 85%;
+    left: 15%;
+    height: 100%;
+    padding: 30px;
+    background-image: linear-gradient(to right, #328acd 0%, #509bdc 100%);
+}
+
+.columna {
+    margin-top: 30px;
+    margin-left: 165px;
+    flex: 100%;
+    padding: 20px;
+    text-align: center;
+    display: inline-block;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 12px;
+}
+
+img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 1px solid black;
+    cursor: pointer;
+    transition: filter 0.5s ease;/*Efecto cambio de tono en las imágenes aplica una transición suave de 0.5 segundos al efecto de filtro*/
+}
+
+img:hover {
+    filter: hue-rotate(90deg);/*Cambia el tono de la imagen aplicando un filtro de rotación de matiz (hue-rotate)*/
+}
+
+
+.saludo_modulos {
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    font-size: 20px;
+}
+
+.contenedor_opciones {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 15%;
+    height: 7%;
+    background-color: #f2f4fe;
+    text-align: center;
+    padding: 20px;
+}
+
+.salir {
+    top: 0;
+    width: 35px;
+    height: 35px;
+    left: 30px;
+    bottom: 0;
+    position: absolute;
+    cursor: pointer;
+}
+
+/* Media query para pantallas pequeñas (móviles) */
+@media (max-width: 640px) {
+    .columna {
+      flex: 100%; /* Ocupan todo el ancho */
+    }
+}
+
+@media (max-width: 320px) {
+    .columna {
+      flex: 100%; /* Ocupan todo el ancho */
+    }
+}

@@ -1,73 +1,108 @@
-// Lógica de negocio
+// 📌 Obtener una orden de trabajo por ID
 
 // Vamos a crear las funciones para las workOrder
 
-import WorkOrder from "../models/workOrder.model.js"; // ✅ ruta corregida
+//admin → CRUD completo sobre todas las órdenes.
 
-// 📌 Obtener todas las órdenes
+//user → puede crear órdenes, y solo puede ver/editar las suyas.
+
+//Solo admin puede eliminar órdenes.
+
+import WorkOrder from "../models/workOrder.model.js";
+
+//Listar órdenes de trabajo
 export const getWorkOrders = async (req, res) => {
   try {
-    const orders = await WorkOrder.find()
-      .populate("cliente", "name lastName email")
-      .populate("tecnicoAsignado", "name lastName email");
-    res.json(orders);
+    let workOrders;
+
+    if (req.user.profile === "admin") {
+      // Admin ve todas
+      workOrders = await WorkOrder.find().populate("user", "-password");
+    } else {
+      // Usuario normal solo ve las suyas
+      workOrders = await WorkOrder.find({ user: req.user.id }).populate("user", "-password");
+    }
+
+    res.json(workOrders);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// 📌 Crear una orden
+//Obtener una orden de trabajo por ID
+export const getWorkOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const workOrder = await WorkOrder.findById(id).populate("user", "-password");
+
+    if (!workOrder) return res.status(404).json({ message: "Orden no encontrada" });
+
+    // Validación: user solo accede a la suya
+    if (req.user.profile !== "admin" && workOrder.user._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: "No autorizado para ver esta orden" });
+    }
+
+    res.json(workOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//Crear orden de trabajo
 export const createWorkOrder = async (req, res) => {
   try {
-    const { title, description, date, cliente, tecnicoAsignado } = req.body;
+    const { title, description, date } = req.body;
+
     const newWorkOrder = new WorkOrder({
       title,
       description,
       date,
-      cliente,
-      tecnicoAsignado,
+      user: req.user.id, // siempre el id normalizado
     });
-    const savedWorkOrder = await newWorkOrder.save();
-    res.status(201).json(savedWorkOrder);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
 
-// 📌 Obtener una orden por ID
-export const getWorkOrder = async (req, res) => {
-  try {
-    const order = await WorkOrder.findById(req.params.id)
-      .populate("cliente", "name lastName email")
-      .populate("tecnicoAsignado", "name lastName email");
-    if (!order) return res.status(404).json({ message: "Orden no encontrada" });
-    res.json(order);
+    const savedWorkOrder = await newWorkOrder.save();
+    res.json(savedWorkOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// 📌 Actualizar una orden
+//Actualizar orden de trabajo
 export const updateWorkOrder = async (req, res) => {
   try {
-    const order = await WorkOrder.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!order) return res.status(404).json({ message: "Orden no encontrada" });
-    res.json(order);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
+    const { id } = req.params;
+    let workOrder = await WorkOrder.findById(id);
 
-// 📌 Eliminar una orden
-export const deleteWorkOrder = async (req, res) => {
-  try {
-    const order = await WorkOrder.findByIdAndDelete(req.params.id);
-    if (!order) return res.status(404).json({ message: "Orden no encontrada" });
-    res.json({ message: "Orden eliminada" });
+    if (!workOrder) return res.status(404).json({ message: "Orden no encontrada" });
+
+    // Validación: user solo edita la suya
+    if (req.user.profile !== "admin" && workOrder.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: "No autorizado para actualizar esta orden" });
+    }
+
+    workOrder = await WorkOrder.findByIdAndUpdate(id, req.body, { new: true });
+    res.json(workOrder);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+//Eliminar orden de trabajo
+export const deleteWorkOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const workOrder = await WorkOrder.findById(id);
+
+    if (!workOrder) return res.status(404).json({ message: "Orden no encontrada" });
+
+    // Solo admin puede eliminar
+    if (req.user.profile !== "admin") {
+      return res.status(403).json({ message: "No autorizado para eliminar esta orden" });
+    }
+
+    await WorkOrder.findByIdAndDelete(id);
+    res.json({ message: "Orden eliminada correctamente" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

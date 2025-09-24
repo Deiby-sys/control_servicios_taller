@@ -1,33 +1,49 @@
-//Rutas POST
+//Rutas CRUD
 
+//GET /api/workorders → Admin ve todas, User solo las suyas.
+
+//GET /api/workorders/:id → User solo puede ver la suya.
+
+//POST /api/workorders → Crea orden ligada al req.user.id.
+
+//PUT /api/workorders/:id → User solo actualiza la suya, Admin cualquiera.
+
+//DELETE /api/workorders/:id → Solo Admin.
+
+// src/routes/workOrders.routes.js
 import { Router } from "express";
-import { authRequired } from "../middlewares/validateToken.js";
 import {
   getWorkOrders,
-  getWorkOrder,
+  getWorkOrderById,
   createWorkOrder,
   updateWorkOrder,
   deleteWorkOrder,
 } from "../controllers/workOrders.controller.js";
+import { authRequired } from "../middlewares/validateToken.js";
 import { validateSchema } from "../middlewares/validator.middleware.js";
-import { createWorkOrderSchema } from "../schemas/workOrder.schema.js";
+import {
+  createWorkOrderSchema,
+  updateWorkOrderSchema,
+} from "../schemas/workOrder.schema.js";
 
 const router = Router();
 
-// 📌 Rutas protegidas con autenticación
-router.get("/workorders", authRequired, getWorkOrders);
+// Listar todas las órdenes (admin ve todas, user solo las suyas)
+router.get("/", authRequired, getWorkOrders);
 
-router.get("/workorders/:id", authRequired, getWorkOrder);
+// Obtener orden por ID
+router.get("/:id", authRequired, getWorkOrderById);
 
-router.post(
-  "/workorders",
-  authRequired,
-  validateSchema(createWorkOrderSchema),
-  createWorkOrder
-);
+// Crear orden (validación Zod)
+router.post("/", authRequired, validateSchema(createWorkOrderSchema), createWorkOrder);
 
-router.put("/workorders/:id", authRequired, updateWorkOrder);
+// Actualizar orden (validación Zod)
+router.put("/:id", authRequired, validateSchema(updateWorkOrderSchema), updateWorkOrder);
 
-router.delete("/workorders/:id", authRequired, deleteWorkOrder);
+// Eliminar orden
+router.delete("/:id", authRequired, deleteWorkOrder);
 
 export default router;
+
+
+

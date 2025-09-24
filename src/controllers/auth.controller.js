@@ -1,89 +1,102 @@
-// Lógica de negocio
+// Registro y Login de usuarios
 
 // Vamos a crear las funciones para las auth
 
-import User from '../models/userModel.js';
-import bcrypt from 'bcryptjs';
-import { createAccessToken } from '../libs/jwt.js';
 
+// src/controllers/auth.controller.js
+import User from '../models/user.model.js';  
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { TOKEN_SECRET } from "../config.js";
+
+// Helper para crear token
+function createAccessToken(user) {
+  return jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      profile: user.profile,
+    },
+    TOKEN_SECRET,
+    { expiresIn: "1d" }
+  );
+}
+
+// Registro
 export const register = async (req, res) => {
-  const { name, lastName, profile, email, password } = req.body;
   try {
-    // Verificar si el email ya existe
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "Email already in use" });
+    const { username, email, password, profile } = req.body;
 
-    // Encriptar contraseña
+    const userFound = await User.findOne({ email });
+    if (userFound) return res.status(400).json({ message: "Email ya registrado" });
+
     const passwordHash = await bcrypt.hash(password, 10);
-
     const newUser = new User({
-      name,
-      lastName,
-      profile,
+      username,
       email,
       password: passwordHash,
+      profile: profile || "user",
     });
 
-    const userSaved = await newUser.save();
-    const token = await createAccessToken({ id: userSaved.id });
+    const savedUser = await newUser.save();
+    const token = createAccessToken(savedUser);
 
-    res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
-
+    res.cookie("token", token);
     res.json({
-      id: userSaved._id,
-      name: userSaved.name,
-      lastName: userSaved.lastName,
-      profile: userSaved.profile,
-      email: userSaved.email,
+      id: savedUser._id,
+      username: savedUser.username,
+      email: savedUser.email,
+      profile: savedUser.profile,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+// Login
 export const login = async (req, res) => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = req.body;
+
     const userFound = await User.findOne({ email });
-    if (!userFound) return res.status(400).json({ message: "Invalid credentials" });
+    if (!userFound) return res.status(400).json({ message: "Usuario no encontrado" });
 
     const isMatch = await bcrypt.compare(password, userFound.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(400).json({ message: "Credenciales inválidas" });
 
-    const token = await createAccessToken({ id: userFound.id });
+    const token = createAccessToken(userFound);
 
-    res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
-
+    res.cookie("token", token);
     res.json({
       id: userFound._id,
-      name: userFound.name,
-      lastName: userFound.lastName,
-      profile: userFound.profile,
+      username: userFound.username,
       email: userFound.email,
+      profile: userFound.profile,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+// Logout
 export const logout = (req, res) => {
-  res.cookie("token", "", {
-    expires: new Date(0),
-  });
+  res.clearCookie("token");
   return res.sendStatus(200);
 };
 
+// Profile
 export const profile = async (req, res) => {
-  const userFound = await User.findById(req.user.id);
-  if (!userFound) return res.status(400).json({ message: "User not found" });
+  try {
+    const userFound = await User.findById(req.user.id, "-password");
+    if (!userFound) return res.status(404).json({ message: "Usuario no encontrado" });
 
-  return res.json({
-    id: userFound._id,
-    name: userFound.name,
-    lastName: userFound.lastName,
-    profile: userFound.profile,
-    email: userFound.email,
-    createdAt: userFound.createdAt,
-    updatedAt: userFound.updatedAt, // corregido
-  });
+    res.json({
+      id: userFound._id,
+      username: userFound.username,
+      email: userFound.email,
+      profile: userFound.profile,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };

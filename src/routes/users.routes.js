@@ -1,5 +1,11 @@
 //CRUD para usuarios
 
+//getUsers → solo admin puede listar todos los usuarios.
+
+//getUserById y updateUser → pueden acceder admin y user. 
+
+//deleteUser → solo admin puede eliminar usuarios.
+
 import { Router } from "express";
 import {
   getUsers,
@@ -7,7 +13,7 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/users.controller.js";
-import { authRequired } from "../middlewares/validateToken.js";
+import { authRequired } from "../middlewares/validateToken.js";   //IMPORT correcto
 import { validateSchema } from "../middlewares/validator.middleware.js";
 import { updateUserSchema } from "../schemas/user.schema.js";
 
@@ -26,4 +32,5 @@ router.put("/:id", authRequired, validateSchema(updateUserSchema), updateUser);
 router.delete("/:id", authRequired, deleteUser);
 
 export default router;
+
 

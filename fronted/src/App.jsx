@@ -1,25 +1,61 @@
 //Es la primera página en ser cargada por la aplicación
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Login from './pages/Login';
-import NotFound from './pages/NotFound';
-import RegisterUser from './pages/registerUser';
-
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import RegisterUser from "./pages/RegisterUser";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
-    <BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-            <Route path="/" element={<Login/>}/>
-            <Route path="/registerUser" element={<RegisterUser/>}/>
-            <Route path="/ppage" element={<h1>HomePage</h1>}/>
-            <Route path="/tasks" element={<h1>TaskPage</h1>}/>
-            <Route path="/add task" element={<h1>NewTask</h1>}/>
-            <Route path="/task/:id" element={<h1>UpdateTask</h1>}/>
-            <Route path="/profile" element={<h1>ProfileUser</h1>}/>
-            <Route path='*' element={<NotFound/>}/>
+          {/* Rutas públicas */}
+          <Route path="/" element={<Login />} />
+          <Route path="/registerUser" element={<RegisterUser />} />
+
+          {/* Rutas protegidas */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <h1>ProfileUser</h1>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workorders"
+            element={
+              <ProtectedRoute>
+                <h1>WorkOrdersPage</h1>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workorders/new"
+            element={
+              <ProtectedRoute>
+                <h1>NewWorkOrder</h1>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workorders/:id"
+            element={
+              <ProtectedRoute>
+                <h1>UpdateWorkOrder</h1>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
+
 export default App;

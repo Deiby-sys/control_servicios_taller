@@ -1,55 +1,82 @@
 //Servirá para listar usuarios
 
-import User from "../models/userModel.js";
+//getUserById → un "user" solo puede consultar su propio id.
 
-// ✅ Listar todos los usuarios
+//updateUser → un "user" solo puede modificar su propio id.
+
+//deleteUser → solo "admin" puede eliminar.
+
+//En todas las consultas, excluimos password con "-password"
+
+import User from "../models/user.model.js";
+
+//Listar todos los usuarios (solo admin)
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // ocultamos el password
+    const users = await User.find({}, "-password"); // excluimos password
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Obtener un usuario por ID
+//Obtener usuario por ID
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const { id } = req.params;
+
+    // Si no es admin, solo puede ver su propio perfil
+    if (req.user.profile !== "admin" && req.user.id !== id) {
+      return res.status(403).json({ message: "Acceso denegado" });
+    }
+
+    const user = await User.findById(id, "-password");
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching user", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Actualizar usuario
+//Actualizar usuario
 export const updateUser = async (req, res) => {
   try {
-    const { name, lastName, profile, email } = req.body;
+    const { id } = req.params;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { name, lastName, profile, email },
-      { new: true, runValidators: true }
-    ).select("-password");
+    // Si no es admin, solo puede actualizar su propio perfil
+    if (req.user.profile !== "admin" && req.user.id !== id) {
+      return res.status(403).json({ message: "No autorizado para actualizar este usuario" });
+    }
 
-    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+      select: "-password",
+    });
+
+    if (!updatedUser) return res.status(404).json({ message: "Usuario no encontrado" });
 
     res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: "Error updating user", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Eliminar usuario
+//Eliminar usuario
 export const deleteUser = async (req, res) => {
   try {
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) return res.status(404).json({ message: "User not found" });
+    const { id } = req.params;
 
-    res.json({ message: "User deleted successfully" });
+    // Solo admin puede eliminar
+    if (req.user.profile !== "admin") {
+      return res.status(403).json({ message: "No autorizado para eliminar usuarios" });
+    }
+
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    res.json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting user", error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };

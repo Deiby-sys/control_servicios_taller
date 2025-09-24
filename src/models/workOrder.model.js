@@ -22,7 +22,7 @@ const workOrderSchema = new mongoose.Schema(
     cliente: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // relación con el cliente
-      required: true,
+      required: false,
     },
     tecnicoAsignado: {
       type: mongoose.Schema.Types.ObjectId,
@@ -41,7 +41,15 @@ const workOrderSchema = new mongoose.Schema(
       ],
       default: "pendiente_asignar",
     },
+
+    // Relación con el usuario que creó la orden
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
+  
   {
     timestamps: true, // crea createdAt y updatedAt automáticamente
   }

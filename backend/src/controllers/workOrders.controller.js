@@ -1,4 +1,4 @@
-// 📌 Obtener una orden de trabajo por ID
+// Obtener una orden de trabajo por ID
 
 // Vamos a crear las funciones para las workOrder
 

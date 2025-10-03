@@ -55,14 +55,13 @@ function RecoverPassword() {
           {loading ? "Procesando..." : "Enviar enlace"}
         </button>
 
-        <ul>
-          <li>
+          <p>
             <Link to="/">Volver a Login</Link>
-          </li>
-          <li>
-            <Link to="/register">Registro Usuario</Link>
-          </li>
-        </ul>
+          </p>
+          <p>
+            <Link to="/registerUser">Registro Usuario</Link>
+          </p>
+        
       </form>
     </div>
   );

@@ -25,14 +25,15 @@ function createAccessToken(user) {
 // Registro
 export const register = async (req, res) => {
   try {
-    const { username, email, password, profile } = req.body;
+    const { name, lastName, email, password, profile } = req.body;
 
     const userFound = await User.findOne({ email });
     if (userFound) return res.status(400).json({ message: "Email ya registrado" });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const newUser = new User({
-      username,
+      name,
+      lastName,
       email,
       password: passwordHash,
       profile: profile || "user",
@@ -44,7 +45,8 @@ export const register = async (req, res) => {
     res.cookie("token", token);
     res.json({
       id: savedUser._id,
-      username: savedUser.username,
+      name: savedUser.name,
+      lastName: savedUser.lastName,
       email: savedUser.email,
       profile: savedUser.profile,
     });
@@ -59,10 +61,13 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const userFound = await User.findOne({ email });
-    if (!userFound) return res.status(400).json({ message: "Usuario no encontrado" });
+    // 1. Usuario no encontrado
+    if (!userFound) return res.status(401).json({ message: "Usuario o contraseña inválidos" }); 
 
     const isMatch = await bcrypt.compare(password, userFound.password);
-    if (!isMatch) return res.status(400).json({ message: "Credenciales inválidas" });
+    // 2. Contraseña incorrecta
+    if (!isMatch) return res.status(401).json({ message: "Usuario o contraseña inválidos" });
+
 
     const token = createAccessToken(userFound);
 

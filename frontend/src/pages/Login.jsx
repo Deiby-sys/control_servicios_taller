@@ -4,14 +4,13 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import emblema from "../images/Emblema.png";
 import { useAuth } from "../context/AuthContext";
-import "../styles/FormStyles.css"; // ahora usamos estilos centralizados
+import "../styles/FormStyles.css";
 
 function Login() {
-  const { login } = useAuth();
+  const { login, errors } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) =>
@@ -19,14 +18,13 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
     setLoading(true);
 
     try {
       await login(formData);
-      navigate("/principal"); // redirige al dashboard
+      navigate("/principal"); // si login fue exitoso, redirige
     } catch (err) {
-      setErrorMsg("Credenciales inválidas");
+      // el error ya lo maneja AuthContext en `errors`
     } finally {
       setLoading(false);
     }
@@ -62,25 +60,26 @@ function Login() {
           required
         />
 
-        {errorMsg && <p className="error">{errorMsg}</p>}
+        {/* Errores del contexto */}
+        {errors.length > 0 && <p className="error">{errors[0]}</p>}
 
         <button type="submit" className="btn" disabled={loading}>
           {loading ? "Ingresando..." : "Ingresar"}
         </button>
 
-        <ul>
-          <li>
-            <Link to="/recuperar">Recuperar Contraseña</Link>
-          </li>
-          <li>
-            <Link to="/registerUser">Registro Usuario</Link>
-          </li>
-        </ul>
+        <p>
+          <Link to="/recuperar">Recuperar Contraseña</Link>
+        </p>
+        <p>
+          <Link to="/registerUser">Registro Usuario</Link>
+        </p>
       </form>
     </div>
   );
 }
 
 export default Login;
+
+
 
 

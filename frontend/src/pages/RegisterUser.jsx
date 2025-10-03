@@ -1,25 +1,27 @@
 // Registro de usuarios
 
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Select from "react-select";
 import emblema from "../images/Emblema.png";
 import "../styles/FormStyles.css";
+import { useAuth } from "../context/AuthContext";
 
 function RegisterUser() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { register, errors } = useAuth(); // usamos register del contexto
 
   const [formData, setFormData] = useState({
     name: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
     profile: null,
   });
 
-  const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
 
   const perfiles = [
     { label: "Admin", value: "Admin" },
@@ -37,30 +39,26 @@ function RegisterUser() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
     setLoading(true);
 
     if (formData.password !== formData.confirmPassword) {
-      setErrorMsg("Las contraseñas no coinciden");
       setLoading(false);
-      return;
+      return alert("Las contraseñas no coinciden");
     }
 
     if (!formData.profile) {
-      setErrorMsg("Debes seleccionar un perfil");
       setLoading(false);
-      return;
+      return alert("Debes seleccionar un perfil");
     }
 
     try {
-      // Aquí luego conectamos al backend (ej: POST /api/register)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await register(formData);
 
-      setSuccessMsg("Usuario registrado con éxito, ahora inicia sesión.");
-      setTimeout(() => navigate("/"), 2000);
+      // Redirección después de registro
+      const from = location.state?.from?.pathname || "/principal";
+      navigate(from, { replace: true });
     } catch (error) {
-      setErrorMsg("Error en el registro. Inténtalo nuevamente.");
+      // errores vienen de AuthContext → `errors`
     } finally {
       setLoading(false);
     }
@@ -85,6 +83,17 @@ function RegisterUser() {
           required
         />
 
+        <label htmlFor="lastName">Apellido:</label>
+        <input
+          type="text"
+          id="lastName"
+          name="lastName"
+          placeholder="Tu apellido completo"
+          value={formData.lastName}
+          onChange={handleChange}
+          required
+        />
+
         <label htmlFor="email">Correo:</label>
         <input
           type="email"
@@ -102,6 +111,7 @@ function RegisterUser() {
           placeholder="Selecciona tu perfil"
           onChange={handleProfileChange}
           className="select"
+          classNamePrefix="react-select"
         />
 
         <label htmlFor="password">Contraseña:</label>
@@ -126,29 +136,21 @@ function RegisterUser() {
           required
         />
 
-        {errorMsg && <p className="error">{errorMsg}</p>}
-        {successMsg && <p className="info">{successMsg}</p>}
+        {/* Errores desde AuthContext */}
+        {errors.length > 0 && <p className="error">{errors[0]}</p>}
 
         <button type="submit" className="btn" disabled={loading}>
           {loading ? "Registrando..." : "Registrarse"}
         </button>
 
-        <ul>
-          <li>
-            <Link to="/">Volver a Login</Link>
-          </li>
-          <li>
-            <Link to="/recuperar">Recuperar Contraseña</Link>
-          </li>
-        </ul>
+        <p>
+          <Link to="/">Volver a Login</Link>
+        </p>
       </form>
     </div>
   );
 }
 
 export default RegisterUser;
-
-
-
 
 

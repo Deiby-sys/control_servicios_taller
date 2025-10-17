@@ -16,7 +16,7 @@ export const getWorkOrders = async (req, res) => {
     let workOrders;
 
     if (req.user.profile === "admin") {
-      // Admin ve todas
+      // admin ve todas
       workOrders = await WorkOrder.find().populate("user", "-password");
     } else {
       // Usuario normal solo ve las suyas

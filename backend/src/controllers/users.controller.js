@@ -13,9 +13,15 @@ import User from "../models/user.model.js";
 //Listar todos los usuarios (solo admin)
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({}, "-password"); // excluimos password
+    // Verificar que el usuario sea admin
+    if (req.user.profile !== "admin") {
+      return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
+    }
+
+    const users = await User.find({}, "-password");
     res.json(users);
   } catch (error) {
+    console.error("Error en getUsers:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -25,8 +31,7 @@ export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Si no es admin, solo puede ver su propio perfil
-    if (req.user.profile !== "admin" && req.user.id !== id) {
+    if (req.user.profile !== "admin" && req.user._id.toString() !== id) {
       return res.status(403).json({ message: "Acceso denegado" });
     }
 
@@ -35,6 +40,7 @@ export const getUserById = async (req, res) => {
 
     res.json(user);
   } catch (error) {
+    console.error("Error en getUserById:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -44,8 +50,7 @@ export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Si no es admin, solo puede actualizar su propio perfil
-    if (req.user.profile !== "admin" && req.user.id !== id) {
+    if (req.user.profile !== "admin" && req.user._id.toString() !== id) {
       return res.status(403).json({ message: "No autorizado para actualizar este usuario" });
     }
 
@@ -58,6 +63,7 @@ export const updateUser = async (req, res) => {
 
     res.json(updatedUser);
   } catch (error) {
+    console.error("Error en updateUser:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -67,7 +73,6 @@ export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Solo admin puede eliminar
     if (req.user.profile !== "admin") {
       return res.status(403).json({ message: "No autorizado para eliminar usuarios" });
     }
@@ -77,6 +82,7 @@ export const deleteUser = async (req, res) => {
 
     res.json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
+    console.error("Error en deleteUser:", error);
     res.status(500).json({ message: error.message });
   }
 };

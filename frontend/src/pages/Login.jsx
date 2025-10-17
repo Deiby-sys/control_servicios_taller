@@ -1,7 +1,7 @@
 // Logueo a nuestra aplicación
 
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // 👈 Agrega useLocation
 import emblema from "../images/Emblema.png";
 import { useAuth } from "../context/AuthContext";
 import "../styles/FormStyles.css";
@@ -9,6 +9,11 @@ import "../styles/FormStyles.css";
 function Login() {
   const { login, errors } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 Obtiene la ubicación anterior
+
+  // Si el usuario fue redirigido aquí desde una ruta protegida,
+  // location.state?.from contendrá esa ruta. Si no, usamos "/".
+  const from = location.state?.from?.pathname || "/";
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -22,9 +27,9 @@ function Login() {
 
     try {
       await login(formData);
-      navigate("/principal"); // si login fue exitoso, redirige
+      navigate(from, { replace: true }); // ✅ Redirección dinámica
     } catch (err) {
-      // el error ya lo maneja AuthContext en `errors`
+      // El error ya se maneja en AuthContext
     } finally {
       setLoading(false);
     }
@@ -79,7 +84,3 @@ function Login() {
 }
 
 export default Login;
-
-
-
-

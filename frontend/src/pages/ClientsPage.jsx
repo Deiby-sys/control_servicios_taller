@@ -1,98 +1,203 @@
 // Página de clientes
 
-import { useEffect } from 'react';
-import { useClients } from '../context/ClientContext'; // Nuestro hook personalizado
-import { Link } from 'react-router-dom';
+// src/pages/ClientsPage.jsx
+import { useState, useEffect } from "react";
+import { useClients } from "../context/ClientContext";
+import { Link } from "react-router-dom";
+import "../styles/ClientsPage.css";
 
 function ClientsPage() {
-    // Obtenemos los datos y funciones del contexto
-    const { clients, getClients, loading, deleteClient } = useClients();
+  const { clients, getClients, loading, error, deleteClient, updateClient } = useClients();
+  const [filteredClients, setFilteredClients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [editingClient, setEditingClient] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    lastName: "",
+    identificationNumber: "",
+    phone: "",
+    city: "",
+  });
 
-    // Cuando el componente se carga, pedimos la lista de clientes al backend
-    useEffect(() => {
-        getClients();
-    }, []); // El array vacío asegura que solo se ejecute al montar
+  useEffect(() => {
+    getClients();
+  }, []);
 
-    if (loading) return <p className='text-xl text-center mt-8'>Cargando clientes...</p>;
-
-    if (clients.length === 0 && !loading) {
-        return (
-            <div className='flex flex-col items-center justify-center h-full'>
-                <h2 className='text-2xl font-bold mb-4'>Aún no hay clientes registrados.</h2>
-                <Link to="/clients/new" className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-                    Crear Nuevo Cliente
-                </Link>
-            </div>
-        );
-    }
-    
-    // Función para manejar la eliminación
-    const handleDelete = (id) => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
-            deleteClient(id);
-        }
-    };
-
-    return (
-        <div className='p-6'>
-            <header className='flex justify-between items-center mb-6'>
-                <h1 className='text-3xl font-bold'>Gestión de Clientes ({clients.length})</h1>
-                <Link to="/clients/new" className='bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded'>
-                    + Nuevo Cliente
-                </Link>
-            </header>
-
-            <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-                <table className="min-w-full leading-normal">
-                    <thead>
-                        <tr className='bg-gray-100'>
-                            <th className='px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider'>
-                                Nombre Completo
-                            </th>
-                            <th className='px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider'>
-                                ID / Teléfono
-                            </th>
-                            <th className='px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider'>
-                                Ciudad
-                            </th>
-                            <th className='px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider'>
-                                Acciones
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {clients.map(client => (
-                            <tr key={client._id} className='hover:bg-gray-50'>
-                                <td className='px-5 py-5 border-b border-gray-200 text-sm'>
-                                    {client.name} {client.lastName}
-                                </td>
-                                <td className='px-5 py-5 border-b border-gray-200 text-sm'>
-                                    {client.identificationNumber} <br/> {client.phone}
-                                </td>
-                                <td className='px-5 py-5 border-b border-gray-200 text-sm'>
-                                    {client.city}
-                                </td>
-                                <td className='px-5 py-5 border-b border-gray-200 text-sm flex gap-2'>
-                                    <Link 
-                                        to={`/clients/${client._id}`} 
-                                        className='text-indigo-600 hover:text-indigo-900 font-semibold'
-                                    >
-                                        Editar
-                                    </Link>
-                                    <button 
-                                        onClick={() => handleDelete(client._id)} 
-                                        className='text-red-600 hover:text-red-900 font-semibold'
-                                    >
-                                        Eliminar
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  useEffect(() => {
+    if (!clients.length) return;
+    const term = searchTerm.toLowerCase();
+    const filtered = clients.filter(
+      (client) =>
+        client.name.toLowerCase().includes(term) ||
+        client.lastName.toLowerCase().includes(term) ||
+        client.identificationNumber.toLowerCase().includes(term) ||
+        client.phone.toLowerCase().includes(term) ||
+        client.city.toLowerCase().includes(term)
     );
+    setFilteredClients(filtered);
+  }, [searchTerm, clients]);
+
+  const startEdit = (client) => {
+    setEditingClient(client._id);
+    setEditForm({
+      name: client.name || "",
+      lastName: client.lastName || "",
+      identificationNumber: client.identificationNumber || "",
+      phone: client.phone || "",
+      city: client.city || "",
+    });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateClient(editingClient, editForm);
+      setEditingClient(null);
+    } catch (error) {
+      console.error("Error al actualizar cliente:", error);
+      alert("Error al actualizar cliente: " + error.message);
+    }
+  };
+
+  const handleDelete = (id, name) => {
+    if (!window.confirm(`¿Eliminar a ${name}? Esta acción no se puede deshacer.`))
+      return;
+    deleteClient(id);
+  };
+
+  const handleEditChange = (e) =>
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+
+  if (loading) return <div className="page">Cargando clientes...</div>;
+  if (error) return <div className="page error">Error: {error}</div>;
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <h1>Gestión de Clientes</h1>
+        <Link to="/clients/new" className="btn-primary">
+          + Nuevo Cliente
+        </Link>
+      </div>
+
+      {/* Barra de búsqueda */}
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Buscar por nombre, documento, teléfono o ciudad..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+      </div>
+
+      {/* Tabla de clientes */}
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Nombre Completo</th>
+              <th>Documento</th>
+              <th>Teléfono</th>
+              <th>Ciudad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredClients.length > 0 ? (
+              filteredClients.map((client) => (
+                <tr key={client._id}>
+                  {editingClient === client._id ? (
+                    <td colSpan="5">
+                      <form onSubmit={handleEditSubmit} className="edit-form-inline">
+                        <input
+                          name="name"
+                          placeholder="Nombre"
+                          value={editForm.name}
+                          onChange={handleEditChange}
+                          required
+                        />
+                        <input
+                          name="lastName"
+                          placeholder="Apellido"
+                          value={editForm.lastName}
+                          onChange={handleEditChange}
+                          required
+                        />
+                        <input
+                          name="identificationNumber"
+                          placeholder="Documento"
+                          value={editForm.identificationNumber}
+                          onChange={handleEditChange}
+                          required
+                        />
+                        <input
+                          name="phone"
+                          placeholder="Teléfono"
+                          value={editForm.phone}
+                          onChange={handleEditChange}
+                          required
+                        />
+                        <input
+                          name="city"
+                          placeholder="Ciudad"
+                          value={editForm.city}
+                          onChange={handleEditChange}
+                          required
+                        />
+                        <button type="submit" className="btn-save">
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-cancel"
+                          onClick={() => setEditingClient(null)}
+                        >
+                          Cancelar
+                        </button>
+                      </form>
+                    </td>
+                  ) : (
+                    <>
+                      <td>{client.name} {client.lastName}</td>
+                      <td>{client.identificationNumber}</td>
+                      <td>{client.phone}</td>
+                      <td>{client.city}</td>
+                      <td>
+                        <button
+                          className="btn-edit"
+                          onClick={() => startEdit(client)}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className="btn-delete"
+                          onClick={() => handleDelete(client._id, `${client.name} ${client.lastName}`)}
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-data">
+                  <div className="empty-state">
+                    <p>No se encontraron clientes</p>
+                    <Link to="/clients/new" className="btn-primary btn-small">
+                      Registrar Cliente
+                    </Link>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 export default ClientsPage;

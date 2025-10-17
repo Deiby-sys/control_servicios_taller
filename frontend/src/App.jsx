@@ -1,37 +1,42 @@
 //Es la primera página en ser cargada por la aplicación
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import RegisterUser from "./pages/RegisterUser";
-import Principal from "./pages/Principal";
-import Profile from "./pages/Profile";
 import RecoverPassword from "./pages/RecoverPassword";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import ClientsPage from "./pages/ClientsPage";
+import ClientFormPage from "./pages/ClientFormPage";
+import UsersManagementPage from "./pages/UsersManagementPage";
+import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ClientsPage from "./pages/ClientsPage"; // Página para listar clientes
-import ClientFormPage from "./pages/ClientFormPage"; // Página para crear/editar
+
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path="/" element={<Login />} />
-        <Route path="/registerUser" element={<RegisterUser />} />
-        <Route path="/recuperar" element={<RecoverPassword />} />
+    <Routes>
+      {/* Rutas públicas */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/registerUser" element={<RegisterUser />} />
+      <Route path="/recuperar" element={<RecoverPassword />} />
 
-        {/* Rutas protegidas */}
-        <Route element={<ProtectedRoute />}>
-          {/* Dashboard y Perfil */}
-          <Route path="/principal" element={<Principal />} />
-          <Route path="/profile" element={<Profile />} />
-
-          {/* Rutas del MÓDULO CLIENTES */}
-          <Route path="/clients" element={<ClientsPage />} /> {/* Listado y CRUD general */}
-          <Route path="/clients/new" element={<ClientFormPage />} /> {/* Formulario de creación */}
-          <Route path="/clients/:id" element={<ClientFormPage />} /> {/* Formulario de edición */}
+      {/* Ruta raíz: protegida */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<DashboardLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="clients" element={<ClientsPage />} />
+          <Route path="clients/new" element={<ClientFormPage />} />
+          <Route path="clients/:id" element={<ClientFormPage />} />
+          <Route path="usuarios" element={<UsersManagementPage />} />
         </Route>
-      </Routes>
-    </BrowserRouter>
+      </Route>
+
+      {/* Redirección de rutas no encontradas */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

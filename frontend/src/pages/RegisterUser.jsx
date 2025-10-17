@@ -24,11 +24,11 @@ function RegisterUser() {
   const [loading, setLoading] = useState(false);
 
   const perfiles = [
-    { label: "Admin", value: "Admin" },
-    { label: "Asesor", value: "Asesor" },
-    { label: "Bodega", value: "Bodega" },
-    { label: "Jefe", value: "Jefe" },
-    { label: "Técnico", value: "Técnico" },
+    { label: "Admin", value: "admin" },
+    { label: "Asesor", value: "asesor" },
+    { label: "Bodega", value: "bodega" },
+    { label: "Jefe", value: "jefe" },
+    { label: "Técnico", value: "tecnico" },
   ];
 
   const handleChange = (e) =>

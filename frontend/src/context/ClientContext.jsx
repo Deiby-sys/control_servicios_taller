@@ -32,9 +32,15 @@ export function ClientProvider({ children }) {
         try {
             const res = await getClientsRequest();
             setClients(res.data);
+            setErrors(null); // Limpia errores previos
         } catch (error) {
-            console.error(error);
-            setErrors(error.response?.data?.message || "Error al cargar clientes");
+          console.error("Error al cargar clientes:", error);
+          const errorMessage = 
+            error.response?.data?.message || 
+            error.response?.data?.errors?.[0] ||
+            error.message || 
+            "Error al cargar clientes";
+         setErrors(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -67,17 +73,24 @@ export function ClientProvider({ children }) {
     
     // Función para ACTUALIZAR un cliente (la implementación en el componente puede variar)
     const updateClient = async (id, clientData) => {
-         try {
+        try {
             const res = await updateClientRequest(id, clientData);
-            // Aquí podrías actualizar el estado 'clients' para reflejar el cambio en la lista
-            // (Esta lógica se puede refinar una vez se construya el componente de edición)
-            console.log("Cliente actualizado:", res.data);
+            // Actualizar el estado local
+             setClients(clients.map(client => 
+            client._id === id ? { ...client, ...res.data } : client
+             ));
+            setErrors(null);
          } catch (error) {
             console.error(error);
-            setErrors(error.response?.data?.message || "Error al actualizar cliente");
-         }
+            const errorMessage = 
+            error.response?.data?.message || 
+            error.response?.data?.errors?.[0] ||
+            error.message || 
+            "Error al actualizar cliente";
+            setErrors(errorMessage);
+            throw error; // Para que el componente pueda manejar el error
+        }
     };
-
 
     return (
         <ClientContext.Provider

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { clientSchema } from '../schemas/client.schema'; // Importamos el esquema de validación
 import { useClients } from '../context/ClientContext';
 import { getClientRequest } from '../api/client.api'; // Importamos la petición individual
+import emblema from "../images/Emblema.png"; 
 
 // Opciones para el campo select (identificationType)
 const idOptions = [
@@ -78,17 +79,16 @@ function ClientFormPage() {
     const buttonText = params.id ? "Actualizar Cliente" : "Guardar Cliente";
 
     return (
-        <div className="form-container"> {/* <-- CLASE BASE DE TU ESTILO */}
+        <div className="form-container"> {/* <-- CLASE BASE DE ESTILO */}
             <header>
-                {/* Asumo que tienes una imagen de logo o emblema */}
-                <img src="/path/to/tu/emblema.png" alt="Emblema Taller" className="emblema" /> 
+                <img src={emblema} alt="Emblema Taller" className="emblema" /> 
                 <h2>{title}</h2>
             </header>
 
             <form onSubmit={onSubmit}>
                 {/* 1. FILA DE IDENTIFICACIÓN */}
                 <label htmlFor="identificationType">Tipo de Identificación</label>
-                {/* Usaremos un <select> simple para mantener la coherencia con tu CSS base */}
+                {/* Uso un <select> simple para mantener la coherencia del CSS base */}
                 <select
                     id="identificationType"
                     {...register('identificationType')}

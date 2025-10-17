@@ -1,0 +1,146 @@
+/* Diseño usuarios en dashboard */
+.page {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.page h1 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.search-bar {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+  background-color: #f1f3f5;
+  font-weight: 600;
+  color: #495057;
+}
+
+.users-table input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.select-small .react-select__control {
+  min-height: 38px;
+  font-size: 0.9rem;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-save,
+.btn-cancel {
+  padding: 0.4rem 0.8rem;
+  margin-right: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-edit {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #0b5ed7;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #bb2d3b;
+}
+
+.btn-save {
+  background-color: #198754;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #157347;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #5c636a;
+}
+
+.edit-row td {
+  padding: 0.75rem !important;
+}
+
+.error {
+  color: #dc3545;
+  padding: 1rem;
+}
+
+/* Formulario de edición en línea */
+.edit-form-inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 1rem;
+}
+
+.edit-form-inline input,
+.edit-form-inline span {
+  padding: 0.4rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  min-width: 100px;
+}
+
+.edit-form-inline span {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+}
+
+.edit-form-inline .select-small {
+  min-width: 120px;
+}

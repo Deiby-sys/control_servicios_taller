@@ -1,7 +1,7 @@
 //Autenticación, validación, etc.
 
 //Se genera para validar autenticación del usuario
-// src/middlewares/validateToken.js
+
 import jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../config.js";
 

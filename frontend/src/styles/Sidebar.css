@@ -1,0 +1,132 @@
+/* Diseño sidebar o menú lateral */
+
+.sidebar {
+  width: 60px;
+  background-color: #2c3e50;
+  color: white;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  z-index: 100;
+}
+
+.sidebar--open {
+  width: 240px;
+}
+
+.sidebar__logo {
+  padding: 1.2rem 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar__nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar__nav li {
+  margin: 0.5rem 0;
+}
+
+.sidebar__nav a {
+  color: #ecf0f1;
+  text-decoration: none;
+  padding: 0.8rem 1rem;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.2s;
+}
+
+.sidebar__nav a:hover {
+  background-color: #34495e;
+}
+
+.sidebar:not(.sidebar--open) .sidebar__logo h2,
+.sidebar:not(.sidebar--open) .sidebar__nav a {
+  opacity: 0;
+  width: 0;
+  padding: 0.8rem 0;
+  pointer-events: none;
+}
+
+/* Footer del sidebar (para botón de logout) */
+.sidebar__footer {
+  margin-top: auto; /* Empuja el footer al final del sidebar */
+  padding: 1rem;
+  width: 100%;
+}
+
+.sidebar__logout-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background-color: #dc3545; /* Rojo suave (puedes cambiarlo) */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar__logout-btn:hover {
+  background-color: #c82333;
+}
+
+/* Si el sidebar está colapsado, puedes ocultar el texto o hacer un ícono */
+.sidebar:not(.sidebar--open) .sidebar__logout-btn {
+  display: none; /* Opcional: oculta el botón cuando está cerrado */
+  /* Alternativa: usa solo un ícono (ej. con Font Awesome) si quieres mostrar algo pequeño */
+}
+
+/* Estilo para los "enlaces" del sidebar (botones que parecen <a>) */
+.sidebar__link {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.sidebar__link:hover,
+.sidebar__link:focus {
+  background-color: #f0f0f0;
+  outline: none;
+}
+
+/* Estilo del botón de logout (ya lo tenías, solo lo ajusto) */
+.sidebar__logout-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar__logout-btn:hover {
+  background-color: #c82333;
+}
+
+/* Footer del sidebar */
+.sidebar__footer {
+  margin-top: auto;
+  padding: 1rem;
+}

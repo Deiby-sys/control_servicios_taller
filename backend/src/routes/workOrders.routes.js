@@ -1,14 +1,14 @@
 //Rutas CRUD
 
-//GET /api/workorders → Admin ve todas, User solo las suyas.
+//GET /api/workorders → admin ve todas, User solo las suyas.
 
 //GET /api/workorders/:id → User solo puede ver la suya.
 
 //POST /api/workorders → Crea orden ligada al req.user.id.
 
-//PUT /api/workorders/:id → User solo actualiza la suya, Admin cualquiera.
+//PUT /api/workorders/:id → User solo actualiza la suya, admin cualquiera.
 
-//DELETE /api/workorders/:id → Solo Admin.
+//DELETE /api/workorders/:id → Solo admin.
 
 // src/routes/workOrders.routes.js
 import { Router } from "express";

@@ -58,7 +58,27 @@
   box-sizing: border-box; /* asegura que padding no rompa el ancho */
 }
 
+.form-container select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  outline: none;
+  background: #2b2b3c;
+  color: #fff;
+  transition: border 0.3s ease;
+  box-sizing: border-box; /* asegura que padding no rompa el ancho */
+  /* Añadir una altura mínima para asegurar que el select se ajuste a la altura del input */
+  height: 40px; 
+}
+
 .form-container input:focus {
+  border: 1px solid #019afe;
+}
+
+.form-container select:focus {
   border: 1px solid #019afe;
 }
 

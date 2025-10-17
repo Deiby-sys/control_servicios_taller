@@ -1,0 +1,112 @@
+/* Estilo global */
+
+/* ====================== LAYOUT PRINCIPAL ====================== */
+
+.dashboard-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #f5f7fa;
+}
+
+.dashboard-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dashboard-main {
+  flex: 1;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* ====================== DASHBOARD CONTENT ====================== */
+
+.dashboard-title {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  justify-content: center; /* Centra el grupo si hay espacio sobrante */
+  padding: 0;
+  max-width: 1200px;
+  margin: 0 auto; /* Centra el contenedor de tarjetas en pantallas grandes */
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.dashboard-card h3 {
+  font-size: 1rem;
+  color: #222;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ====================== RESPONSIVIDAD ====================== */
+
+@media (max-width: 1024px) {
+  .dashboard-main {
+    padding: 1rem;
+  }
+  .dashboard-cards {
+    gap: 1rem;
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-card {
+    padding: 1rem;
+    min-height: 150px;
+  }
+}

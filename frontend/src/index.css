@@ -12,12 +12,3 @@ body {
   color: #333;
 }
 
-/* Estilos para login (opcional) */
-.login-background {
-  background: #00416A;
-  background: linear-gradient(to left, #E4E5E6, #00416A);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}

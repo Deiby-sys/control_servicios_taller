@@ -4,12 +4,10 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { clientSchema } from '../schemas/client.schema'; // Importamos el esquema de validación
+import { clientSchema } from '../schemas/client.schema';
 import { useClients } from '../context/ClientContext';
-import { getClientRequest } from '../api/client.api'; // Importamos la petición individual
-import emblema from "../images/Emblema.png"; 
+import { getClientRequest } from '../api/client.api';
 
-// Opciones para el campo select (identificationType)
 const idOptions = [
     { value: 'Cédula', label: 'Cédula' },
     { value: 'RUC', label: 'RUC' },
@@ -19,24 +17,19 @@ const idOptions = [
 ];
 
 function ClientFormPage() {
-    // Hooks de formularios y navegación
     const { register, handleSubmit, setValue, formState: { errors } } = useForm({
-        resolver: zodResolver(clientSchema), // Usamos Zod para la validación
+        resolver: zodResolver(clientSchema),
     });
     
-    // Funciones CRUD del contexto
     const { createClient, updateClient } = useClients();
-    
     const navigate = useNavigate();
-    const params = useParams(); // Para obtener el ID si estamos editando
+    const params = useParams();
 
-    // Lógica para CARGAR datos si estamos en modo EDICIÓN
     useEffect(() => {
         const loadClient = async () => {
             if (params.id) {
                 try {
                     const res = await getClientRequest(params.id);
-                    // Rellenar el formulario con los datos del cliente
                     const data = res.data;
                     setValue('identificationType', data.identificationType);
                     setValue('identificationNumber', data.identificationNumber);
@@ -48,52 +41,46 @@ function ClientFormPage() {
                     setValue('email', data.email);
                 } catch (error) {
                     console.error("Error al cargar cliente para edición:", error);
-                    // Aquí podrías redirigir o mostrar un error
                 }
             }
         };
         loadClient();
     }, [params.id, setValue]);
 
-
-    // Función que se ejecuta al enviar el formulario
     const onSubmit = handleSubmit(async (data) => {
         try {
             if (params.id) {
-                // Modo Edición
                 await updateClient(params.id, data);
             } else {
-                // Modo Creación
                 await createClient(data);
             }
-            // Redirigir a la lista de clientes después de guardar
             navigate('/clients'); 
         } catch (error) {
-            console.error("Error al guardar cliente:", error.response.data);
-            // Mostrar mensajes de error de API si es necesario
+            console.error("Error al guardar cliente:", error.response?.data);
         }
     });
-    
-    // Título dinámico
-    const title = params.id ? "Editar Cliente" : "Registrar Nuevo Cliente";
-    const buttonText = params.id ? "Actualizar Cliente" : "Guardar Cliente";
+
+    // Función para cancelar y volver a la lista
+    const handleCancel = () => {
+        navigate('/clients');
+    };
+
+    const title = params.id ? "Editar Cliente" : "Registrar Cliente";
+    const submitButtonText = params.id ? "Actualizar Cliente" : "Registrar Cliente"; // Cambiado el texto
 
     return (
-        <div className="form-container"> {/* <-- CLASE BASE DE ESTILO */}
+        <div className="form-container">
             <header>
-                <img src={emblema} alt="Emblema Taller" className="emblema" /> 
-                <h2>{title}</h2>
+                <h1>{title}</h1>
             </header>
 
             <form onSubmit={onSubmit}>
                 {/* 1. FILA DE IDENTIFICACIÓN */}
                 <label htmlFor="identificationType">Tipo de Identificación</label>
-                {/* Uso un <select> simple para mantener la coherencia del CSS base */}
                 <select
                     id="identificationType"
                     {...register('identificationType')}
-                    // Aplicamos el estilo de input para que sea similar
-                    className="form-container input" 
+                    className="input" // Quitado "form-container" 
                 >
                     <option value="">Seleccione...</option>
                     {idOptions.map(opt => (
@@ -102,7 +89,6 @@ function ClientFormPage() {
                 </select>
                 {errors.identificationType && (<p className='text-red-500 text-sm'>{errors.identificationType.message}</p>)}
 
-
                 <label htmlFor="identificationNumber">Número de Identificación</label>
                 <input
                     type="text"
@@ -110,7 +96,7 @@ function ClientFormPage() {
                     placeholder='Número de Cédula/RUC/NIT'
                     {...register('identificationNumber')}
                 />
-                {errors.identificationNumber && (<p className='text-red-red-500 text-sm'>{errors.identificationNumber.message}</p>)}
+                {errors.identificationNumber && (<p className='text-red-500 text-sm'>{errors.identificationNumber.message}</p>)}
 
                 {/* 2. FILA DE NOMBRE COMPLETO */}
                 <label htmlFor="name">Nombre</label>
@@ -168,10 +154,22 @@ function ClientFormPage() {
                 />
                 {errors.email && (<p className='text-red-500 text-sm'>{errors.email.message}</p>)}
 
-                {/* Botón de Enviar */}
-                <button type="submit" className="btn mt-4">
-                    {buttonText}
-                </button>
+                {/* DOS BOTONES: Registrar/Actualizar y Cancelar */}
+                <div className="form-actions"> {/* Contenedor para los botones */}
+                    <button 
+                        type="button" 
+                        className="btn-cancel" 
+                        onClick={handleCancel}
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit" 
+                        className="btn"
+                    >
+                        {submitButtonText}
+                    </button>
+                </div>
             </form>
         </div>
     );

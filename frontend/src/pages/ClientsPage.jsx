@@ -1,6 +1,5 @@
 // Página de clientes
 
-// src/pages/ClientsPage.jsx
 import { useState, useEffect } from "react";
 import { useClients } from "../context/ClientContext";
 import { Link } from "react-router-dom";
@@ -17,6 +16,7 @@ function ClientsPage() {
     identificationNumber: "",
     phone: "",
     city: "",
+    email: "", // Agregado email al formulario de edición
   });
 
   useEffect(() => {
@@ -32,7 +32,8 @@ function ClientsPage() {
         client.lastName.toLowerCase().includes(term) ||
         client.identificationNumber.toLowerCase().includes(term) ||
         client.phone.toLowerCase().includes(term) ||
-        client.city.toLowerCase().includes(term)
+        client.city.toLowerCase().includes(term) ||
+        (client.email && client.email.toLowerCase().includes(term)) // Agregado email a la búsqueda
     );
     setFilteredClients(filtered);
   }, [searchTerm, clients]);
@@ -45,6 +46,7 @@ function ClientsPage() {
       identificationNumber: client.identificationNumber || "",
       phone: client.phone || "",
       city: client.city || "",
+      email: client.email || "", // Agregado email al formulario
     });
   };
 
@@ -74,7 +76,7 @@ function ClientsPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Gestión de Clientes</h1>
+        <h2>Gestión de Clientes</h2>
         <Link to="/clients/new" className="btn-primary">
           + Nuevo Cliente
         </Link>
@@ -84,7 +86,7 @@ function ClientsPage() {
       <div className="search-bar">
         <input
           type="text"
-          placeholder="Buscar por nombre, documento, teléfono o ciudad..."
+          placeholder="Buscar por nombre, documento, teléfono, ciudad o email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
@@ -100,6 +102,7 @@ function ClientsPage() {
               <th>Documento</th>
               <th>Teléfono</th>
               <th>Ciudad</th>
+              <th>Email</th> {/* Nueva columna */}
               <th>Acciones</th>
             </tr>
           </thead>
@@ -108,7 +111,7 @@ function ClientsPage() {
               filteredClients.map((client) => (
                 <tr key={client._id}>
                   {editingClient === client._id ? (
-                    <td colSpan="5">
+                    <td colSpan="6"> {/* Cambiado de 5 a 6 */}
                       <form onSubmit={handleEditSubmit} className="edit-form-inline">
                         <input
                           name="name"
@@ -145,6 +148,12 @@ function ClientsPage() {
                           onChange={handleEditChange}
                           required
                         />
+                        <input
+                          name="email"
+                          placeholder="Email"
+                          value={editForm.email}
+                          onChange={handleEditChange}
+                        />
                         <button type="submit" className="btn-save">
                           Guardar
                         </button>
@@ -163,6 +172,7 @@ function ClientsPage() {
                       <td>{client.identificationNumber}</td>
                       <td>{client.phone}</td>
                       <td>{client.city}</td>
+                      <td>{client.email}</td> {/* Mostrar el email */}
                       <td>
                         <button
                           className="btn-edit"
@@ -183,7 +193,7 @@ function ClientsPage() {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="no-data">
+                <td colSpan="6" className="no-data"> {/* Cambiado de 5 a 6 */}
                   <div className="empty-state">
                     <p>No se encontraron clientes</p>
                     <Link to="/clients/new" className="btn-primary btn-small">

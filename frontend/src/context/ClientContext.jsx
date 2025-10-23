@@ -32,7 +32,7 @@ export function ClientProvider({ children }) {
         try {
             const res = await getClientsRequest();
             setClients(res.data);
-            setErrors(null); // Limpia errores previos
+            setErrors(null);
         } catch (error) {
           console.error("Error al cargar clientes:", error);
           const errorMessage = 
@@ -46,16 +46,23 @@ export function ClientProvider({ children }) {
         }
     };
 
-    // Función para CREAR un nuevo cliente
+    // Función para CREAR un nuevo cliente ✅ CORREGIDA
     const createClient = async (clientData) => {
         try {
             const res = await createClientRequest(clientData);
-            // Si el backend devuelve el cliente creado, lo añadimos al estado local
-            setClients([...clients, res.data]); 
+            const newClient = res.data;
+            setClients([...clients, newClient]);
+            setErrors(null);
+            return newClient; // 👈 DEVUELVE EL CLIENTE CREADO
         } catch (error) {
-            console.error(error);
-            // Captura y expone los errores de validación de Mongoose
-            setErrors(error.response?.data?.message || "Error al crear cliente");
+            console.error("Error al crear cliente:", error);
+            const errorMessage = 
+              error.response?.data?.message || 
+              error.response?.data?.errors?.[0] ||
+              error.message || 
+              "Error al crear cliente";
+            setErrors(errorMessage);
+            throw new Error(errorMessage); // 👈 LANZA EL ERROR PARA QUE EL COMPONENTE LO MANEJE
         }
     };
 
@@ -63,32 +70,38 @@ export function ClientProvider({ children }) {
     const deleteClient = async (id) => {
         try {
             await deleteClientRequest(id);
-            // Actualizamos el estado filtrando el cliente eliminado
             setClients(clients.filter(client => client._id !== id));
+            setErrors(null);
         } catch (error) {
-            console.error(error);
-            setErrors(error.response?.data?.message || "Error al eliminar cliente");
+            console.error("Error al eliminar cliente:", error);
+            const errorMessage = 
+              error.response?.data?.message || 
+              error.response?.data?.errors?.[0] ||
+              error.message || 
+              "Error al eliminar cliente";
+            setErrors(errorMessage);
+            throw new Error(errorMessage); // También lanza error para manejo externo
         }
     };
     
-    // Función para ACTUALIZAR un cliente (la implementación en el componente puede variar)
+    // Función para ACTUALIZAR un cliente
     const updateClient = async (id, clientData) => {
         try {
             const res = await updateClientRequest(id, clientData);
-            // Actualizar el estado local
-             setClients(clients.map(client => 
-            client._id === id ? { ...client, ...res.data } : client
-             ));
+            setClients(clients.map(client => 
+              client._id === id ? { ...client, ...res.data } : client
+            ));
             setErrors(null);
-         } catch (error) {
-            console.error(error);
+            return res.data; // También devuelve el cliente actualizado
+        } catch (error) {
+            console.error("Error al actualizar cliente:", error);
             const errorMessage = 
-            error.response?.data?.message || 
-            error.response?.data?.errors?.[0] ||
-            error.message || 
-            "Error al actualizar cliente";
+              error.response?.data?.message || 
+              error.response?.data?.errors?.[0] ||
+              error.message || 
+              "Error al actualizar cliente";
             setErrors(errorMessage);
-            throw error; // Para que el componente pueda manejar el error
+            throw new Error(errorMessage);
         }
     };
 
@@ -102,7 +115,6 @@ export function ClientProvider({ children }) {
                 createClient,
                 deleteClient,
                 updateClient,
-                // Puedes agregar getClient si lo necesitas para la edición
             }}
         >
             {children}

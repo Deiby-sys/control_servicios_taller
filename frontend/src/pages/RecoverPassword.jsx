@@ -1,9 +1,10 @@
 //Recuperar contraseña
 
+// src/pages/RecoverPassword.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import emblema from "../images/Emblema.png";
-import "../styles/FormStyles.css";
+import "../styles/LoginPage.css";
 
 function RecoverPassword() {
   const [email, setEmail] = useState("");
@@ -31,23 +32,24 @@ function RecoverPassword() {
   };
 
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit}>
+    <div className="login-page">
+      <form onSubmit={handleSubmit} className="login-form"> {/* 👈 Agrega className="login-form" */}
         <header>
           <img src={emblema} className="emblema" alt="emblema" />
           <h2>Recuperar Contraseña</h2>
         </header>
 
-        <label htmlFor="email">Correo registrado:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="Ingresa tu correo"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <div className="form-group"> {/* 👈 Envuelve el input en form-group */}
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Ingresa tu correo"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
         {message && <p className="info">{message}</p>}
 
@@ -55,17 +57,14 @@ function RecoverPassword() {
           {loading ? "Procesando..." : "Enviar enlace"}
         </button>
 
-          <p>
-            <Link to="/">Volver a Login</Link>
-          </p>
-          <p>
-            <Link to="/registerUser">Registro Usuario</Link>
-          </p>
-        
+        <div className="links"> {/* 👈 Usa la clase links para los enlaces */}
+          <Link to="/login">Volver a Login</Link>
+          <br />
+          <Link to="/registerUser">Registro Usuario</Link>
+        </div>
       </form>
     </div>
   );
 }
 
 export default RecoverPassword;
-

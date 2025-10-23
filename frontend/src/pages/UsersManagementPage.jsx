@@ -147,7 +147,7 @@ function UsersManagementPage() {
 
   return (
     <div className="page">
-      <h1>Gestión de Usuarios</h1>
+      <h2>Gestión de Usuarios</h2>
 
       {/* Barra de búsqueda */}
       <div className="search-bar">

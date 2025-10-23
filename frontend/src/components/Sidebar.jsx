@@ -57,7 +57,7 @@ function Sidebar({ isOpen }) {
           <li>
             <button
               className="sidebar__link"
-              onClick={() => handleNavigation("/vehiculos")}
+              onClick={() => handleNavigation("/vehicles")}
             >
               Vehículos
             </button>

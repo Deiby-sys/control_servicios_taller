@@ -35,7 +35,7 @@ const clientSchema = new mongoose.Schema(
             type: String,
             trim: true,
             lowercase: true,
-            // unique: true, // Opcional: ¿Permitir clientes sin email o con emails duplicados?
+            unique: true, // Opcional: ¿Permitir clientes sin email o con emails duplicados?
             match: [/^\S+@\S+\.\S+$/, "El correo electrónico no tiene un formato válido"],
         },
         phone: {

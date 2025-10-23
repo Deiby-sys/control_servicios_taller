@@ -9,6 +9,8 @@ import Profile from "./pages/Profile";
 import ClientsPage from "./pages/ClientsPage";
 import ClientFormPage from "./pages/ClientFormPage";
 import UsersManagementPage from "./pages/UsersManagementPage";
+import VehiclesPage from "./pages/VehiclesPage";
+import VehicleFormPage from "./pages/VehicleFormPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -31,6 +33,9 @@ function App() {
           <Route path="clients/new" element={<ClientFormPage />} />
           <Route path="clients/:id" element={<ClientFormPage />} />
           <Route path="usuarios" element={<UsersManagementPage />} />
+          <Route path="vehicles" element={<VehiclesPage />} />
+          <Route path="vehicles/new" element={<VehicleFormPage />} />
+          <Route path="vehicles/:id" element={<VehicleFormPage />} />
         </Route>
       </Route>
 

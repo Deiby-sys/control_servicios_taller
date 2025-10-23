@@ -1,19 +1,14 @@
 // Logueo a nuestra aplicación
 
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom"; // 👈 Agrega useLocation
+import { Link, useNavigate } from "react-router-dom";
 import emblema from "../images/Emblema.png";
+import "../styles/LoginPage.css";
 import { useAuth } from "../context/AuthContext";
-import "../styles/FormStyles.css";
 
 function Login() {
   const { login, errors } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // 👈 Obtiene la ubicación anterior
-
-  // Si el usuario fue redirigido aquí desde una ruta protegida,
-  // location.state?.from contendrá esa ruta. Si no, usamos "/".
-  const from = location.state?.from?.pathname || "/";
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -27,43 +22,45 @@ function Login() {
 
     try {
       await login(formData);
-      navigate(from, { replace: true }); // ✅ Redirección dinámica
+      navigate("/dashboard");
     } catch (err) {
-      // El error ya se maneja en AuthContext
+      // El error ya lo maneja AuthContext en `errors`
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit}>
+    <div className="login-page">
+      <form onSubmit={handleSubmit} className="login-form">
         <header>
           <img src={emblema} className="emblema" alt="emblema" />
           <h2>Control Servicios Taller</h2>
         </header>
 
-        <label htmlFor="email">Correo:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="Email registrado"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+        <div className="form-group">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Email registrado"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <label htmlFor="password">Contraseña:</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Contraseña"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+        <div className="form-group">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Contraseña"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
         {/* Errores del contexto */}
         {errors.length > 0 && <p className="error">{errors[0]}</p>}
@@ -72,12 +69,11 @@ function Login() {
           {loading ? "Ingresando..." : "Ingresar"}
         </button>
 
-        <p>
+        <div className="links">
           <Link to="/recuperar">Recuperar Contraseña</Link>
-        </p>
-        <p>
+          <br />
           <Link to="/registerUser">Registro Usuario</Link>
-        </p>
+        </div>
       </form>
     </div>
   );

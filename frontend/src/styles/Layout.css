@@ -2,23 +2,17 @@
 
 .dashboard-layout {
   display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  background-color: #f5f7fa;
+  min-height: 100vh;
+  background-color: #f8f9fa;
 }
 
 .dashboard-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .dashboard-main {
+  padding: 2rem;
   flex: 1;
-  padding: 1.5rem;
-  background-color: #f5f7fa;
-  overflow-y: auto;
-  box-sizing: border-box;
 }

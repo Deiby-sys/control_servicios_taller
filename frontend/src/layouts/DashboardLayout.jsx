@@ -12,7 +12,8 @@ function DashboardLayout() {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
-    <div className="dashboard-layout">
+    /* Agregamos la clase dinámica al contenedor principal */
+    <div className={`dashboard-layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <Sidebar isOpen={sidebarOpen} />
       <div className="dashboard-content">
         <Header onToggleSidebar={toggleSidebar} />
@@ -25,4 +26,3 @@ function DashboardLayout() {
 }
 
 export default DashboardLayout;
-

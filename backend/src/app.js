@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from "./routes/users.routes.js";
 import workOrderRoutes from "./routes/workOrders.routes.js";
 import clientRoutes from "./routes/client.routes.js";
+import vehicleRoutes from "./routes/vehicles.js";
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.use("/api/auth", authRoutes);       // Todas las auth empiezan con /api/auth
 app.use("/api/users", userRoutes);
 app.use("/api/workorders", workOrderRoutes);
 app.use("/api", clientRoutes);
+app.use("/api/vehicles", vehicleRoutes);
 
 export default app;

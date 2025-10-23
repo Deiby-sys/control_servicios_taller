@@ -1,0 +1,307 @@
+/* Estilo formulario vehículos */
+
+.form-page {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-container h1 {
+  margin-bottom: 2rem;
+  color: #333;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.vehicle-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-group input {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-group input.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.client-search-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.client-search-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.client-list {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.client-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.client-item:hover {
+  background-color: #f8f9fa;
+}
+
+.client-item:last-child {
+  border-bottom: none;
+}
+
+.selected-client {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #e8f5e8;
+  border-radius: 4px;
+  border: 1px solid #c3e6c3;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.modal-form {
+  padding: 1.5rem;
+}
+
+.modal-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.modal-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.modal-form .form-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+/* Estilos para el modal */
+.modal-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.modal-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.modal-form .form-group input,
+.modal-form .form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Importante para mantener el tamaño */
+}
+
+/* Estilo específico para el select */
+.modal-form .form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  cursor: pointer;
+  font-family: inherit; /* Mantiene la misma fuente que los inputs */
+  line-height: 1.5;
+}
+
+/* Para Firefox */
+.modal-form .form-select::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/* Para Chrome, Safari y Edge */
+.modal-form .form-select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Para asegurar que el select tenga el mismo alto que los inputs */
+.modal-form .form-select {
+  height: calc(2.25em + 0.75rem + 2px); /* Altura de los inputs */
+}
+
+/* En caso de que quieras que el select tenga un padding interno igual al de los inputs */
+.modal-form .form-select {
+  padding: 0.5rem 0.75rem; /* Igual que los inputs */
+}
+
+/* Estilo para el placeholder */
+.modal-form .form-select option[value=""] {
+  color: #6c757d;
+  font-style: italic;
+}
+
+
+/* Estilo para el cliente seleccionado */
+.selected-client {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #e8f5e8; /* Fondo verde claro */
+  border-radius: 4px;
+  border: 1px solid #c3e6c3;
+  color: #28a745; /* Texto verde oscuro */
+}
+
+/* Estilo para la lista de clientes (cuando buscas) */
+.client-list {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.client-item {
+  padding: 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  color: #212529; /* Texto oscuro */
+}
+
+.client-item:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+.client-item:last-child {
+  border-bottom: none;
+}
+
+/* Estilo para el botón "Nuevo Cliente" */
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}

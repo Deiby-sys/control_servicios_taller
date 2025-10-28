@@ -6,6 +6,7 @@ import asignados from "../images/asignados.png";
 import aprobacion from "../images/aprobacion.png";
 import repuestos from "../images/repuestos.png";
 import soporte from "../images/soporte.png";
+import proceso from "../images/proceso.png"
 import listos from "../images/listos.png";
 import "../styles/Dashboard.css";
 
@@ -40,8 +41,12 @@ function Dashboard() {
           <h3>En Soporte</h3>
         </div>
         <div className="dashboard-card">
+          <img src={proceso} alt="En Proceso" />
+          <h3>En Proceso</h3>
+        </div>
+        <div className="dashboard-card">
           <img src={listos} alt="Listos" />
-          <h3>Listos</h3>
+          <h3>Completado</h3>
         </div>
       </div>
     </div>

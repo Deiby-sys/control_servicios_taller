@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useClients } from "../context/ClientContext";
 import { Link } from "react-router-dom";
+import { useExportToExcel } from "../hooks/useExportToExcel"; // Importar el hook
 import "../styles/ClientsPage.css";
 
 function ClientsPage() {
   const { clients, getClients, loading, error, deleteClient, updateClient } = useClients();
+  const { exportToExcel } = useExportToExcel(); // Usar el hook
   const [filteredClients, setFilteredClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingClient, setEditingClient] = useState(null);
@@ -69,6 +71,22 @@ function ClientsPage() {
 
   const handleEditChange = (e) =>
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  
+  const handleExportClients = () => {
+    if (clients.length === 0) return;
+     // Formatear los datos para Excel
+    const exportData = clients.map(client => ({
+      'Nombre': client.name,
+      'Apellido': client.lastName,
+      'Documento': client.identificationNumber,
+      'Teléfono': client.phone,
+      'Ciudad': client.city,
+      'Email': client.email || '',
+      'Fecha Creación': new Date(client.createdAt).toLocaleDateString('es-CO')
+    }));
+    
+    exportToExcel(exportData, 'clientes', 'Clientes');
+  };
 
   if (loading) return <div className="page">Cargando clientes...</div>;
   if (error) return <div className="page error">Error: {error}</div>;
@@ -77,9 +95,18 @@ function ClientsPage() {
     <div className="page">
       <div className="page-header">
         <h2>Gestión de Clientes</h2>
-        <Link to="/clients/new" className="btn-primary">
-          + Nuevo Cliente
-        </Link>
+        <div className="header-actions">
+          <button 
+            onClick={handleExportClients}
+            className="btn-export"
+            disabled={clients.length === 0}
+          >
+            📊 Exportar a Excel
+          </button>
+          <Link to="/clients/new" className="btn-primary">
+            + Nuevo Cliente
+          </Link>
+        </div>
       </div>
 
       {/* Barra de búsqueda */}

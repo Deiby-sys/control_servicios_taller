@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useVehicles } from "../context/VehicleContext";
 import { Link } from "react-router-dom";
+import { useExportToExcel } from "../hooks/useExportToExcel"; // Importar el hook
 import "../styles/VehiclesPage.css";
 
 function VehiclesPage() {
   const { vehicles, getVehicles, loading, error, deleteVehicle, updateVehicle } = useVehicles();
+  const { exportToExcel } = useExportToExcel(); // Usar el hook
   const [filteredVehicles, setFilteredVehicles] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingVehicle, setEditingVehicle] = useState(null);
@@ -71,6 +73,28 @@ function VehiclesPage() {
   const handleEditChange = (e) =>
     setEditForm({ ...editForm, [e.target.name]: e.target.value });
 
+  const handleExportVehicles = () => {
+    if (vehicles.length === 0) return;
+    
+    // Formatear los datos para Excel
+    const exportData = vehicles.map(vehicle => ({
+      'Placa': vehicle.plate,
+      'VIN': vehicle.vin,
+      'Marca': vehicle.brand,
+      'Línea': vehicle.line,
+      'Modelo': vehicle.model,
+      'Color': vehicle.color,
+      'Cliente': vehicle.client 
+        ? `${vehicle.client.name} ${vehicle.client.lastName}`
+        : 'Cliente no encontrado',
+      'Documento Cliente': vehicle.client?.identificationNumber || '',
+      'Teléfono Cliente': vehicle.client?.phone || '',
+      'Fecha Creación': new Date(vehicle.createdAt).toLocaleDateString('es-CO')
+    }));
+    
+    exportToExcel(exportData, 'vehiculos', 'Vehículos');
+  };
+
   if (loading) return <div className="page">Cargando vehículos...</div>;
   if (error) return <div className="page error">Error: {error}</div>;
 
@@ -78,10 +102,19 @@ function VehiclesPage() {
     <div className="page">
       <div className="page-header">
         <h2>Gestión de Vehículos</h2>
+        <div className="header-actions">
+          <button 
+            onClick={handleExportVehicles}
+            className="btn-export"
+            disabled={vehicles.length === 0}
+          >
+            📊 Exportar a Excel
+          </button>
         <Link to="/vehicles/new" className="btn-primary">
           + Nuevo Vehículo
         </Link>
       </div>
+    </div>
 
       <div className="search-bar">
         <input

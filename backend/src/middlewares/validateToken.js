@@ -1,44 +1,51 @@
-//Autenticación, validación, etc.
-
-//Se genera para validar autenticación del usuario
+//Autenticación, validación
 
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 import { TOKEN_SECRET } from "../config.js";
 
-export const authRequired = (req, res, next) => {
+export const authRequired = async (req, res, next) => {
   try {
-    // 1. Buscar en cookies
+    // 1. Buscar token en cookies
     let token = req.cookies?.token;
 
-    // 2. Si no está en cookies, buscar en headers
+    // 2. Si no está en cookies, buscar en headers (Bearer token)
     if (!token && req.headers.authorization) {
       const authHeader = req.headers.authorization.split(" ");
-      if (authHeader[0] === "Bearer") {
+      if (authHeader[0] === "Bearer" && authHeader[1]) {
         token = authHeader[1];
       }
     }
 
-    // 3. Validar si no hay token
+    // 3. Si no hay token, rechazar
     if (!token) {
-      return res
-        .status(401)
-        .json({ message: "No token, authorization denied" });
+      return res.status(401).json({ message: "No token, authorization denied" });
     }
 
-    // 4. Verificar token
-    jwt.verify(token, TOKEN_SECRET, (err, decoded) => {
-      if (err) return res.status(403).json({ message: "Invalid token" });
+    // 4. Verificar el token
+    const decoded = jwt.verify(token, TOKEN_SECRET);
 
-      // Normalizamos el id (a veces el token guarda `_id` y otras `id`)
-      req.user = {
-        ...decoded,
-        id: decoded.id || decoded._id,
-      };
+    // 5. Buscar el usuario REAL en la base de datos
+    const userId = decoded.id || decoded._id;
+    const user = await User.findById(userId);
 
-      next();
-    });
+    if (!user) {
+      return res.status(403).json({ message: "Usuario no encontrado" });
+    }
+
+    // 6. Asignar el usuario completo a req.user
+    req.user = user;
+    next();
   } catch (error) {
-    return res.status(500).json({ message: "Error en autenticación", error });
+    console.error("Error en authRequired:", error.message);
+
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(403).json({ message: "Token inválido" });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(403).json({ message: "Token expirado" });
+    }
+
+    return res.status(500).json({ message: "Error en el proceso de autenticación" });
   }
 };
-

@@ -1,7 +1,7 @@
 // Controlador de vehículos
 
 import Vehicle from "../models/vehicle.model.js";
-import User from "../models/client.model.js"; // Importo el modelo de clientes
+import Client from "../models/client.model.js"; // Importo el modelo de clientes
 
 export const getVehicles = async (req, res) => {
   try {
@@ -20,7 +20,7 @@ export const createVehicle = async (req, res) => {
     const { plate, vin, brand, line, model, color, client } = req.body;
 
     // Verificar que el cliente exista
-    const clientExists = await User.findById(client);
+    const clientExists = await Client.findById(client);
     if (!clientExists) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
@@ -81,7 +81,7 @@ export const updateVehicle = async (req, res) => {
     const { plate, vin, brand, line, model, color, client } = req.body;
 
     // Verificar cliente
-    const clientExists = await User.findById(client);
+    const clientExists = await Client.findById(client);
     if (!clientExists) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
@@ -116,5 +116,25 @@ export const deleteVehicle = async (req, res) => {
   } catch (error) {
     console.error("Error al eliminar vehículo:", error);
     res.status(500).json({ message: "Error al eliminar vehículo" });
+  }
+}; // 👈 Aquí estaba faltando la llave de cierre
+
+//Buscar el vehículo por placa
+export const getVehicleByPlate = async (req, res) => {
+  try {
+    const { plate } = req.params;
+    const cleanPlate = plate.trim().toUpperCase();
+    
+    const vehicle = await Vehicle.findOne({ plate: cleanPlate })
+      .populate('client', 'name lastName identificationNumber phone city');
+    
+    if (!vehicle) {
+      return res.status(404).json({ message: "Vehículo no encontrado" });
+    }
+    
+    res.json(vehicle);
+  } catch (error) {
+    console.error("Error al buscar vehículo por placa:", error);
+    res.status(500).json({ message: "Error al buscar vehículo por placa" });
   }
 };

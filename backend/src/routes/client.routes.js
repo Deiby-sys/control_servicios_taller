@@ -2,6 +2,7 @@
 
 
 import { Router } from 'express';
+import { authRequired } from '../middlewares/validateToken.js'; // Asumo que tienes un middleware para verificar el JWT
 // Importa el controlador que vamos a crear en el siguiente paso
 import { 
     getClients, 
@@ -10,7 +11,7 @@ import {
     updateClient, 
     deleteClient 
 } from '../controllers/client.controller.js'; 
-import { authRequired } from '../middlewares/validateToken.js'; // Asumo que tienes un middleware para verificar el JWT
+
 
 const router = Router();
 

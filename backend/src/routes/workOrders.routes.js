@@ -1,49 +1,52 @@
-//Rutas CRUD
+// rutas para órdenes de trabajo
 
-//GET /api/workorders → admin ve todas, User solo las suyas.
-
-//GET /api/workorders/:id → User solo puede ver la suya.
-
-//POST /api/workorders → Crea orden ligada al req.user.id.
-
-//PUT /api/workorders/:id → User solo actualiza la suya, admin cualquiera.
-
-//DELETE /api/workorders/:id → Solo admin.
-
-// src/routes/workOrders.routes.js
 import { Router } from "express";
-import {
-  getWorkOrders,
-  getWorkOrderById,
-  createWorkOrder,
-  updateWorkOrder,
-  deleteWorkOrder,
-} from "../controllers/workOrders.controller.js";
 import { authRequired } from "../middlewares/validateToken.js";
-import { validateSchema } from "../middlewares/validator.middleware.js";
-import {
-  createWorkOrderSchema,
-  updateWorkOrderSchema,
-} from "../schemas/workOrder.schema.js";
+import { 
+getWorkOrders, 
+createWorkOrder, 
+getWorkOrderById,
+getVehicleByPlate, 
+getClientByIdentification, 
+addNoteToWorkOrder,
+updateWorkOrderStatus,
+deliverWorkOrder,
+getWorkOrdersByStatus,
+getWorkOrderCounts,
+getWorkOrdersByPlate
+} from "../controllers/workOrder.controller.js";
 
 const router = Router();
 
-// Listar todas las órdenes (admin ve todas, user solo las suyas)
-router.get("/", authRequired, getWorkOrders);
 
-// Obtener orden por ID
-router.get("/:id", authRequired, getWorkOrderById);
+// =======================================================
+// === 1. RUTAS FIJAS y CON PARÁMETROS ESPECÍFICOS PRIMERO
+// =======================================================
 
-// Crear orden (validación Zod)
-router.post("/", authRequired, validateSchema(createWorkOrderSchema), createWorkOrder);
+// CONTADORES (Fijas)
+router.get("/counts", authRequired, getWorkOrderCounts); 
 
-// Actualizar orden (validación Zod)
-router.put("/:id", authRequired, validateSchema(updateWorkOrderSchema), updateWorkOrder);
+// BÚSQUEDAS DINÁMICAS ESPECÍFICAS (DEBEN IR ANTES de /:id)
+router.get("/vehicle/plate/:plate", authRequired, getVehicleByPlate); // Búsqueda de vehículo por placa
+router.get("/client/:identification", authRequired, getClientByIdentification); // Búsqueda de cliente por ID
+router.get("/historial/plate/:plate", authRequired, getWorkOrdersByPlate); // Historial por placa
 
-// Eliminar orden
-router.delete("/:id", authRequired, deleteWorkOrder);
+// RUTAS DE ESTADO (Dinámicas pero Fijas)
+router.get("/status/:status", authRequired, getWorkOrdersByStatus);
+
+
+// =======================================================
+// === 2. CRUD GENERAL y ACCIONES (Con parámetros ambiguos)
+// =======================================================
+
+// CRUD
+router.get("/", authRequired, getWorkOrders); // Obtener todas las órdenes
+router.post("/", authRequired, createWorkOrder); // Crear orden
+
+// RUTAS CON ID DINÁMICO (/ALGUN_ID) Y RUTAS DE ACCIÓN
+router.get("/:id", authRequired, getWorkOrderById); // Obtener UNA orden por ID (Comodín)
+router.post("/:id/notes", authRequired, addNoteToWorkOrder);
+router.patch("/:id/status", authRequired, updateWorkOrderStatus);
+router.post("/:id/deliver", authRequired, deliverWorkOrder);
 
 export default router;
-
-
-

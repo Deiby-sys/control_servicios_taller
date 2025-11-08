@@ -11,6 +11,11 @@ import ClientFormPage from "./pages/ClientFormPage";
 import UsersManagementPage from "./pages/UsersManagementPage";
 import VehiclesPage from "./pages/VehiclesPage";
 import VehicleFormPage from "./pages/VehicleFormPage";
+import WorkOrdersPage from "./pages/WorkOrdersPage";
+import WorkOrderFormPage from "./pages/WorkOrderFormPage";
+import WorkOrderDetailPage from "./pages/WorkOrderDetailPage";
+import WorkOrdersByStatusPage from "./pages/WorkOrdersByStatusPage";
+import HistoryPage from "./pages/HistoryPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -36,6 +41,11 @@ function App() {
           <Route path="vehicles" element={<VehiclesPage />} />
           <Route path="vehicles/new" element={<VehicleFormPage />} />
           <Route path="vehicles/:id" element={<VehicleFormPage />} />
+          <Route path="ordenes" element={<WorkOrdersPage />} />
+          <Route path="ordenes/new" element={<WorkOrderFormPage />} />
+          <Route path="ordenes/:id" element={<WorkOrderDetailPage />} />
+          <Route path="ordenes/status/:status" element={<WorkOrdersByStatusPage />} />
+          <Route path="historial" element={<HistoryPage />} />
         </Route>
       </Route>
 

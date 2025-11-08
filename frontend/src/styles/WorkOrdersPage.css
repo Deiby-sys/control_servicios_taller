@@ -1,0 +1,12 @@
+/* Usa los mismos estilos que otras páginas de listado */
+.status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.status-abierto { background-color: #d4edda; color: #155724; }
+.status-en_proceso { background-color: #fff3cd; color: #856404; }
+.status-completado { background-color: #d1ecf1; color: #0c5460; }
+.status-cancelado { background-color: #f8d7da; color: #721c24; }

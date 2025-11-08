@@ -1,0 +1,206 @@
+/* Estilos para la página de detalle */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.page-header h2 {
+  margin: 0;
+  color: #0d6efd;
+  font-size: 1.5rem;
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Información de la orden */
+.order-info {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.info-card h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.info-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.info-grid div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.info-grid strong {
+  min-width: 120px;
+  color: #495057;
+}
+
+/* Secciones de la orden */
+.order-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.order-section h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.solicitud-content {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  border-left: 4px solid #0d6efd;
+  white-space: pre-wrap;
+}
+
+/* Gestión de la orden */
+.management-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Select personalizados */
+.select-status .react-select__control,
+.select-assignees .react-select__control {
+  min-height: 40px;
+}
+
+/* Estado con color */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+/* Notas de seguimiento */
+.add-note-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.add-note-form textarea {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.add-note-form button {
+  padding: 0.75rem 1.5rem;
+  height: fit-content;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.note-item {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  border-left: 4px solid #0d6efd;
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.note-date {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.no-notes {
+  color: #6c757d;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Firma del cliente */
+.signature-display {
+  text-align: center;
+  padding: 1rem;
+}
+
+.signature-display img {
+  max-width: 300px;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .management-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .order-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .add-note-form {
+    flex-direction: column;
+  }
+}

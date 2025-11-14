@@ -2,22 +2,26 @@
 
 import { Router } from "express";
 import { authRequired } from "../middlewares/validateToken.js";
+import upload from "../middlewares/upload.js";
 import { 
-getWorkOrders, 
-createWorkOrder, 
-getWorkOrderById,
-getVehicleByPlate, 
-getClientByIdentification, 
-addNoteToWorkOrder,
-updateWorkOrderStatus,
-deliverWorkOrder,
-getWorkOrdersByStatus,
-getWorkOrderCounts,
-getWorkOrdersByPlate
+  getWorkOrders, 
+  createWorkOrder, 
+  getWorkOrderById,
+  getVehicleByPlate, 
+  getClientByIdentification, 
+  addNoteToWorkOrder,
+  updateWorkOrderStatus,
+  deliverWorkOrder,
+  getWorkOrdersByStatus,
+  getWorkOrderCounts,
+  getWorkOrdersByPlate,
+  // ✅ Nuevas funciones para adjuntos
+  uploadAttachment,
+  downloadAttachment,
+  deleteAttachment
 } from "../controllers/workOrder.controller.js";
 
 const router = Router();
-
 
 // =======================================================
 // === 1. RUTAS FIJAS y CON PARÁMETROS ESPECÍFICOS PRIMERO
@@ -34,7 +38,6 @@ router.get("/historial/plate/:plate", authRequired, getWorkOrdersByPlate); // Hi
 // RUTAS DE ESTADO (Dinámicas pero Fijas)
 router.get("/status/:status", authRequired, getWorkOrdersByStatus);
 
-
 // =======================================================
 // === 2. CRUD GENERAL y ACCIONES (Con parámetros ambiguos)
 // =======================================================
@@ -48,5 +51,10 @@ router.get("/:id", authRequired, getWorkOrderById); // Obtener UNA orden por ID 
 router.post("/:id/notes", authRequired, addNoteToWorkOrder);
 router.patch("/:id/status", authRequired, updateWorkOrderStatus);
 router.post("/:id/deliver", authRequired, deliverWorkOrder);
+
+// RUTAS PARA ADJUNTOS
+router.post("/:id/attachments", authRequired, upload.single('file'), uploadAttachment);
+router.get("/:id/attachments/:fileId", authRequired, downloadAttachment);
+router.delete("/:id/attachments/:fileId", authRequired, deleteAttachment);
 
 export default router;

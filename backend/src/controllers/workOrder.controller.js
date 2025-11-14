@@ -360,3 +360,120 @@ export const deliverWorkOrder = async (req, res) => {
     res.status(500).json({ message: "Error al entregar orden" });
   }
 };
+
+// Funciones para adjuntos
+
+/**
+ * Subir archivo adjunto a una orden de trabajo
+ */
+export const uploadAttachment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validar que el archivo exista
+    if (!req.file) {
+      return res.status(400).json({ message: "No se ha subido ningún archivo" });
+    }
+
+    const workOrder = await WorkOrder.findById(id);
+    if (!workOrder) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    // Añadir archivo a la orden
+    workOrder.attachments.push({
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      path: req.file.path,
+      uploadedBy: req.user._id
+    });
+
+    await workOrder.save();
+
+    // Poblar y devolver la orden actualizada
+    const populatedOrder = await WorkOrder.findById(id)
+      .populate('vehicle', 'plate brand model')
+      .populate('client', 'name lastName email')
+      .populate('createdBy', 'name lastName')
+      .populate('assignedTo', 'name lastName')
+      .populate('attachments.uploadedBy', 'name lastName');
+
+    res.status(201).json(populatedOrder);
+  } catch (error) {
+    console.error("Error al subir archivo:", error);
+    res.status(500).json({ message: "Error al subir archivo" });
+  }
+};
+
+/**
+ * Descargar archivo adjunto
+ */
+export const downloadAttachment = async (req, res) => {
+  try {
+    const { id, fileId } = req.params;
+
+    const workOrder = await WorkOrder.findById(id);
+    if (!workOrder) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    const attachment = workOrder.attachments.id(fileId);
+    if (!attachment) {
+      return res.status(404).json({ message: "Archivo no encontrado" });
+    }
+
+    // Verificar permisos (opcional: solo el creador o asignados pueden descargar)
+    const hasPermission = req.user._id.equals(workOrder.createdBy) || 
+                         workOrder.assignedTo.some(user => user.equals(req.user._id));
+    
+    if (!hasPermission) {
+      return res.status(403).json({ message: "No autorizado" });
+    }
+
+    // Enviar archivo
+    const filePath = attachment.path;
+    res.download(filePath, attachment.originalName);
+  } catch (error) {
+    console.error("Error al descargar archivo:", error);
+    res.status(500).json({ message: "Error al descargar archivo" });
+  }
+};
+
+/**
+ * Eliminar archivo adjunto
+ */
+export const deleteAttachment = async (req, res) => {
+  try {
+    const { id, fileId } = req.params;
+
+    const workOrder = await WorkOrder.findById(id);
+    if (!workOrder) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    const attachment = workOrder.attachments.id(fileId);
+    if (!attachment) {
+      return res.status(404).json({ message: "Archivo no encontrado" });
+    }
+
+    // Verificar que el usuario sea el que subió el archivo o el creador de la orden
+    if (!attachment.uploadedBy.equals(req.user._id) && !workOrder.createdBy.equals(req.user._id)) {
+      return res.status(403).json({ message: "No autorizado para eliminar este archivo" });
+    }
+
+    // Eliminar archivo físico (opcional, dependiendo de tu configuración)
+    // const fs = require('fs');
+    // fs.unlinkSync(attachment.path);
+
+    // Eliminar del array
+    workOrder.attachments.pull({ _id: fileId });
+    await workOrder.save();
+
+    res.json({ message: "Archivo eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar archivo:", error);
+    res.status(500).json({ message: "Error al eliminar archivo" });
+  }
+};

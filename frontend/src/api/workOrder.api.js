@@ -17,3 +17,24 @@ export const getWorkOrderCountsRequest = () => apiClient.get("/work-orders/count
 export const getVehicleByPlateRequest = (plate) => apiClient.get(`/work-orders/vehicle/plate/${plate}`);
 export const getClientByIdentificationRequest = (identification) => apiClient.get(`/work-orders/client/${identification}`); 
 export const addNoteToWorkOrderRequest = (id, noteData) => apiClient.post(`/work-orders/${id}/notes`, noteData);
+
+// FUNCIONES PARA ADJUNTOS
+export const uploadAttachmentRequest = async (orderId, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  return await axios.post(`/api/work-orders/${orderId}/attachments`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+export const downloadAttachmentRequest = async (orderId, fileId) => {
+  // Retorna la URL para descargar
+  return `/api/work-orders/${orderId}/attachments/${fileId}`;
+};
+
+export const deleteAttachmentRequest = async (orderId, fileId) => {
+  return await axios.delete(`/api/work-orders/${orderId}/attachments/${fileId}`);
+};

@@ -2,6 +2,22 @@
 
 import mongoose from "mongoose";
 
+// Esquema para archivos adjuntos
+const fileSchema = new mongoose.Schema({
+  filename: { type: String, required: true },
+  originalName: { type: String, required: true },
+  size: { type: Number, required: true }, // tamaño en bytes
+  mimetype: { type: String, required: true },
+  path: { type: String, required: true }, // ruta donde se guardó
+  uploadedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  uploadedAt: { type: Date, default: Date.now }
+});
+
+// Esquema para notas
 const noteSchema = new mongoose.Schema({
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -23,7 +39,7 @@ const workOrderSchema = new mongoose.Schema({
   // Datos básicos
   orderNumber: {
     type: String,
-    unique: true, // ← Comentado temporalmente
+    unique: true,
     default: () => `ORD-${Date.now()}`
   },
   entryDate: {
@@ -56,7 +72,7 @@ const workOrderSchema = new mongoose.Schema({
       'en_aprobacion', 
       'por_repuestos', 
       'en_soporte', 
-      'en_proceso',
+      'en_proceso', 
       'completado'
     ],
     default: 'por_asignar'
@@ -69,9 +85,12 @@ const workOrderSchema = new mongoose.Schema({
   // Seguimiento y notas
   notes: [noteSchema],
   
+  // Archivos adjuntos
+  attachments: [fileSchema],
+  
   // Firma y PDF
   clientSignature: {
-    type: String, // URL de la imagen de la firma o datos de firma digital
+    type: String,
     default: null
   },
   pdfGenerated: {
@@ -94,7 +113,7 @@ const workOrderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// ❌ Hook comentado temporalmente
+// ❌ Hook comentado temporalmente porque ha fallado el número de orden consecutivo
 /*
 workOrderSchema.pre('save', async function(next) {
   if (this.isNew) {

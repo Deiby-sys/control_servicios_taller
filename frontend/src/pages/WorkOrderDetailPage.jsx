@@ -1,17 +1,24 @@
 // Página detalle órdenes de trabajo
 
-// Página detalle órdenes de trabajo
 import { useState, useEffect } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
 import { useAuth } from "../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
-import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator'; // ✅ Importado
+import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 import "../styles/WorkOrderDetailPage.css";
 
 function WorkOrderDetailPage() {
   const { id } = useParams();
-  const { workOrders, getWorkOrderById, updateWorkOrderStatus, addNoteToWorkOrder } = useWorkOrders();
+  const { 
+    workOrders, 
+    getWorkOrderById, 
+    updateWorkOrderStatus, 
+    addNoteToWorkOrder,
+    uploadAttachment,
+    downloadAttachment,
+    deleteAttachment
+  } = useWorkOrders();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -23,14 +30,14 @@ function WorkOrderDetailPage() {
   const [selectedAssignees, setSelectedAssignees] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Estados disponibles ✅ Actualizado
+  // Estados disponibles
   const statusOptions = [
     { value: 'por_asignar', label: 'Por asignar' },
     { value: 'asignado', label: 'Asignado' },
     { value: 'en_aprobacion', label: 'En aprobación' },
     { value: 'por_repuestos', label: 'Por repuestos' },
     { value: 'en_soporte', label: 'En soporte' },
-    { value: 'en_proceso', label: 'En proceso' }, // ✅ Añadido
+    { value: 'en_proceso', label: 'En proceso' },
     { value: 'completado', label: 'Completado' }
   ];
 
@@ -96,7 +103,38 @@ function WorkOrderDetailPage() {
     }
   };
 
-  // Colores de estado ✅ Actualizado
+  // Funciones auxiliares para adjuntos
+  const handleUploadAttachment = async (file) => {
+    try {
+      const updatedOrder = await uploadAttachment(workOrder._id, file);
+      setWorkOrder(updatedOrder); // Actualizar el estado local
+      alert('Archivo subido correctamente');
+    } catch (error) {
+      alert('Error al subir archivo: ' + error.message);
+    }
+  };
+
+  const handleDeleteAttachment = async (fileId) => {
+    if (window.confirm('¿Estás seguro de eliminar este archivo?')) {
+      try {
+        const updatedOrder = await deleteAttachment(workOrder._id, fileId);
+        setWorkOrder(updatedOrder); // Actualizar el estado local
+        alert('Archivo eliminado correctamente');
+      } catch (error) {
+        alert('Error al eliminar archivo: ' + error.message);
+      }
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Colores de estado
   const getStatusColor = (status) => {
     const colors = {
       'por_asignar': '#6c757d',
@@ -104,7 +142,7 @@ function WorkOrderDetailPage() {
       'en_aprobacion': '#ffc107',
       'por_repuestos': '#fd7e14',
       'en_soporte': '#20c997',
-      'en_proceso': '#20c997', // ✅ Añadido (mismo color que en_soporte)
+      'en_proceso': '#20c997', // (mismo color que en_soporte)
       'completado': '#198754'
     };
     return colors[status] || '#6c757d';
@@ -116,13 +154,13 @@ function WorkOrderDetailPage() {
 
   return (
     <div className="page">
-      {/* ✅ Encabezado con botón de PDF */}
+      {/* Encabezado con botón de PDF */}
       <div className="page-header">
         <div>
           <h1>Orden de Trabajo</h1>
           <h2>{workOrder.orderNumber}</h2>
         </div>
-        <div className="header-actions"> {/* ✅ Nuevo contenedor para botones */}
+        <div className="header-actions"> {/* Nuevo contenedor para botones */}
           <button 
             onClick={() => generateWorkOrderPDF(workOrder)}
             className="btn-primary"
@@ -261,16 +299,74 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Firma del cliente */}
-      {workOrder.clientSignature && (
+      {/* Sección de archivos adjuntos */}
       <div className="order-section">
-        <h3>Firma Digital del Cliente</h3>
-        <div className="signature-display">
-          <span className="signature-label"></span> {/* Etiqueta */}
-          <img src={workOrder.clientSignature} alt="Firma del cliente" />
+        <h3>Archivos Adjuntos</h3>
+        
+        {/* Formulario para subir archivos */}
+        <div className="attachments-upload">
+          <input
+            type="file"
+            id="attachment-file"
+            className="attachment-input"
+            onChange={(e) => {
+              if (e.target.files[0]) {
+                handleUploadAttachment(e.target.files[0]);
+              }
+            }}
+            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+          />
+          <label htmlFor="attachment-file" className="btn-primary attachment-label">
+            + Adjuntar Archivo
+          </label>
+        </div>
+
+        {/* Lista de archivos adjuntos */}
+        <div className="attachments-list">
+          {workOrder.attachments && workOrder.attachments.length > 0 ? (
+            workOrder.attachments.map((attachment) => (
+              <div key={attachment._id} className="attachment-item">
+                <div className="attachment-info">
+                  <span className="attachment-name">{attachment.originalName}</span>
+                  <span className="attachment-size">({formatFileSize(attachment.size)})</span>
+                  <span className="attachment-uploader">
+                    Subido por {attachment.uploadedBy?.name} {attachment.uploadedBy?.lastName}
+                  </span>
+                </div>
+                <div className="attachment-actions">
+                  <button
+                    className="btn-view"
+                    onClick={() => downloadAttachment(workOrder._id, attachment._id)}
+                  >
+                    Descargar
+                  </button>
+                  {attachment.uploadedBy?._id === user._id && (
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDeleteAttachment(attachment._id)}
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="no-attachments">No hay archivos adjuntos</p>
+          )}
         </div>
       </div>
-    )}
+
+      {/* Firma del cliente */}
+      {workOrder.clientSignature && (
+        <div className="order-section">
+          <h3>Firma Digital del Cliente</h3>
+          <div className="signature-display">
+            <span className="signature-label"></span> {/* Etiqueta */}
+            <img src={workOrder.clientSignature} alt="Firma del cliente" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

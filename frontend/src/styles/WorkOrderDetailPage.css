@@ -252,3 +252,91 @@
     min-height: 100px;
   }
 }
+
+/* Estilos para archivos adjuntos */
+.attachments-upload {
+  margin-bottom: 1.5rem;
+}
+
+.attachment-input {
+  display: none;
+}
+
+.attachment-label {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.attachment-label:hover {
+  background-color: #218838;
+}
+
+.attachments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.attachment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #28a745;
+}
+
+.attachment-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.attachment-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.attachment-size {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.attachment-uploader {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.attachment-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.no-attachments {
+  color: #6c757d;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .attachment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .attachment-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

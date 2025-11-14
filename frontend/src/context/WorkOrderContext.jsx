@@ -1,6 +1,5 @@
 {/*Contexto órdenes de trabajo*/}
 
-
 import { createContext, useContext, useState } from "react";
 import { 
     getWorkOrdersRequest, 
@@ -11,7 +10,10 @@ import {
     addNoteToWorkOrderRequest,
     updateWorkOrderStatusRequest,
     getWorkOrdersByStatusRequest,
-    getWorkOrderCountsRequest
+    getWorkOrderCountsRequest,
+    uploadAttachmentRequest,
+    downloadAttachmentRequest,
+    deleteAttachmentRequest
 } from "../api/workOrder.api"; 
 
 const WorkOrderContext = createContext();
@@ -52,7 +54,7 @@ export function WorkOrderProvider({ children }) {
         }
     };
     
-    // 3. Obtener Orden por ID (FUNCIÓN EXISTENTE)
+    // 3. Obtener Orden por ID
     const getWorkOrderById = async (id) => {
         try {
             const res = await getWorkOrderRequest(id);
@@ -62,7 +64,7 @@ export function WorkOrderProvider({ children }) {
         }
     };
 
-    // 4. Actualizar Estado (FUNCIÓN EXISTENTE)
+    // 4. Actualizar Estado
     const updateWorkOrderStatus = async (id, updateData) => {
         try {
             const res = await updateWorkOrderStatusRequest(id, updateData);
@@ -73,7 +75,7 @@ export function WorkOrderProvider({ children }) {
         }
     };
 
-    // 5. Añadir Nota (FUNCIÓN EXISTENTE)
+    // 5. Añadir Nota
     const addNoteToWorkOrder = async (id, noteData) => {
         try {
             const res = await addNoteToWorkOrderRequest(id, noteData);
@@ -84,6 +86,37 @@ export function WorkOrderProvider({ children }) {
         }
     };
 
+    // FUNCIONES PARA ADJUNTOS
+    const uploadAttachment = async (orderId, file) => {
+        try {
+            const res = await uploadAttachmentRequest(orderId, file);
+            return res.data;
+        } catch (error) {
+            setErrors(error.response?.data || error.message);
+            throw error;
+        }
+    };
+
+    const downloadAttachment = async (orderId, fileId) => {
+        try {
+            // Retorna la URL para abrir en una nueva pestaña
+            const url = await downloadAttachmentRequest(orderId, fileId);
+            window.open(url, '_blank');
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    };
+
+    const deleteAttachment = async (orderId, fileId) => {
+        try {
+            const res = await deleteAttachmentRequest(orderId, fileId);
+            return res.data;
+        } catch (error) {
+            setErrors(error.response?.data || error.message);
+            throw error;
+        }
+    };
 
     // --- FUNCIONES DE BÚSQUEDA ---
 
@@ -111,8 +144,7 @@ export function WorkOrderProvider({ children }) {
         }
     };
 
-
-    // 6. Obtener Contador por Estado (FUNCIÓN EXISTENTE)
+    // 6. Obtener Contador por Estado
     const getWorkOrderCounts = async () => {
         try {
             const res = await getWorkOrderCountsRequest();
@@ -122,7 +154,7 @@ export function WorkOrderProvider({ children }) {
         }
     };
     
-    // 7. Obtener Órdenes por Estado (FUNCIÓN EXISTENTE)
+    // 7. Obtener Órdenes por Estado
     const getWorkOrdersByStatus = async (status) => {
         try {
             const res = await getWorkOrdersByStatusRequest(status);
@@ -138,14 +170,20 @@ export function WorkOrderProvider({ children }) {
                 workOrders,
                 createWorkOrder,
                 getWorkOrders,
-                getWorkOrderById, // Exportada
-                updateWorkOrderStatus, // Exportada
-                addNoteToWorkOrder, // Exportada
-                getWorkOrderCounts, // Exportada
-                getWorkOrdersByStatus, // Exportada
+                getWorkOrderById,
+                updateWorkOrderStatus,
+                addNoteToWorkOrder,
+                getWorkOrderCounts,
+                getWorkOrdersByStatus,
                 
-                getVehicleByPlate, // Exportada
-                getClientByIdentification, // Exportada
+                getVehicleByPlate,
+                getClientByIdentification,
+                
+                //NUEVAS FUNCIONES AL PROVIDER
+                uploadAttachment,
+                downloadAttachment,
+                deleteAttachment,
+                
                 errors
             }}
         >

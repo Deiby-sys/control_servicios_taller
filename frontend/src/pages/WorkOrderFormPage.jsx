@@ -7,6 +7,7 @@ import { useClients } from "../context/ClientContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import SignatureCanvas from 'react-signature-canvas';
+import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 import "../styles/WorkOrderFormPage.css";
 
 function WorkOrderFormPage() {
@@ -125,6 +126,40 @@ function WorkOrderFormPage() {
         serviceRequest: formData.serviceRequest,
         clientSignature: signatureData
       });
+
+      // Al inicio del archivo
+
+
+      // En handleSubmit, después de crear la orden:
+      const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!validateForm()) return;
+
+      setLoading(true);
+      try {
+      const signatureData = signatureRef.current.getCanvas().toDataURL('image/png');
+    
+      const createdOrder = await createWorkOrder({
+      vehicle: formData.vehicle,
+      currentMileage: parseInt(formData.currentMileage),
+      serviceRequest: formData.serviceRequest,
+      clientSignature: signatureData
+      });
+
+    // Generar PDF automáticamente
+    setTimeout(() => {
+      generateWorkOrderPDF(createdOrder);
+    }, 1000); // Pequeño delay para asegurar que la orden esté completa
+
+    navigate("/ordenes");
+  } catch (error) {
+    console.error("Error detallado:", error);
+    const errorMessage = error.response?.data?.message || error.message || "Error desconocido";
+    alert("Error al crear orden: " + errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
       navigate("/ordenes");
     } catch (error) {
@@ -245,10 +280,10 @@ function WorkOrderFormPage() {
 
           {/* Firma digital */}
           <div className="form-group">
-            <label>Firma Digital del Cliente *</label>
+            <label></label>
             <div className="signature-container">
               <SignatureCanvas
-                ref={signatureRef} // ✅ Referencia directa
+                ref={signatureRef} // Referencia directa
                 penColor='black'
                 canvasProps={{ width: 500, height: 200, className: 'signature-canvas' }}
               />

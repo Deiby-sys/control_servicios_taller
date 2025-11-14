@@ -75,7 +75,7 @@ function Sidebar({ isOpen }) {
               className="sidebar__link"
               onClick={() => handleNavigation("/ordenes")}
             >
-              Órdenes Trabajo
+              Órdenes de Trabajo
             </button>
           </li>
           <li>

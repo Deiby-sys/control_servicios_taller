@@ -6,6 +6,7 @@ import { useWorkOrders } from "../context/WorkOrderContext";
 import { useAuth } from "../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
+import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator'; // ✅ Importado
 import "../styles/WorkOrderDetailPage.css";
 
 function WorkOrderDetailPage() {
@@ -115,17 +116,27 @@ function WorkOrderDetailPage() {
 
   return (
     <div className="page">
+      {/* ✅ Encabezado con botón de PDF */}
       <div className="page-header">
         <div>
           <h1>Orden de Trabajo</h1>
           <h2>{workOrder.orderNumber}</h2>
         </div>
-        <button 
-          onClick={() => navigate('/ordenes')}
-          className="btn-secondary"
-        >
-          ← Volver a Órdenes
-        </button>
+        <div className="header-actions"> {/* ✅ Nuevo contenedor para botones */}
+          <button 
+            onClick={() => generateWorkOrderPDF(workOrder)}
+            className="btn-primary"
+            style={{ marginRight: '0.5rem' }}
+          >
+            📄 Descargar PDF
+          </button>
+          <button 
+            onClick={() => navigate('/ordenes')}
+            className="btn-secondary"
+          >
+            ← Volver a Órdenes
+          </button>
+        </div>
       </div>
 
       {/* Información básica */}
@@ -252,13 +263,14 @@ function WorkOrderDetailPage() {
 
       {/* Firma del cliente */}
       {workOrder.clientSignature && (
-        <div className="order-section">
-          <h3>Firma del Cliente</h3>
-          <div className="signature-display">
-            <img src={workOrder.clientSignature} alt="Firma del cliente" />
-          </div>
+      <div className="order-section">
+        <h3>Firma Digital del Cliente</h3>
+        <div className="signature-display">
+          <span className="signature-label"></span> {/* Etiqueta */}
+          <img src={workOrder.clientSignature} alt="Firma del cliente" />
         </div>
-      )}
+      </div>
+    )}
     </div>
   );
 }

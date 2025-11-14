@@ -1,4 +1,11 @@
-/* Estilos para la página de detalle */
+/* Estilos generales para la página de detalle */
+
+.page {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -29,6 +36,13 @@
 
 .btn-secondary:hover {
   background-color: #5a6268;
+}
+
+/* Encabezado con botones */
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 /* Información de la orden */
@@ -64,6 +78,7 @@
 .info-grid strong {
   min-width: 120px;
   color: #495057;
+  font-weight: 600;
 }
 
 /* Secciones de la orden */
@@ -87,6 +102,9 @@
   border-radius: 4px;
   border-left: 4px solid #0d6efd;
   white-space: pre-wrap;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 /* Gestión de la orden */
@@ -139,6 +157,9 @@
   border-radius: 4px;
   font-size: 1rem;
   resize: vertical;
+  font-family: inherit;
+  color: #495057; /* Texto oscuro */
+  background-color: white; /* Fondo blanco */
 }
 
 .add-note-form button {
@@ -177,10 +198,18 @@
   padding: 1rem;
 }
 
-/* Firma del cliente */
+/* Firma del cliente - ¡Aquí está la mejora! */
 .signature-display {
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem;
+  border: 2px dashed #ddd; /* Borde punteado para definir el espacio */
+  border-radius: 8px;
+  background-color: #fafafa; /* Fondo claro */
+  min-height: 150px; /* Altura mínima */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .signature-display img {
@@ -188,6 +217,21 @@
   height: auto;
   border: 1px solid #ddd;
   border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 0.5rem;
+  background-color: white;
+}
+
+/* Etiqueta "Firma del Cliente" */
+.signature-label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: white;
+  padding: 0 0.5rem;
+  font-size: 0.875rem;
+  color: #495057;
+  font-weight: 600;
 }
 
 /* Responsive */
@@ -202,5 +246,9 @@
   
   .add-note-form {
     flex-direction: column;
+  }
+  
+  .signature-display {
+    min-height: 100px;
   }
 }

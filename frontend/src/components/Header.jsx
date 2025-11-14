@@ -10,7 +10,7 @@ function Header({ onToggleSidebar }) {
       <button onClick={onToggleSidebar} 
       className="menu-toggle" // conectamos el clic con la función
       >
-        ☰
+       ☰
       </button>
   
       {/* Agrupamos emblema y título en un contenedor */}

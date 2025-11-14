@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
 import { useParams } from "react-router-dom";
+import Select from "react-select";
 import "../styles/WorkOrdersByStatusPage.css";
 
 function WorkOrdersByStatusPage() {
@@ -10,23 +11,61 @@ function WorkOrdersByStatusPage() {
   const { workOrders, getWorkOrders, loading, error } = useWorkOrders();
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchAssignee, setSearchAssignee] = useState(null); // Nuevo estado
+  const [users, setUsers] = useState([]); // Usuarios para responsable
 
   useEffect(() => {
     getWorkOrders();
+    
+    // Cargar usuarios para responsable
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users', {
+          credentials: 'include'
+        });
+        const userData = await response.json();
+        setUsers(userData.map(u => ({ 
+          value: u._id, 
+          label: `${u.name} ${u.lastName}` 
+        })));
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   useEffect(() => {
     if (!workOrders.length) return;
-    const term = searchTerm.toLowerCase();
-    const filtered = workOrders.filter(
-      (order) =>
-        order.status === status &&
-        (order.vehicle?.plate?.toLowerCase().includes(term) ||
-         order.client?.name?.toLowerCase().includes(term) || 
-         order.serviceRequest.toLowerCase().includes(term))
-    );
+    
+    let filtered = workOrders.filter(order => order.status === status);
+    
+    // Filtrar por texto general (placa, cliente, solicitud)
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (order) =>
+          order.vehicle?.plate?.toLowerCase().includes(term) ||
+          order.client?.name?.toLowerCase().includes(term) || 
+          order.serviceRequest.toLowerCase().includes(term)
+      );
+    }
+    
+    // ✅ Filtrar por responsable
+    if (searchAssignee) {
+      filtered = filtered.filter(order =>
+        order.assignedTo?.some(user => user._id === searchAssignee.value)
+      );
+    }
+    
     setFilteredOrders(filtered);
-  }, [searchTerm, workOrders, status]);
+  }, [searchTerm, searchAssignee, workOrders, status]);
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSearchAssignee(null);
+  };
 
   if (loading) return <div className="page">Cargando órdenes...</div>;
   if (error) return <div className="page error">Error: {error}</div>;
@@ -43,14 +82,37 @@ function WorkOrdersByStatusPage() {
         </button>
       </div>
 
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder={`Buscar por placa, cliente o solicitud...`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
+      {/* Formulario de búsqueda avanzada */}
+      <div className="search-container">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder={`Buscar por placa, cliente o solicitud...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+
+        <div className="advanced-search">
+          <Select
+            options={users}
+            value={searchAssignee}
+            onChange={setSearchAssignee}
+            placeholder="Filtrar por responsable..."
+            className="search-select"
+            isClearable
+          />
+        </div>
+
+        {searchAssignee && (
+          <button 
+            onClick={handleClearFilters}
+            className="btn-secondary clear-filters"
+          >
+            Limpiar Filtros
+          </button>
+        )}
       </div>
 
       <div className="table-container">
@@ -61,6 +123,7 @@ function WorkOrdersByStatusPage() {
               <th>Cliente</th>
               <th>Kilometraje</th>
               <th>Solicitud</th>
+              <th>Responsable</th>
               <th>Fecha</th>
               <th>Acciones</th>
             </tr>
@@ -71,12 +134,19 @@ function WorkOrdersByStatusPage() {
                 <tr key={order._id}>
                   <td>{order.vehicle?.plate}</td>
                   <td>
-                    {order.client // ✅ Corregido
+                    {order.client 
                       ? `${order.client.name} ${order.client.lastName}`
                       : "Cliente no asignado"}
                   </td>
                   <td>{order.currentMileage.toLocaleString()}</td>
                   <td>{order.serviceRequest}</td>
+                  <td>
+                    {order.assignedTo && order.assignedTo.length > 0
+                      ? order.assignedTo.map(user => 
+                          `${user.name} ${user.lastName}`
+                        ).join(', ')
+                      : "Sin asignar"}
+                  </td>
                   <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                   <td>
                     <button
@@ -90,7 +160,7 @@ function WorkOrdersByStatusPage() {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="no-data">
+                <td colSpan="7" className="no-data">
                   No hay órdenes en este estado
                 </td>
               </tr>

@@ -73,7 +73,7 @@ export const generatePDF = async (workOrder) => {
 
       <div class="signature">
         <div class="signature-line"></div>
-        <p>Firma del Cliente</p>
+        <p>Firma Digital del Cliente</p>
       </div>
     </body>
     </html>

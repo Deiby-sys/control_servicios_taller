@@ -95,11 +95,11 @@
   font-style: italic;
 }
 
-/* ✅ Estilos actualizados para los estados actuales */
+/* Estilos para los estados de las órdenes */
 .status {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -202,7 +202,32 @@
   background-color: #c82333;
 }
 
-/* ✅ Estilos para búsqueda avanzada */
+/* Estilo para la columna de Días en Taller (última columna - posición 8) */
+
+/* Fecha (columna 7) - GRIS NORMAL */
+.data-table td:nth-child(7) {
+  color: #0d6efd !important;
+  text-align: left;
+}
+
+/* Días en Taller (columna 8) - AZUL */
+.data-table td:nth-child(8) {
+  color: #0d6efd !important;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Encabezados - ambos en gris */
+.data-table th:nth-child(7),
+.data-table th:nth-child(8) {
+  color: #495057 !important;
+}
+
+.data-table th:nth-child(8) {
+  text-align: center;
+}
+
+/* Estilos para búsqueda avanzada */
 .search-container {
   margin-bottom: 1.5rem;
   background: white;
@@ -270,5 +295,11 @@
   
   .advanced-search {
     grid-template-columns: 1fr;
+  }
+  
+  /* Responsive para columna de días */
+  .data-table td:nth-child(8),
+  .data-table th:nth-child(8) {
+    text-align: center;
   }
 }

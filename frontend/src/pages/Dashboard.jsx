@@ -10,21 +10,36 @@ import soporte from "../images/soporte.png";
 import proceso from "../images/proceso.png";
 import listos from "../images/listos.png";
 import { useWorkOrderCounts } from "../hooks/useWorkOrderCounts";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Dashboard.css";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { counts, loading } = useWorkOrderCounts();
+  const { counts, totalEnTaller, loading } = useWorkOrderCounts();
+  const { user } = useAuth();
 
   const handleCardClick = (path) => {
     navigate(path);
   };
 
+  // Verificar si el perfil es técnico (con tolerancia a mayúsculas/minúsculas)
+  const isTechnician = user?.profile?.toLowerCase() === 'tecnico';
+
   return (
     <div className="dashboard-main">
       <h2>Estado Servicios</h2>
+      
+      {/* Saludo personalizado */}
+      {isTechnician && (
+      <div className="info-message">
+        <p>👋 ¡Hola, <strong>{user.name} {user.lastName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
+        <p>Para ver tus órdenes asignadas, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
+      </div>
+    )}
 
       <div className="dashboard-cards">
+        {/* Tarjeta de ingreso - solo admin, asesor o jefe */}
+        {!isTechnician && (
         <div 
           className="dashboard-card" 
           onClick={() => handleCardClick("/ordenes/new")}
@@ -32,7 +47,9 @@ function Dashboard() {
           <img src={ingreso} alt="Ingreso" />
           <h3>Ingreso</h3>
         </div>
+      )}
         
+        {/* Resto de tarjetas... */}
         <div 
           className="dashboard-card" 
           onClick={() => handleCardClick("/ordenes/status/por_asignar")}
@@ -94,6 +111,15 @@ function Dashboard() {
           <img src={listos} alt="Listos" />
           <h3>Completado</h3>
           {!loading && <div className="card-count">{counts.completado}</div>}
+        </div>
+
+        <div className="dashboard-card dashboard-card--total">
+          <h3>Total en Taller</h3>
+          {!loading && (
+            <div className="card-count card-count--total">
+              {totalEnTaller}
+            </div>
+          )}
         </div>
       </div>
     </div>

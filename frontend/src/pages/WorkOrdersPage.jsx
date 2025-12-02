@@ -12,7 +12,7 @@ function WorkOrdersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchStatus, setSearchStatus] = useState(null);
   const [searchAssignee, setSearchAssignee] = useState(null);
-  const [users, setUsers] = useState([]); 
+  const [users, setUsers] = useState([]);
 
   // Opciones de estado
   const statusOptions = [
@@ -147,46 +147,66 @@ function WorkOrdersPage() {
               <th>Solicitud</th>
               <th>Estado</th>
               <th>Responsable</th>
-              <th>Fecha</th>
+              <th>Fecha Ingreso</th>
+              <th>Días en Taller</th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.length > 0 ? (
-              filteredOrders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order.vehicle?.plate}</td>
-                  <td>
-                    {order.client 
-                      ? `${order.client.name} ${order.client.lastName}` 
-                      : "Cliente no asignado"}
-                  </td>
-                  <td>{order.currentMileage.toLocaleString()}</td>
-                  <td>{order.serviceRequest}</td>
-                  <td>
-                    <span className={`status status-${order.status.replace(/_/g, '-')}`}>
-                      {order.status === 'por_asignar' ? 'Por Asignar' :
-                       order.status === 'asignado' ? 'Asignado' :
-                       order.status === 'en_aprobacion' ? 'En Aprobación' :
-                       order.status === 'por_repuestos' ? 'Por Repuestos' :
-                       order.status === 'en_soporte' ? 'En Soporte' :
-                       order.status === 'en_proceso' ? 'En Proceso' :
-                       order.status === 'completado' ? 'Completado' :
-                       'Estado Desconocido'}
-                    </span>
-                  </td>
-                  <td>
-                    {order.assignedTo && order.assignedTo.length > 0
-                      ? order.assignedTo.map(user => 
-                          `${user.name} ${user.lastName}`
-                        ).join(', ')
-                      : "Sin asignar"}
-                  </td>
-                  <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))
+              filteredOrders.map((order) => {
+                // Calcular días en taller
+                let diasEnTaller = 0;
+                
+                if (order.status === 'entregado' && order.deliveryDate) {
+                  // Para órdenes entregadas: fecha entrega - fecha ingreso
+                  diasEnTaller = Math.ceil(
+                    (new Date(order.deliveryDate) - new Date(order.entryDate)) / (1000 * 60 * 60 * 24)
+                  );
+                } else {
+                  // Para órdenes activas: fecha actual - fecha ingreso
+                  diasEnTaller = Math.ceil(
+                    (new Date() - new Date(order.entryDate)) / (1000 * 60 * 60 * 24)
+                  );
+                }
+
+                return (
+                  <tr key={order._id}>
+                    <td>{order.vehicle?.plate}</td>
+                    <td>
+                      {order.client 
+                        ? `${order.client.name} ${order.client.lastName}` 
+                        : "Cliente no asignado"}
+                    </td>
+                    <td>{order.currentMileage.toLocaleString()}</td>
+                    <td>{order.serviceRequest}</td>
+                    <td>
+                      <span className={`status status-${order.status.replace(/_/g, '-')}`}>
+                        {order.status === 'por_asignar' ? 'Por Asignar' :
+                         order.status === 'asignado' ? 'Asignado' :
+                         order.status === 'en_aprobacion' ? 'En Aprobación' :
+                         order.status === 'por_repuestos' ? 'Por Repuestos' :
+                         order.status === 'en_soporte' ? 'En Soporte' :
+                         order.status === 'en_proceso' ? 'En Proceso' :
+                         order.status === 'completado' ? 'Completado' :
+                         order.status === 'entregado' ? 'Entregado' :
+                         'Estado Desconocido'}
+                      </span>
+                    </td>
+                    <td>
+                      {order.assignedTo && order.assignedTo.length > 0
+                        ? order.assignedTo.map(user => 
+                            `${user.name} ${user.lastName}`
+                          ).join(', ')
+                        : "Sin asignar"}
+                    </td>
+                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>{diasEnTaller}</td> {/* Mostrar días */}
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan="7" className="no-data">
+                <td colSpan="8" className="no-data">
                   No se encontraron órdenes
                 </td>
               </tr>

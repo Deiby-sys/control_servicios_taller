@@ -78,25 +78,67 @@ export const generateWorkOrderPDF = (workOrder) => {
   doc.text(lines, 20, 180);
   
   // Responsables
+  let currentY = 190 + (lines.length * 5);
   if (workOrder.assignedTo && workOrder.assignedTo.length > 0) {
     doc.setFont(undefined, 'bold');
-    doc.text('Responsables:', 20, 190 + (lines.length * 5));
+    doc.text('Responsables:', 20, currentY);
     doc.setFont(undefined, 'normal');
     
     const responsables = workOrder.assignedTo.map(user => 
       `${user.name} ${user.lastName}`
     ).join(', ');
     
-    doc.text(responsables, 20, 195 + (lines.length * 5));
+    currentY += 5;
+    doc.text(responsables, 20, currentY);
+    currentY += 10;
+  } else {
+    currentY += 10;
   }
   
-  // Firma del cliente (si existe)
-  if (workOrder.clientSignature) {
-    const img = new Image();
-    img.src = workOrder.clientSignature;
+  // PUNTO 4: Añadir resumen de actividades si existe (entregado)
+  if (workOrder.deliveryNote) {
+    doc.setFont(undefined, 'bold');
+    doc.text('Resumen de Actividades Realizadas:', 20, currentY);
+    doc.setFont(undefined, 'normal');
     
-    // Ajustar la posición según la longitud del texto
-    const signatureY = 205 + (lines.length * 5) + (workOrder.assignedTo?.length ? 15 : 0);
+    const noteLines = doc.splitTextToSize(workOrder.deliveryNote, 170);
+    doc.text(noteLines, 20, currentY + 5);
+    
+    currentY += 5 + (noteLines.length * 5);
+  }
+  
+  // PUNTO 5: Añadir firma de entrega si existe (entregado)
+  if (workOrder.deliverySignature && workOrder.deliveryDate) {
+    doc.setFont(undefined, 'bold');
+    doc.text('Firma de Recibido por el Cliente:', 20, currentY);
+    
+    // Añadir imagen de firma de entrega
+    doc.addImage(
+      workOrder.deliverySignature, 
+      'PNG', 
+      20, 
+      currentY + 5, 
+      60, 
+      30
+    );
+    
+    // Texto descriptivo con fecha y hora
+    const entregaY = currentY + 40;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100); // Gris oscuro
+    doc.text(
+      `Firmado digitalmente por el cliente el ${new Date(workOrder.deliveryDate).toLocaleString('es-CO')}`, 
+      20, 
+      entregaY
+    );
+    
+    currentY = entregaY + 5;
+  }
+  
+  // Firma del cliente (si existe) - solo si NO es entrega
+  if (workOrder.clientSignature && !workOrder.deliverySignature) {
+    const signatureY = currentY;
     
     doc.setFont(undefined, 'bold');
     doc.text('Firma Digital del Cliente:', 20, signatureY);
@@ -125,7 +167,8 @@ const getStatusLabel = (status) => {
     'por_repuestos': 'Por Repuestos',
     'en_soporte': 'En Soporte',
     'en_proceso': 'En Proceso',
-    'completado': 'Completado'
+    'completado': 'Completado',
+    'entregado': 'Entregado'
   };
   return labels[status] || status;
 };

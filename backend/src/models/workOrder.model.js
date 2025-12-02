@@ -62,7 +62,26 @@ const workOrderSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  
+
+  // CAMPOS PARA ENTREGA
+  deliverySignature: {
+    type: String, // URL de la imagen de la firma de entrega
+    default: null
+  },
+  deliveryDate: {
+    type: Date,
+    default: null
+  },
+  deliveryNote: {
+    type: String, // Resumen de actividades realizadas
+    default: null
+  },
+  deliveredBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+    
   // Gestión de estados y responsables
   status: {
     type: String,
@@ -73,7 +92,8 @@ const workOrderSchema = new mongoose.Schema({
       'por_repuestos', 
       'en_soporte', 
       'en_proceso', 
-      'completado'
+      'completado',
+      'entregado'
     ],
     default: 'por_asignar'
   },

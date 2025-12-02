@@ -1,7 +1,8 @@
 //Esquemas mongoose
 
-//vamos a estructurar los datos a manejar para los usuarios
+// Datos a manejar para los usuarios
 
+// models/user.model.js
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -18,8 +19,14 @@ const userSchema = new mongoose.Schema(
     },
     profile: {
       type: String,
-      required: [true, "El perfil es obligatorio"], // Ej: admin, mecánico, cliente
+      required: [true, "El perfil es obligatorio"],
+      // Validación de perfiles permitidos
+      enum: {
+        values: ['admin', 'asesor', 'bodega', 'jefe', 'tecnico'],
+        message: "Perfil no válido. Perfiles permitidos: admin, asesor, bodega, jefe, tecnico"
+      },
       trim: true,
+      lowercase: true // Asegura que siempre sea en minúsculas
     },
     email: {
       type: String,
@@ -39,7 +46,7 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Crea createdAt y updatedAt
+    timestamps: true,
   }
 );
 

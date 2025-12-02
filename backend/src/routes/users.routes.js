@@ -13,7 +13,7 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/users.controller.js";
-import { authRequired } from "../middlewares/validateToken.js";   //IMPORT correcto
+import { authRequired } from "../middlewares/validateToken.js"; 
 import { validateSchema } from "../middlewares/validator.middleware.js";
 import { updateUserSchema } from "../schemas/user.schema.js";
 

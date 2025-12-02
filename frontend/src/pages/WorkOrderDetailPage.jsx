@@ -17,7 +17,8 @@ function WorkOrderDetailPage() {
     addNoteToWorkOrder,
     uploadAttachment,
     downloadAttachment,
-    deleteAttachment
+    deleteAttachment,
+    deliverWorkOrder
   } = useWorkOrders();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -142,8 +143,9 @@ function WorkOrderDetailPage() {
       'en_aprobacion': '#ffc107',
       'por_repuestos': '#fd7e14',
       'en_soporte': '#20c997',
-      'en_proceso': '#20c997', // (mismo color que en_soporte)
-      'completado': '#198754'
+      'en_proceso': '#20c997',
+      'completado': '#198754',
+      'entregado': '#28a745'
     };
     return colors[status] || '#6c757d';
   };
@@ -160,7 +162,7 @@ function WorkOrderDetailPage() {
           <h1>Orden de Trabajo</h1>
           <h2>{workOrder.orderNumber}</h2>
         </div>
-        <div className="header-actions"> {/* Nuevo contenedor para botones */}
+        <div className="header-actions">
           <button 
             onClick={() => generateWorkOrderPDF(workOrder)}
             className="btn-primary"
@@ -168,6 +170,18 @@ function WorkOrderDetailPage() {
           >
             📄 Descargar PDF
           </button>
+          
+          {/* Botón de entrega si está completada */}
+          {workOrder.status === 'completado' && (
+            <button 
+              onClick={() => navigate(`/ordenes/${workOrder._id}/entregar`)}
+              className="btn-primary"
+              style={{ marginRight: '0.5rem' }}
+            >
+              🚗 Entregar Vehículo
+            </button>
+          )}
+          
           <button 
             onClick={() => navigate('/ordenes')}
             className="btn-secondary"
@@ -184,11 +198,12 @@ function WorkOrderDetailPage() {
           <div className="info-grid">
             <div><strong>Fecha de Ingreso:</strong> {new Date(workOrder.entryDate).toLocaleString('es-CO')}</div>
             <div><strong>Estado:</strong> 
+              {/* Mostrar "Entregado" si es estado entregado */}
               <span 
-                className="status-badge" 
+                className={`status-badge status-${workOrder.status.replace(/_/g, '-')}`}
                 style={{ backgroundColor: getStatusColor(workOrder.status) }}
               >
-                {statusOptions.find(s => s.value === workOrder.status)?.label}
+                {workOrder.status === 'entregado' ? 'Entregado' : statusOptions.find(s => s.value === workOrder.status)?.label}
               </span>
             </div>
             <div><strong>Creado por:</strong> {workOrder.createdBy?.name} {workOrder.createdBy?.lastName}</div>
@@ -225,101 +240,140 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Gestión de estado y asignación */}
-      <div className="order-section">
-        <h3>Gestión de la Orden</h3>
-        <div className="management-grid">
-          <div className="form-group">
-            <label>Estado Actual</label>
-            <Select
-              options={statusOptions}
-              value={statusOptions.find(option => option.value === selectedStatus)}
-              onChange={(option) => setSelectedStatus(option.value)}
-              className="select-status"
-            />
-          </div>
+      {/* Sección de gestión: ocultar si está entregada */}
+      {workOrder.status !== 'entregado' && (
+        <div className="order-section">
+          <h3>Gestión de la Orden</h3>
+          <div className="management-grid">
+            <div className="form-group">
+              <label>Estado Actual</label>
+              <Select
+                options={statusOptions}
+                value={statusOptions.find(option => option.value === selectedStatus)}
+                onChange={(option) => setSelectedStatus(option.value)}
+                className="select-status"
+              />
+            </div>
 
-          <div className="form-group">
-            <label>Asignar a</label>
-            <Select
-              options={users}
-              isMulti
-              value={users.filter(user => selectedAssignees.includes(user.value))}
-              onChange={(selected) => setSelectedAssignees(selected.map(u => u.value))}
-              className="select-assignees"
-            />
-          </div>
+            <div className="form-group">
+              <label>Asignar a</label>
+              <Select
+                options={users}
+                isMulti
+                value={users.filter(user => selectedAssignees.includes(user.value))}
+                onChange={(selected) => setSelectedAssignees(selected.map(u => u.value))}
+                className="select-assignees"
+              />
+            </div>
 
-          <div className="form-group">
-            <button 
-              onClick={handleUpdateStatus}
-              className="btn-primary"
-              style={{ height: '100%' }}
-            >
-              Actualizar Orden
-            </button>
+            <div className="form-group">
+              <button 
+                onClick={handleUpdateStatus}
+                className="btn-primary"
+                style={{ height: '100%' }}
+              >
+                Actualizar Orden
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Mostrar mensaje si está entregada */}
+      {workOrder.status === 'entregado' && (
+        <div className="order-section">
+          <div className="info-card" style={{ backgroundColor: '#d4edda', border: '1px solid #c3e6cb' }}>
+            <div style={{ textAlign: 'center', color: '#155724', fontWeight: 'bold' }}>
+              📋 Esta orden ya ha sido entregada y no puede modificarse
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notas de seguimiento */}
-      <div className="order-section">
-        <h3>Notas de Seguimiento</h3>
-        <form onSubmit={handleAddNote} className="add-note-form">
-          <textarea
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Escribe una nota de seguimiento..."
-            rows="3"
-            required
-          />
-          <button type="submit" className="btn-primary">
-            Agregar Nota
-          </button>
-        </form>
+      {workOrder.status !== 'entregado' && (
+        <div className="order-section">
+          <h3>Notas de Seguimiento</h3>
+          <form onSubmit={handleAddNote} className="add-note-form">
+            <textarea
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              placeholder="Escribe una nota de seguimiento..."
+              rows="3"
+              required
+            />
+            <button type="submit" className="btn-primary">
+              Agregar Nota
+            </button>
+          </form>
 
-        <div className="notes-list">
-          {workOrder.notes && workOrder.notes.length > 0 ? (
-            workOrder.notes.map((note, index) => (
-              <div key={index} className="note-item">
-                <div className="note-header">
-                  <strong>{note.author?.name} {note.author?.lastName}</strong>
-                  <span className="note-date">
-                    {new Date(note.createdAt).toLocaleString('es-CO')}
-                  </span>
+          <div className="notes-list">
+            {workOrder.notes && workOrder.notes.length > 0 ? (
+              workOrder.notes.map((note, index) => (
+                <div key={index} className="note-item">
+                  <div className="note-header">
+                    <strong>{note.author?.name} {note.author?.lastName}</strong>
+                    <span className="note-date">
+                      {new Date(note.createdAt).toLocaleString('es-CO')}
+                    </span>
+                  </div>
+                  <div className="note-content">
+                    {note.content}
+                  </div>
                 </div>
-                <div className="note-content">
-                  {note.content}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="no-notes">No hay notas de seguimiento</p>
-          )}
+              ))
+            ) : (
+              <p className="no-notes">No hay notas de seguimiento</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+{/* Mostrar notas existentes pero sin opción de agregar si está entregada */}
+{workOrder.status === 'entregado' && workOrder.notes && workOrder.notes.length > 0 && (
+  <div className="order-section">
+    <h3>Notas de Seguimiento</h3>
+    <div className="notes-list">
+      {workOrder.notes.map((note, index) => (
+        <div key={index} className="note-item">
+          <div className="note-header">
+            <strong>{note.author?.name} {note.author?.lastName}</strong>
+            <span className="note-date">
+              {new Date(note.createdAt).toLocaleString('es-CO')}
+            </span>
+          </div>
+          <div className="note-content">
+            {note.content}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
       {/* Sección de archivos adjuntos */}
       <div className="order-section">
         <h3>Archivos Adjuntos</h3>
         
         {/* Formulario para subir archivos */}
-        <div className="attachments-upload">
-          <input
-            type="file"
-            id="attachment-file"
-            className="attachment-input"
-            onChange={(e) => {
-              if (e.target.files[0]) {
-                handleUploadAttachment(e.target.files[0]);
-              }
-            }}
-            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-          />
-          <label htmlFor="attachment-file" className="btn-primary attachment-label">
-            + Adjuntar Archivo
-          </label>
-        </div>
+        {workOrder.status !== 'entregado' && (
+          <div className="attachments-upload">
+            <input
+              type="file"
+              id="attachment-file"
+              className="attachment-input"
+              onChange={(e) => {
+                if (e.target.files[0]) {
+                  handleUploadAttachment(e.target.files[0]);
+                }
+              }}
+              accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+            />
+            <label htmlFor="attachment-file" className="btn-primary attachment-label">
+              + Adjuntar Archivo
+            </label>
+          </div>
+        )}
 
         {/* Lista de archivos adjuntos */}
         <div className="attachments-list">
@@ -340,7 +394,7 @@ function WorkOrderDetailPage() {
                   >
                     Descargar
                   </button>
-                  {attachment.uploadedBy?._id === user._id && (
+                  {attachment.uploadedBy?._id === user._id && workOrder.status !== 'entregado' && (
                     <button
                       className="btn-delete"
                       onClick={() => handleDeleteAttachment(attachment._id)}
@@ -357,8 +411,43 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
+      {/* Sección de entrega */}
+      {workOrder.status === 'entregado' && workOrder.deliverySignature && (
+        <div className="order-section">
+          <h3>Entrega del Servicio</h3>
+          
+          {/* Firma de entrega */}
+          <div className="signature-display">
+            <span className="signature-label">Firma del Cliente - Entrega</span>
+            <img src={workOrder.deliverySignature} alt="Firma de entrega" />
+          </div>
+          
+          {/* Nota de entrega */}
+          {workOrder.deliveryNote && (
+            <div className="solicitud-content">
+              <strong>Resumen de Actividades Realizadas:</strong><br />
+              {workOrder.deliveryNote}
+            </div>
+          )}
+          
+          {/* Información de entrega */}
+          <div className="info-card">
+            <div className="info-grid">
+              <div>
+                <strong>Fecha de Entrega:</strong> 
+                {new Date(workOrder.deliveryDate).toLocaleString('es-CO')}
+              </div>
+              <div>
+                <strong>Entregado por:</strong> 
+                {workOrder.deliveredBy?.name} {workOrder.deliveredBy?.lastName} {/* Mostrar nombre completo */}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Firma del cliente */}
-      {workOrder.clientSignature && (
+      {workOrder.clientSignature && workOrder.status !== 'entregado' && (
         <div className="order-section">
           <h3>Firma Digital del Cliente</h3>
           <div className="signature-display">

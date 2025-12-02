@@ -26,7 +26,9 @@ export const useWorkOrderCounts = () => {
     en_aprobacion: 0,
     por_repuestos: 0,
     en_soporte: 0,
-    completado: 0
+    en_proceso: 0, 
+    completado: 0,
+    entregado: 0 // Añadido para que el backend pueda devolverlo
   });
   const [loading, setLoading] = useState(true);
 
@@ -51,5 +53,14 @@ export const useWorkOrderCounts = () => {
     fetchCounts();
   }, []);
 
-  return { counts, loading };
+  // Calcular total en taller (todos menos entregado)
+  const totalEnTaller = counts.por_asignar + 
+                       counts.asignado + 
+                       counts.en_aprobacion + 
+                       counts.por_repuestos + 
+                       counts.en_soporte + 
+                       counts.en_proceso + 
+                       counts.completado;
+
+  return { counts, totalEnTaller, loading };
 };

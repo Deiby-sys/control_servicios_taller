@@ -15,10 +15,11 @@ import WorkOrdersPage from "./pages/WorkOrdersPage";
 import WorkOrderFormPage from "./pages/WorkOrderFormPage";
 import WorkOrderDetailPage from "./pages/WorkOrderDetailPage";
 import WorkOrdersByStatusPage from "./pages/WorkOrdersByStatusPage";
-import HistoryPage from "./pages/HistoryPage";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import WorkOrderDeliveryPage from "./pages/WorkOrderDeliveryPage";
+import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
+import RoleGuard from "./components/RoleGuard";
 
 function App() {
   return (
@@ -33,19 +34,138 @@ function App() {
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="clients" element={<ClientsPage />} />
-          <Route path="clients/new" element={<ClientFormPage />} />
-          <Route path="clients/:id" element={<ClientFormPage />} />
-          <Route path="usuarios" element={<UsersManagementPage />} />
-          <Route path="vehicles" element={<VehiclesPage />} />
-          <Route path="vehicles/new" element={<VehicleFormPage />} />
-          <Route path="vehicles/:id" element={<VehicleFormPage />} />
-          <Route path="ordenes" element={<WorkOrdersPage />} />
-          <Route path="ordenes/new" element={<WorkOrderFormPage />} />
-          <Route path="ordenes/:id" element={<WorkOrderDetailPage />} />
-          <Route path="ordenes/status/:status" element={<WorkOrdersByStatusPage />} />
-          <Route path="historial" element={<HistoryPage />} />
+          
+          {/* Profile - Todos los perfiles */}
+          <Route 
+            path="profile" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+                <Profile />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Clientes - Solo admin */}
+          <Route 
+            path="clients" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <ClientsPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="clients/new" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <ClientFormPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="clients/:id" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <ClientFormPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Usuarios - Solo admin */}
+          <Route 
+            path="usuarios" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <UsersManagementPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Vehículos - Solo admin */}
+          <Route 
+            path="vehicles" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <VehiclesPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="vehicles/new" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <VehicleFormPage />
+              </RoleGuard>
+            } 
+          />
+          <Route 
+            path="vehicles/:id" 
+            element={
+              <RoleGuard allowedRoles={['admin']} >
+                <VehicleFormPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Órdenes de trabajo - Todos los perfiles de taller */}
+          <Route 
+            path="ordenes" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+                <WorkOrdersPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Crear órdenes - Solo admin, asesor y jefe */}
+          <Route 
+            path="ordenes/new" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
+                <WorkOrderFormPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Detalle de órdenes - Todos los perfiles de taller */}
+          <Route 
+            path="ordenes/:id" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+                <WorkOrderDetailPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Entrega de órdenes - Solo admin, asesor y jefe */}
+          <Route 
+            path="ordenes/:id/entregar" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
+                <WorkOrderDeliveryPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Órdenes por estado - Todos los perfiles de taller */}
+          <Route 
+            path="ordenes/status/:status" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+                <WorkOrdersByStatusPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* Histórico - Todos los perfiles de taller */}
+          <Route 
+            path="historial" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+                <WorkOrderHistoryPage />
+              </RoleGuard>
+            } 
+          />
         </Route>
       </Route>
 

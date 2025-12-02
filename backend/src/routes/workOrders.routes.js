@@ -2,6 +2,7 @@
 
 import { Router } from "express";
 import { authRequired } from "../middlewares/validateToken.js";
+import { requireRole } from "../middlewares/roleMiddleware.js";
 import upload from "../middlewares/upload.js";
 import { 
   getWorkOrders, 
@@ -15,10 +16,10 @@ import {
   getWorkOrdersByStatus,
   getWorkOrderCounts,
   getWorkOrdersByPlate,
-  // ✅ Nuevas funciones para adjuntos
   uploadAttachment,
   downloadAttachment,
-  deleteAttachment
+  deleteAttachment,
+  getWorkOrderHistory
 } from "../controllers/workOrder.controller.js";
 
 const router = Router();
@@ -56,5 +57,20 @@ router.post("/:id/deliver", authRequired, deliverWorkOrder);
 router.post("/:id/attachments", authRequired, upload.single('file'), uploadAttachment);
 router.get("/:id/attachments/:fileId", authRequired, downloadAttachment);
 router.delete("/:id/attachments/:fileId", authRequired, deleteAttachment);
+
+// Ruta para historial
+router.get("/historial", authRequired, getWorkOrderHistory);
+
+// Crear orden - solo admin, asesor o jefe
+router.post("/", authRequired, requireRole('admin', 'asesor', 'jefe'), createWorkOrder);
+
+// Ver órdenes - técnicos pueden ver
+router.get("/", authRequired, getWorkOrders);
+
+// Actualizar estado - técnicos pueden actualizar
+router.patch("/:id/status", authRequired, updateWorkOrderStatus);
+
+// Agregar notas - técnicos pueden agregar
+router.post("/:id/notes", authRequired, addNoteToWorkOrder);
 
 export default router;

@@ -333,7 +333,7 @@ export const updateWorkOrderStatus = async (req, res) => {
 export const deliverWorkOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { deliverySignature } = req.body;
+    const { deliverySignature, deliveryNote } = req.body; // Añadido deliveryNote
 
     const workOrder = await WorkOrder.findById(id);
     if (!workOrder) {
@@ -344,17 +344,32 @@ export const deliverWorkOrder = async (req, res) => {
       return res.status(400).json({ message: "La orden debe estar en estado 'completado' para entregar" });
     }
 
-    workOrder.status = 'entregado';
+    // Validar que la nota de entrega sea obligatoria
+    if (!deliveryNote || !deliveryNote.trim()) {
+      return res.status(400).json({ message: "La nota de resumen de actividades es obligatoria" });
+    }
+
+    // Validar que la firma sea obligatoria
+    if (!deliverySignature) {
+      return res.status(400).json({ message: "La firma del cliente es obligatoria" });
+    }
+
+    workOrder.status = 'entregado'; // Estado 'entregado'
     workOrder.deliverySignature = deliverySignature;
+    workOrder.deliveryNote = deliveryNote;
     workOrder.deliveryDate = new Date();
+    workOrder.deliveredBy = req.user._id;
+
     await workOrder.save();
 
-    const populatedOrder = await WorkOrder.findById(id)
+    const populatedWorkOrder = await WorkOrder.findById(workOrder._id)
       .populate('vehicle', 'plate brand model')
-      .populate('client', 'name lastName')
-      .populate('createdBy', 'name lastName');
+      .populate('client', 'name lastName email')
+      .populate('createdBy', 'name lastName')
+      .populate('deliveredBy', 'name lastName')
+      .populate('assignedTo', 'name lastName');
 
-    res.json(populatedOrder);
+    res.json(populatedWorkOrder);
   } catch (error) {
     console.error("Error al entregar orden:", error);
     res.status(500).json({ message: "Error al entregar orden" });
@@ -475,5 +490,24 @@ export const deleteAttachment = async (req, res) => {
   } catch (error) {
     console.error("Error al eliminar archivo:", error);
     res.status(500).json({ message: "Error al eliminar archivo" });
+  }
+};
+
+/**
+ * Obtener historial de órdenes entregadas
+ */
+export const getWorkOrderHistory = async (req, res) => {
+  try {
+    const workOrders = await WorkOrder.find({ status: 'entregado' })
+      .populate('vehicle', 'plate')
+      .populate('client', 'name lastName')
+      .populate('deliveredBy', 'name lastName')
+      .sort({ deliveryDate: -1 })
+      .select('-__v');
+
+    res.json(workOrders);
+  } catch (error) {
+    console.error("Error al obtener historial:", error);
+    res.status(500).json({ message: "Error al obtener historial" });
   }
 };

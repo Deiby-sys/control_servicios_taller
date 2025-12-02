@@ -13,7 +13,8 @@ import {
     getWorkOrderCountsRequest,
     uploadAttachmentRequest,
     downloadAttachmentRequest,
-    deleteAttachmentRequest
+    deleteAttachmentRequest,
+    deliverWorkOrderRequest
 } from "../api/workOrder.api"; 
 
 const WorkOrderContext = createContext();
@@ -108,15 +109,28 @@ export function WorkOrderProvider({ children }) {
         }
     };
 
+   
+    // Eliminar adjunto y devolver orden actualizada
     const deleteAttachment = async (orderId, fileId) => {
-        try {
-            const res = await deleteAttachmentRequest(orderId, fileId);
-            return res.data;
-        } catch (error) {
-            setErrors(error.response?.data || error.message);
-            throw error;
-        }
-    };
+    try {
+    const res = await deleteAttachmentRequest(orderId, fileId);
+    
+    // ACTUALIZAR ESTADO LOCAL: Obtener la orden actualizada
+    const updatedOrder = await getWorkOrderById(orderId);
+    
+    // ACTUALIZAR EL ESTADO GLOBAL
+    setWorkOrders(prev => 
+      prev.map(order => 
+        order._id === orderId ? updatedOrder : order
+      )
+    );
+    
+    return res.data;
+  } catch (error) {
+    setErrors(error.response?.data || error.message);
+    throw error;
+  }
+};
 
     // --- FUNCIONES DE BÚSQUEDA ---
 
@@ -164,6 +178,17 @@ export function WorkOrderProvider({ children }) {
         }
     };
 
+    // 8. Entrega orden completada al cliente
+    const deliverWorkOrder = async (id, deliveryData) => {
+        try {
+            const res = await deliverWorkOrderRequest(id, deliveryData);
+            return res.data;
+        } catch (error) {
+            setErrors(error.response.data);
+            throw error;
+        }
+    };
+
     return (
         <WorkOrderContext.Provider
             value={{
@@ -175,14 +200,12 @@ export function WorkOrderProvider({ children }) {
                 addNoteToWorkOrder,
                 getWorkOrderCounts,
                 getWorkOrdersByStatus,
-                
                 getVehicleByPlate,
                 getClientByIdentification,
-                
-                //NUEVAS FUNCIONES AL PROVIDER
                 uploadAttachment,
                 downloadAttachment,
                 deleteAttachment,
+                deliverWorkOrder,
                 
                 errors
             }}

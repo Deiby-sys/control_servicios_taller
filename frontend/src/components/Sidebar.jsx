@@ -6,7 +6,12 @@ import { useAuth } from "../context/AuthContext";
 
 function Sidebar({ isOpen }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth(); // Añadido 'user'
+
+  // Función para verificar si el usuario tiene un perfil específico
+  const hasRole = (roles) => {
+    return user && roles.includes(user.profile);
+  };
 
   // Función para navegar sin recargar
   const handleNavigation = (path) => {
@@ -30,6 +35,7 @@ function Sidebar({ isOpen }) {
       </div>
       <nav className="sidebar__nav">
         <ul>
+          {/* Inicio - Todos los perfiles */}
           <li>
             <button
               className="sidebar__link"
@@ -38,54 +44,90 @@ function Sidebar({ isOpen }) {
               Inicio
             </button>
           </li>
-          <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/usuarios")}
-            >
-              Usuarios
-            </button>
-          </li>
-          <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/clients")}
-            >
-              Clientes
-            </button>
-          </li>
-          <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/vehicles")}
-            >
-              Vehículos
-            </button>
-          </li>
-          <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/historico")}
-            >
-              Histórico
-            </button>
-          </li>
-          <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/ordenes")}
-            >
-              Órdenes de Trabajo
-            </button>
-          </li>
-          <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/cotizador")}
-            >
-              Cotizador
-            </button>
-          </li>
+          
+          {/* Órdenes de trabajo - Todos los perfiles de taller */}
+          {hasRole(['admin', 'asesor', 'bodega', 'jefe', 'tecnico']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/ordenes")}
+              >
+                Órdenes de Trabajo
+              </button>
+            </li>
+          )}
+          
+          {/* + Nueva Orden - Solo admin, asesor y jefe */}
+          {hasRole(['admin', 'asesor', 'jefe']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/ordenes/new")}
+              >
+                + Nueva Orden
+              </button>
+            </li>
+          )}
+          
+          {/* Histórico - Todos los perfiles de taller */}
+          {hasRole(['admin', 'asesor', 'bodega', 'jefe', 'tecnico']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/historial")}
+              >
+                Histórico
+              </button>
+            </li>
+          )}
+          
+          {/* Vehículos - Solo admin */}
+          {hasRole(['admin']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/vehicles")}
+              >
+                Vehículos
+              </button>
+            </li>
+          )}
+          
+          {/* Clientes - Solo admin */}
+          {hasRole(['admin']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/clients")}
+              >
+                Clientes
+              </button>
+            </li>
+          )}
+          
+          {/* Cotizador - Solo admin */}
+          {hasRole(['admin']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/cotizador")}
+              >
+                Cotizador
+              </button>
+            </li>
+          )}
+          
+          {/* Usuarios - Solo admin */}
+          {hasRole(['admin']) && (
+            <li>
+              <button
+                className="sidebar__link"
+                onClick={() => handleNavigation("/usuarios")}
+              >
+                Usuarios
+              </button>
+            </li>
+          )}
         </ul>
       </nav>
 

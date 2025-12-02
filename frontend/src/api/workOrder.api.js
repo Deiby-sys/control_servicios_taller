@@ -35,6 +35,12 @@ export const downloadAttachmentRequest = async (orderId, fileId) => {
   return `/api/work-orders/${orderId}/attachments/${fileId}`;
 };
 
+// Eliminar adjunto y devolver orden actualizada
 export const deleteAttachmentRequest = async (orderId, fileId) => {
   return await axios.delete(`/api/work-orders/${orderId}/attachments/${fileId}`);
+};
+
+// Historial órdenes de trabajo
+export const deliverWorkOrderRequest = async (id, deliveryData) => {
+  return await axios.post(`/api/work-orders/${id}/deliver`, deliveryData);
 };

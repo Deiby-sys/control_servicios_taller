@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
-import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import "../styles/WorkOrdersPage.css";
 
 function WorkOrdersPage() {
   const { workOrders, getWorkOrders, loading, error } = useWorkOrders();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchStatus, setSearchStatus] = useState(null);
@@ -22,31 +25,43 @@ function WorkOrdersPage() {
     { value: 'por_repuestos', label: 'Por Repuestos' },
     { value: 'en_soporte', label: 'En Soporte' },
     { value: 'en_proceso', label: 'En Proceso' },
-    { value: 'completado', label: 'Completado' }
+    { value: 'completado', label: 'Completado' },
+    { value: 'entregado', label: 'Entregado' }
   ];
 
+
+  // Genera la lista de responsables desde las órdenes
   useEffect(() => {
-    getWorkOrders();
-    
-    // Cargar usuarios para responsable
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users', {
-          credentials: 'include'
+    if (!workOrders.length) {
+      setUsers([]);
+      return;
+    }
+
+    const responsiblesMap = new Map();
+
+     workOrders.forEach(order => {
+      if (order.assignedTo && order.assignedTo.length > 0) {
+        order.assignedTo.forEach(user => {
+          // Validación segura
+          if (user?._id && user?.name && user?.lastName) {
+            if (!responsiblesMap.has(user._id)) {
+              responsiblesMap.set(user._id, {
+                value: user._id,
+                label: `${user.name} ${user.lastName}`
+              });
+            }
+          }
         });
-        const userData = await response.json();
-        setUsers(userData.map(u => ({ 
-          value: u._id, 
-          label: `${u.name} ${u.lastName}` 
-        })));
-      } catch (error) {
-        console.error("Error al cargar usuarios:", error);
       }
-    };
+    });
 
-    fetchUsers();
-  }, []);
+    // Ordenar alfabéticamente
+    const responsiblesList = Array.from(responsiblesMap.values())
+      .sort((a, b) => a.label.localeCompare(b.label));
 
+    setUsers(responsiblesList);
+  }, [workOrders]);
+   
   useEffect(() => {
     if (!workOrders.length) return;
     
@@ -90,9 +105,13 @@ function WorkOrdersPage() {
     <div className="page">
       <div className="page-header">
         <h1>Órdenes de Trabajo</h1>
-        <Link to="/ordenes/new" className="btn-primary">
-          + Nueva Orden
-        </Link>
+        
+        {/* SOLO admin, asesor y jefe ven "+ Nueva Orden" */}
+        {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
+          <Link to="/ordenes/new" className="btn-primary">
+            + Nueva Orden
+          </Link>
+        )}
       </div>
 
       {/* Formulario de búsqueda avanzada */}
@@ -117,6 +136,7 @@ function WorkOrdersPage() {
             isClearable
           />
           
+          {/* Filtro por responsable con datos cargados */}
           <Select
             options={users}
             value={searchAssignee}
@@ -124,6 +144,7 @@ function WorkOrdersPage() {
             placeholder="Filtrar por responsable..."
             className="search-select"
             isClearable
+            noOptionsMessage={() => "No hay responsables disponibles"}
           />
         </div>
 
@@ -154,22 +175,29 @@ function WorkOrdersPage() {
           <tbody>
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => {
-                // Calcular días en taller
-                let diasEnTaller = 0;
+              // Calcula días en  taller
+              const orderStatus = (order.status || '').toLowerCase();
+              
+              let diasEnTaller = 0;
+              
+              try {
+                const entryDate = new Date(order.entryDate);
                 
-                if (order.status === 'entregado' && order.deliveryDate) {
-                  // Para órdenes entregadas: fecha entrega - fecha ingreso
-                  diasEnTaller = Math.ceil(
-                    (new Date(order.deliveryDate) - new Date(order.entryDate)) / (1000 * 60 * 60 * 24)
-                  );
+                if (orderStatus === 'entregado' && order.deliveryDate) {
+                  const deliveryDate = new Date(order.deliveryDate);
+                  // Asegura que las fechas sean válidas
+                  if (!isNaN(entryDate) && !isNaN(deliveryDate)) {
+                    diasEnTaller = Math.ceil((deliveryDate - entryDate) / (1000 * 60 * 60 * 24));
+                  }
                 } else {
-                  // Para órdenes activas: fecha actual - fecha ingreso
-                  diasEnTaller = Math.ceil(
-                    (new Date() - new Date(order.entryDate)) / (1000 * 60 * 60 * 24)
-                  );
+                  diasEnTaller = Math.ceil((new Date() - entryDate) / (1000 * 60 * 60 * 24));
                 }
+              } catch (e) {
+                console.error("Error calculando días en taller:", e);
+                diasEnTaller = 0;
+              }
 
-                return (
+                  return (
                   <tr key={order._id}>
                     <td>{order.vehicle?.plate}</td>
                     <td>
@@ -200,7 +228,7 @@ function WorkOrdersPage() {
                         : "Sin asignar"}
                     </td>
                     <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td>{diasEnTaller}</td> {/* Mostrar días */}
+                    <td>{diasEnTaller}</td>
                   </tr>
                 );
               })

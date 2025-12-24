@@ -39,38 +39,55 @@ function WorkOrderDetailPage() {
     { value: 'por_repuestos', label: 'Por repuestos' },
     { value: 'en_soporte', label: 'En soporte' },
     { value: 'en_proceso', label: 'En proceso' },
-    { value: 'completado', label: 'Completado' }
+    { value: 'completado', label: 'Completado' },
+    { value: 'entregado', label: 'Entregado' }
   ];
 
   useEffect(() => {
     const fetchWorkOrder = async () => {
-      try {
-        setLoading(true);
-        const order = await getWorkOrderById(id);
-        setWorkOrder(order);
-        setSelectedStatus(order.status);
-        setSelectedAssignees(order.assignedTo || []);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      setLoading(true);
+      const order = await getWorkOrderById(id);
+      setWorkOrder(order);
+      setSelectedStatus(order.status);
+      
+      // Extraer solo los _id de los usuarios asignados
+      const assigneeIds = order.assignedTo?.map(user => user._id) || [];
+      setSelectedAssignees(assigneeIds);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users', {
-          credentials: 'include'
-        });
-        const userData = await response.json();
-        setUsers(userData.map(u => ({ 
-          value: u._id, 
-          label: `${u.name} ${u.lastName} (${u.profile})` 
-        })));
-      } catch (error) {
-        console.error("Error al cargar usuarios:", error);
-      }
-    };
+  const fetchUsers = async () => {
+  try {
+    // Usa la ruta pública accesible para todos los perfiles autenticados
+    const response = await fetch('/api/users', {
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    
+    const userData = await response.json();
+    
+    // Validación de seguridad: asegura que userData sea un array
+    if (!Array.isArray(userData)) {
+      throw new Error("La respuesta no es un array de usuarios");
+    }
+
+    setUsers(userData.map(u => ({ 
+      value: u._id, 
+      label: `${u.name} ${u.lastName} (${u.profile})` 
+    })));
+  } catch (error) {
+    console.error("Error al cargar usuarios:", error);
+    setUsers([]); // Asegura que users sea un array vacío en caso de error
+  }
+};
 
     if (id) {
       fetchWorkOrder();
@@ -172,7 +189,8 @@ function WorkOrderDetailPage() {
           </button>
           
           {/* Botón de entrega si está completada */}
-          {workOrder.status === 'completado' && (
+          {workOrder.status === 'completado' && 
+            ['admin', 'asesor', 'jefe'].includes(user?.profile) && (
             <button 
               onClick={() => navigate(`/ordenes/${workOrder._id}/entregar`)}
               className="btn-primary"

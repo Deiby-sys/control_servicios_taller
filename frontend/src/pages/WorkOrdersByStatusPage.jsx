@@ -52,7 +52,7 @@ function WorkOrdersByStatusPage() {
       );
     }
     
-    // ✅ Filtrar por responsable
+    // Filtrar por responsable
     if (searchAssignee) {
       filtered = filtered.filter(order =>
         order.assignedTo?.some(user => user._id === searchAssignee.value)

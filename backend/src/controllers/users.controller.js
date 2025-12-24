@@ -1,19 +1,45 @@
-//Servirá para listar usuarios
-
-//getUserById → un "user" solo puede consultar su propio id.
-
-//updateUser → un "user" solo puede modificar su propio id.
-
-//deleteUser → solo "admin" puede eliminar.
-
-//En todas las consultas, excluimos password con "-password"
+// Controlador para usuarios
 
 import User from "../models/user.model.js";
+
+// Crear nuevo usuario (solo admin)
+export const createUser = async (req, res) => {
+  try {
+    if (req.user.profile !== "admin") {
+      return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
+    }
+
+    const { name, lastName, email, password, profile } = req.body;
+    
+    const validProfiles = ['admin', 'asesor', 'bodega', 'jefe', 'tecnico'];
+    if (!validProfiles.includes(profile)) {
+      return res.status(400).json({ message: "Perfil no válido" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email ya registrado" });
+    }
+
+    const newUser = new User({
+      name,
+      lastName,
+      email,
+      password,
+      profile
+    });
+
+    const savedUser = await newUser.save();
+    res.status(201).json(savedUser);
+  } catch (error) {
+    console.error("Error en createUser:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 //Listar todos los usuarios (solo admin)
 export const getUsers = async (req, res) => {
   try {
-    // Verificar que el usuario sea admin
     if (req.user.profile !== "admin") {
       return res.status(403).json({ message: "Acceso denegado. Solo administradores." });
     }
@@ -84,5 +110,20 @@ export const deleteUser = async (req, res) => {
   } catch (error) {
     console.error("Error en deleteUser:", error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Lista de responsables para todos los perfiles
+export const getPublicUsersList = async (req, res) => {
+  try {
+    const users = await User.find(
+      {}, 
+      'name lastName _id profile' // solo campos seguros
+    ).sort({ name: 1, lastName: 1 });
+    
+    res.json(users);
+  } catch (error) {
+    console.error("Error al obtener lista de usuarios:", error);
+    res.status(500).json({ message: "Error al obtener lista de usuarios" });
   }
 };

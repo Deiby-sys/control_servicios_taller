@@ -8,9 +8,6 @@ import mongoose from "mongoose";
 
 // --- FUNCIONES DE BÚSQUEDA (GET) ---
 
-/**
- * Busca un vehículo por su placa y popula la información del cliente.
- */
 export const getVehicleByPlate = async (req, res) => {
   try {
     const { plate } = req.params;
@@ -30,9 +27,6 @@ export const getVehicleByPlate = async (req, res) => {
   }
 };
 
-/**
- * Busca un cliente por su número de identificación.
- */
 export const getClientByIdentification = async (req, res) => {
   try {
     const { identification } = req.params;
@@ -53,19 +47,20 @@ export const getClientByIdentification = async (req, res) => {
   }
 };
 
-/**
- * Obtener todas las órdenes de trabajo.
- */
 export const getWorkOrders = async (req, res) => {
   try {
     const workOrders = await WorkOrder.find()
-      .populate('vehicle', 'plate vin brand line model color')
-      .populate('client', 'name lastName email')
-      .populate('createdBy', 'name lastName')
-      .populate('assignedTo', 'name lastName')
-      .populate('notes.author', 'name lastName')
-      .sort({ entryDate: -1 })
-      .select('-__v');
+      .populate('vehicle', 'plate') // Solo placa del vehículo
+      .populate('client', 'name lastName') // Solo nombre del cliente
+      .populate('createdBy', 'name lastName') // Solo creador
+      .populate('assignedTo', 'name lastName') // Solo responsables
+      .sort({ entryDate: -1 }) // Órdenes más recientes primero
+      // CAMPOS ESENCIALES INCLUYEN entryDate Y deliveryDate
+      .select(
+        'entryDate deliveryDate status orderNumber currentMileage serviceRequest ' +
+        'vehicle client createdBy assignedTo createdAt'
+      );
+    
     res.json(workOrders);
   } catch (error) {
     console.error("Error al obtener órdenes:", error);
@@ -73,9 +68,6 @@ export const getWorkOrders = async (req, res) => {
   }
 };
 
-/**
- * Obtener orden por ID.
- */
 export const getWorkOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -97,9 +89,6 @@ export const getWorkOrderById = async (req, res) => {
   }
 };
 
-/**
- * Obtener órdenes por estado.
- */
 export const getWorkOrdersByStatus = async (req, res) => {
   try {
     const { status } = req.params;
@@ -130,9 +119,6 @@ export const getWorkOrdersByStatus = async (req, res) => {
   }
 };
 
-/**
- * Historial completo de órdenes con búsqueda por placa.
- */
 export const getWorkOrdersByPlate = async (req, res) => {
   try {
     const { plate } = req.params;
@@ -157,9 +143,6 @@ export const getWorkOrdersByPlate = async (req, res) => {
   }
 };
 
-/**
- * Obtener contador de órdenes por estado.
- */
 export const getWorkOrderCounts = async (req, res) => {
   try {
     const counts = await WorkOrder.aggregate([
@@ -167,7 +150,6 @@ export const getWorkOrderCounts = async (req, res) => {
       { $project: { status: "$_id", count: 1, _id: 0 } }
     ]);
 
-    // Añadido 'en_proceso'
     const result = {
       por_asignar: 0,
       asignado: 0,
@@ -193,21 +175,25 @@ export const getWorkOrderCounts = async (req, res) => {
 
 // --- FUNCIONES DE ACCIÓN (POST/PATCH) ---
 
-/**
- * Crea una nueva orden de trabajo.
- */
 export const createWorkOrder = async (req, res) => {
   try {
-    const { vehicle, currentMileage, serviceRequest, clientSignature } = req.body;
+    // Validación de perfil
 
-    if (!req.user) {
-      return res.status(401).json({ message: "No autorizado" });
+    console.log("Perfil del usuario en createWorkOrder:", req.user?.profile);
+
+    if (!req.user || !['admin', 'asesor', 'jefe'].includes(req.user.profile)) {
+      return res.status(403).json({ 
+        message: "Solo administradores, asesores y jefes pueden crear órdenes" 
+      });
     }
+
+    const { vehicle, currentMileage, serviceRequest, clientSignature } = req.body;
 
     if (!vehicle || !mongoose.Types.ObjectId.isValid(vehicle)) {
       return res.status(400).json({ message: "ID de vehículo inválido" });
     }
 
+    // BUSCAR VEHÍCULO Y PLACA
     const vehicleDoc = await Vehicle.findById(vehicle);
     if (!vehicleDoc) {
       return res.status(404).json({ message: "Vehículo no encontrado" });
@@ -218,6 +204,19 @@ export const createWorkOrder = async (req, res) => {
       return res.status(400).json({ message: "Cliente del vehículo no válido" });
     }
 
+    // VERIFICAR SI YA HAY UNA ORDEN ACTIVA PARA ESTA PLACA
+    const existingActiveOrder = await WorkOrder.findOne({
+      vehicle: vehicleDoc._id,
+      status: { $ne: 'entregado' } // Cualquier estado excepto "entregado"
+    });
+
+    if (existingActiveOrder) {
+      return res.status(409).json({ 
+        message: `Ya existe una orden activa para la placa ${vehicleDoc.plate}. No se puede crear otra hasta que se entregue la actual.`
+      });
+    }
+
+    // Crear la nueva orden
     const newOrder = new WorkOrder({
       vehicle: vehicleDoc._id,
       client: clientDoc._id,
@@ -229,7 +228,6 @@ export const createWorkOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // Obtener datos relacionados manualmente
     const [vehicleData, clientData, userData] = await Promise.all([
       Vehicle.findById(savedOrder.vehicle).select('plate vin brand line model color'),
       Client.findById(savedOrder.client).select('name lastName email identificationNumber phone city'),
@@ -250,9 +248,6 @@ export const createWorkOrder = async (req, res) => {
   }
 };
 
-/**
- * Agrega una nota a una orden de trabajo existente.
- */
 export const addNoteToWorkOrder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -262,6 +257,13 @@ export const addNoteToWorkOrder = async (req, res) => {
     const workOrder = await WorkOrder.findById(id);
     if (!workOrder) {
       return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    // Bloquear si ya está entregada
+    if (workOrder.status === 'entregado') {
+      return res.status(400).json({ 
+        message: "No se puede agregar nota a una orden ya entregada" 
+      });
     }
 
     workOrder.notes.push({ author, content });
@@ -281,14 +283,32 @@ export const addNoteToWorkOrder = async (req, res) => {
 };
 
 /**
- * Actualiza el estado y asigna responsables.
+ * Actualiza estado y responsables — NO permite entregar ni editar órdenes entregadas.
  */
 export const updateWorkOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status, assignedTo } = req.body;
 
-    // Validación opcional de estados
+    const workOrder = await WorkOrder.findById(id);
+    if (!workOrder) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    // Bloquear cualquier modificación si ya está entregada
+    if (workOrder.status === 'entregado') {
+      return res.status(400).json({ 
+        message: "No se puede modificar una orden ya entregada" 
+      });
+    }
+
+    // Prohibir cambiar a 'entregado' desde aquí
+    if (status === 'entregado') {
+      return res.status(400).json({ 
+        message: "Use el endpoint /deliver para entregar una orden" 
+      });
+    }
+
     const validStatuses = [
       'por_asignar', 
       'asignado', 
@@ -296,17 +316,11 @@ export const updateWorkOrderStatus = async (req, res) => {
       'por_repuestos', 
       'en_soporte', 
       'en_proceso', 
-      'completado',
-      'entregado'
+      'completado'
     ];
 
     if (status && !validStatuses.includes(status)) {
       return res.status(400).json({ message: "Estado no válido" });
-    }
-
-    const workOrder = await WorkOrder.findById(id);
-    if (!workOrder) {
-      return res.status(404).json({ message: "Orden no encontrada" });
     }
 
     if (status) workOrder.status = status;
@@ -328,33 +342,43 @@ export const updateWorkOrderStatus = async (req, res) => {
 };
 
 /**
- * Proceso final de entrega y firma del cliente.
+ * Entrega oficial: requiere firma, nota y establece deliveryDate.
  */
 export const deliverWorkOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { deliverySignature, deliveryNote } = req.body; // Añadido deliveryNote
+    const { deliverySignature, deliveryNote } = req.body;
+
+    // VALIDACIÓN CRÍTICA: verificar perfil del usuario
+    if (!req.user || !['admin', 'asesor', 'jefe'].includes(req.user.profile)) {
+      return res.status(403).json({ 
+        message: "Solo administradores, asesores y jefes pueden entregar órdenes" 
+      });
+    }
 
     const workOrder = await WorkOrder.findById(id);
     if (!workOrder) {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
 
+    // Asegurar que no esté ya entregada (doble entrega)
+    if (workOrder.status === 'entregado') {
+      return res.status(400).json({ message: "La orden ya ha sido entregada" });
+    }
+
     if (workOrder.status !== 'completado') {
       return res.status(400).json({ message: "La orden debe estar en estado 'completado' para entregar" });
     }
 
-    // Validar que la nota de entrega sea obligatoria
     if (!deliveryNote || !deliveryNote.trim()) {
       return res.status(400).json({ message: "La nota de resumen de actividades es obligatoria" });
     }
 
-    // Validar que la firma sea obligatoria
     if (!deliverySignature) {
       return res.status(400).json({ message: "La firma del cliente es obligatoria" });
     }
 
-    workOrder.status = 'entregado'; // Estado 'entregado'
+    workOrder.status = 'entregado';
     workOrder.deliverySignature = deliverySignature;
     workOrder.deliveryNote = deliveryNote;
     workOrder.deliveryDate = new Date();
@@ -376,16 +400,12 @@ export const deliverWorkOrder = async (req, res) => {
   }
 };
 
-// Funciones para adjuntos
+// --- Adjuntos ---
 
-/**
- * Subir archivo adjunto a una orden de trabajo
- */
 export const uploadAttachment = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Validar que el archivo exista
     if (!req.file) {
       return res.status(400).json({ message: "No se ha subido ningún archivo" });
     }
@@ -395,7 +415,13 @@ export const uploadAttachment = async (req, res) => {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
 
-    // Añadir archivo a la orden
+    // Bloquear si ya está entregada
+    if (workOrder.status === 'entregado') {
+      return res.status(400).json({ 
+        message: "No se pueden adjuntar archivos a una orden ya entregada" 
+      });
+    }
+
     workOrder.attachments.push({
       filename: req.file.filename,
       originalName: req.file.originalname,
@@ -407,7 +433,6 @@ export const uploadAttachment = async (req, res) => {
 
     await workOrder.save();
 
-    // Poblar y devolver la orden actualizada
     const populatedOrder = await WorkOrder.findById(id)
       .populate('vehicle', 'plate brand model')
       .populate('client', 'name lastName email')
@@ -422,9 +447,6 @@ export const uploadAttachment = async (req, res) => {
   }
 };
 
-/**
- * Descargar archivo adjunto
- */
 export const downloadAttachment = async (req, res) => {
   try {
     const { id, fileId } = req.params;
@@ -439,7 +461,6 @@ export const downloadAttachment = async (req, res) => {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
-    // Verificar permisos (opcional: solo el creador o asignados pueden descargar)
     const hasPermission = req.user._id.equals(workOrder.createdBy) || 
                          workOrder.assignedTo.some(user => user.equals(req.user._id));
     
@@ -447,18 +468,13 @@ export const downloadAttachment = async (req, res) => {
       return res.status(403).json({ message: "No autorizado" });
     }
 
-    // Enviar archivo
-    const filePath = attachment.path;
-    res.download(filePath, attachment.originalName);
+    res.download(attachment.path, attachment.originalName);
   } catch (error) {
     console.error("Error al descargar archivo:", error);
     res.status(500).json({ message: "Error al descargar archivo" });
   }
 };
 
-/**
- * Eliminar archivo adjunto
- */
 export const deleteAttachment = async (req, res) => {
   try {
     const { id, fileId } = req.params;
@@ -473,16 +489,10 @@ export const deleteAttachment = async (req, res) => {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
-    // Verificar que el usuario sea el que subió el archivo o el creador de la orden
     if (!attachment.uploadedBy.equals(req.user._id) && !workOrder.createdBy.equals(req.user._id)) {
       return res.status(403).json({ message: "No autorizado para eliminar este archivo" });
     }
 
-    // Eliminar archivo físico (opcional, dependiendo de tu configuración)
-    // const fs = require('fs');
-    // fs.unlinkSync(attachment.path);
-
-    // Eliminar del array
     workOrder.attachments.pull({ _id: fileId });
     await workOrder.save();
 
@@ -493,9 +503,6 @@ export const deleteAttachment = async (req, res) => {
   }
 };
 
-/**
- * Obtener historial de órdenes entregadas
- */
 export const getWorkOrderHistory = async (req, res) => {
   try {
     const workOrders = await WorkOrder.find({ status: 'entregado' })
@@ -503,11 +510,47 @@ export const getWorkOrderHistory = async (req, res) => {
       .populate('client', 'name lastName')
       .populate('deliveredBy', 'name lastName')
       .sort({ deliveryDate: -1 })
-      .select('-__v');
+      // SOLO CAMPOS NECESARIOS PARA EL HISTÓRICO
+      .select(
+        'orderNumber entryDate deliveryDate status currentMileage serviceRequest ' +
+        'vehicle client deliveredBy'
+      );
 
     res.json(workOrders);
   } catch (error) {
     console.error("Error al obtener historial:", error);
     res.status(500).json({ message: "Error al obtener historial" });
+  }
+};
+
+export const checkActiveOrderByPlate = async (req, res) => {
+  try {
+    const { plate } = req.query;
+    
+    if (!plate) {
+      return res.status(400).json({ message: "Placa requerida" });
+    }
+
+    const cleanPlate = plate.trim().toUpperCase();
+    console.log("Placa buscada:", cleanPlate);
+
+    const vehicle = await Vehicle.findOne({ plate: cleanPlate });
+    console.log("Vehículo encontrado:", vehicle);
+    
+    // Si el vehículo no existe, no hay órdenes activas
+    if (!vehicle) {
+      return res.json({ exists: false }); //Devuelve 200 con exists:false
+    }
+
+    const existingOrder = await WorkOrder.findOne({
+      vehicle: vehicle._id,
+      status: { $ne: 'entregado' }
+    });
+    console.log("Orden activa encontrada:", existingOrder);
+
+    res.json({ exists: !!existingOrder });
+  } catch (error) {
+    console.error("Error al verificar orden activa:", error);
+    res.status(500).json({ message: "Error al verificar orden" });
   }
 };

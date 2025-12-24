@@ -57,7 +57,7 @@ function RecoverPassword() {
           {loading ? "Procesando..." : "Enviar enlace"}
         </button>
 
-        <div className="links"> {/* 👈 Usa la clase links para los enlaces */}
+        <div className="links"> {/* Usa la clase links para los enlaces */}
           <Link to="/login">Volver a Login</Link>
           <br />
           <Link to="/registerUser">Registro Usuario</Link>

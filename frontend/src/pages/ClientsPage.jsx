@@ -1,14 +1,16 @@
 // Página de clientes
 
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useClients } from "../context/ClientContext";
 import { Link } from "react-router-dom";
-import { useExportToExcel } from "../hooks/useExportToExcel"; // Importar el hook
+import { useExportToExcel } from "../hooks/useExportToExcel";
 import "../styles/ClientsPage.css";
 
 function ClientsPage() {
+  const location = useLocation(); 
   const { clients, getClients, loading, error, deleteClient, updateClient } = useClients();
-  const { exportToExcel } = useExportToExcel(); // Usar el hook
+  const { exportToExcel } = useExportToExcel();
   const [filteredClients, setFilteredClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingClient, setEditingClient] = useState(null);
@@ -18,12 +20,12 @@ function ClientsPage() {
     identificationNumber: "",
     phone: "",
     city: "",
-    email: "", // Agregado email al formulario de edición
+    email: "",
   });
 
   useEffect(() => {
     getClients();
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!clients.length) return;
@@ -35,7 +37,7 @@ function ClientsPage() {
         client.identificationNumber.toLowerCase().includes(term) ||
         client.phone.toLowerCase().includes(term) ||
         client.city.toLowerCase().includes(term) ||
-        (client.email && client.email.toLowerCase().includes(term)) // Agregado email a la búsqueda
+        (client.email && client.email.toLowerCase().includes(term)) 
     );
     setFilteredClients(filtered);
   }, [searchTerm, clients]);

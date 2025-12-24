@@ -1,4 +1,4 @@
-//Sidebar (barra lateral)
+// Sidebar
 
 import "../styles/Sidebar.css";
 import { useNavigate } from "react-router-dom";
@@ -6,14 +6,8 @@ import { useAuth } from "../context/AuthContext";
 
 function Sidebar({ isOpen }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // Añadido 'user'
+  const { user, logout } = useAuth();
 
-  // Función para verificar si el usuario tiene un perfil específico
-  const hasRole = (roles) => {
-    return user && roles.includes(user.profile);
-  };
-
-  // Función para navegar sin recargar
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -35,95 +29,63 @@ function Sidebar({ isOpen }) {
       </div>
       <nav className="sidebar__nav">
         <ul>
-          {/* Inicio - Todos los perfiles */}
           <li>
-            <button
-              className="sidebar__link"
-              onClick={() => handleNavigation("/dashboard")}
-            >
+            <button onClick={() => handleNavigation("/dashboard")} className="sidebar__link">
               Inicio
             </button>
           </li>
+          <li>
+            <button onClick={() => handleNavigation("/ordenes")} className="sidebar__link">
+              Órdenes de Trabajo
+            </button>
+          </li>
           
-          {/* Órdenes de trabajo - Todos los perfiles de taller */}
-          {hasRole(['admin', 'asesor', 'bodega', 'jefe', 'tecnico']) && (
+          {/* SOLO admin, asesor y jefe ven "+ Nueva Orden" */}
+          {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
             <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/ordenes")}
-              >
-                Órdenes de Trabajo
-              </button>
-            </li>
-          )}
-          
-          {/* + Nueva Orden - Solo admin, asesor y jefe */}
-          {hasRole(['admin', 'asesor', 'jefe']) && (
-            <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/ordenes/new")}
-              >
+              <button onClick={() => handleNavigation("/ordenes/new")} className="sidebar__link">
                 + Nueva Orden
               </button>
             </li>
           )}
           
-          {/* Histórico - Todos los perfiles de taller */}
-          {hasRole(['admin', 'asesor', 'bodega', 'jefe', 'tecnico']) && (
-            <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/historial")}
-              >
-                Histórico
-              </button>
-            </li>
-          )}
+          <li>
+            <button onClick={() => handleNavigation("/historial")} className="sidebar__link">
+              Histórico
+            </button>
+          </li>
           
-          {/* Vehículos - Solo admin */}
-          {hasRole(['admin']) && (
+          {/* VEHÍCULOS: solo admin, asesor, jefe */}
+          {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
             <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/vehicles")}
-              >
+              <button onClick={() => handleNavigation("/vehicles")} className="sidebar__link">
                 Vehículos
               </button>
             </li>
           )}
-          
-          {/* Clientes - Solo admin */}
-          {hasRole(['admin']) && (
+
+          {/* CLIENTES: solo admin, asesor, jefe */}
+          {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
             <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/clients")}
-              >
+              <button onClick={() => handleNavigation("/clients")} className="sidebar__link">
                 Clientes
               </button>
             </li>
           )}
           
-          {/* Cotizador - Solo admin */}
-          {hasRole(['admin']) && (
+          {/* COTIZADOR: solo admin, asesor, jefe, bodega */}
+          {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe' || user?.profile === 'bodega') && (
             <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/cotizador")}
-              >
+              <button onClick={() => handleNavigation("/cotizador")} className="sidebar__link">
                 Cotizador
               </button>
             </li>
           )}
           
-          {/* Usuarios - Solo admin */}
-          {hasRole(['admin']) && (
+          {/* USUARIOS: solo admin */}
+          {user?.profile === 'admin' && (
             <li>
-              <button
-                className="sidebar__link"
-                onClick={() => handleNavigation("/usuarios")}
-              >
+              <button onClick={() => handleNavigation("/usuarios")} className="sidebar__link">
                 Usuarios
               </button>
             </li>
@@ -131,7 +93,6 @@ function Sidebar({ isOpen }) {
         </ul>
       </nav>
 
-      {/* Botón de cierre de sesión */}
       <div className="sidebar__footer">
         <button className="sidebar__logout-btn" onClick={handleLogout}>
           Cerrar sesión

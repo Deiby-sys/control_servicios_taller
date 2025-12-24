@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
-import { useVehicles } from "../context/VehicleContext";
 import { useClients } from "../context/ClientContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -11,47 +10,46 @@ import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 import "../styles/WorkOrderFormPage.css";
 
 function WorkOrderFormPage() {
-  // Aseguramos que se importa la nueva función
   const { createWorkOrder, getVehicleByPlate, getClientByIdentification } = useWorkOrders();
-  const { getVehicles } = useVehicles();
   const { getClients } = useClients();
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Estados
   const [formData, setFormData] = useState({
     plate: "",
     vehicle: "",
     currentMileage: "",
     serviceRequest: "",
   });
-
   const [vehicleData, setVehicleData] = useState(null);
   const [clientData, setClientData] = useState(null);
   const [clientIdentification, setClientIdentification] = useState("");
-
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-
-  // Usa useRef para el canvas de firma
   const signatureRef = useRef();
 
+  // Cargar clientes al iniciar (vehículos se cargan dinámicamente por placa)
   useEffect(() => {
-    getVehicles();
-    getClients();
+    const loadClients = async () => {
+      try {
+        await getClients();
+      } catch (error) {
+        console.error("Error al cargar clientes:", error);
+      }
+    };
+    loadClients();
   }, []);
 
+  // Validación del formulario
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.plate.trim()) newErrors.plate = "La placa es requerida";
-    if (!formData.vehicle || formData.vehicle === "") {
-      newErrors.vehicle = "Debe buscar y seleccionar un vehículo válido";
-    }
+    if (!formData.vehicle) newErrors.vehicle = "Debe buscar y seleccionar un vehículo válido";
     if (!formData.currentMileage) newErrors.currentMileage = "El kilometraje es requerido";
     if (!formData.serviceRequest.trim()) newErrors.serviceRequest = "La solicitud es requerida";
-    
-    // Validación de firma directa en el canvas
     if (!signatureRef.current || signatureRef.current.isEmpty()) {
       newErrors.signature = "Debe firmar digitalmente";
     }
@@ -60,7 +58,7 @@ function WorkOrderFormPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- LÓGICA DE BÚSQUEDA DE VEHÍCULO ---
+  // Buscar vehículo por placa
   const handleSearchVehicle = async () => {
     if (!formData.plate.trim()) return;
     const cleanPlate = formData.plate.trim().toUpperCase();
@@ -87,7 +85,7 @@ function WorkOrderFormPage() {
     }
   };
 
-  // --- LÓGICA DE BÚSQUEDA DE CLIENTE ---
+  // Buscar cliente por identificación
   const handleSearchClient = async () => {
     if (!clientIdentification.trim()) return;
 
@@ -111,72 +109,65 @@ function WorkOrderFormPage() {
     }
   };
 
+  // Crear orden de trabajo
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setLoading(true);
     try {
-      // Acceso directo al canvas con useRef
-      const signatureData = signatureRef.current.getCanvas().toDataURL('image/png');
+      // Validación: asegurar que se haya cargado vehicleData
+      if (!vehicleData) {
+        throw new Error("Debe buscar y seleccionar un vehículo válido");
+      }
 
-      await createWorkOrder({
+      // Verificar órdenes activas usando vehicleData.plate &t=${Date.now()} añade un parámetro único en cada petición, evitando el caché
+      const checkResponse = await fetch(`/api/orders/exists?plate=${vehicleData.plate}&t=${Date.now()}`, {
+      credentials: 'include'
+      });
+
+      if (!checkResponse.ok) {
+        throw new Error("Error al verificar órdenes existentes");
+      }
+
+      const { exists } = await checkResponse.json();
+      if (exists) {
+        alert(`Ya existe una orden activa para la placa ${vehicleData.plate}. No se puede crear otra hasta que se entregue la actual.`);
+        setLoading(false);
+        return;
+      }
+
+      // Crear orden
+      const signatureData = signatureRef.current.getCanvas().toDataURL('image/png');
+      const createdOrder = await createWorkOrder({
         vehicle: formData.vehicle,
         currentMileage: parseInt(formData.currentMileage),
         serviceRequest: formData.serviceRequest,
         clientSignature: signatureData
       });
 
-      // Al inicio del archivo
-
-
-      // En handleSubmit, después de crear la orden:
-      const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!validateForm()) return;
-
-      setLoading(true);
-      try {
-      const signatureData = signatureRef.current.getCanvas().toDataURL('image/png');
-    
-      const createdOrder = await createWorkOrder({
-      vehicle: formData.vehicle,
-      currentMileage: parseInt(formData.currentMileage),
-      serviceRequest: formData.serviceRequest,
-      clientSignature: signatureData
-      });
-
-    // Generar PDF automáticamente
-    setTimeout(() => {
-      generateWorkOrderPDF(createdOrder);
-    }, 1000); // Pequeño delay para asegurar que la orden esté completa
-
-    navigate("/ordenes");
-  } catch (error) {
-    console.error("Error detallado:", error);
-    const errorMessage = error.response?.data?.message || error.message || "Error desconocido";
-    alert("Error al crear orden: " + errorMessage);
-  } finally {
-    setLoading(false);
-  }
-};
+      // Generar PDF
+      setTimeout(() => {
+        generateWorkOrderPDF(createdOrder);
+      }, 1000);
 
       navigate("/ordenes");
     } catch (error) {
-      console.error("Error detallado:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Error desconocido al crear la orden";
-      alert("Error al crear orden: " + errorMessage);
+      console.error("Error al crear orden:", error);
+      alert("Error: " + (error.message || "No se pudo crear la orden"));
     } finally {
       setLoading(false);
     }
   };
 
+  // Limpiar firma
   const handleClearSignature = () => {
     if (signatureRef.current) {
       signatureRef.current.clear();
     }
   };
 
+  // Renderizado
   return (
     <div className="form-page">
       <div className="form-container">
@@ -280,10 +271,10 @@ function WorkOrderFormPage() {
 
           {/* Firma digital */}
           <div className="form-group">
-            <label></label>
+            <label>Firma del Cliente *</label>
             <div className="signature-container">
               <SignatureCanvas
-                ref={signatureRef} // Referencia directa
+                ref={signatureRef}
                 penColor='black'
                 canvasProps={{ width: 500, height: 200, className: 'signature-canvas' }}
               />

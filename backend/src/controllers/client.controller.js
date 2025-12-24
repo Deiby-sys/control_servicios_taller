@@ -1,4 +1,4 @@
-// Controlador de clientes CRUD
+// Controlador para clientes
 
 import Client from '../models/client.model.js';
 
@@ -46,7 +46,7 @@ export const createClient = async (req, res) => {
 // 2. OBTENER todos los clientes
 export const getClients = async (req, res) => {
     try {
-        const clients = await Client.find({ user: req.user.id });
+        const clients = await Client.find();
         res.json(clients);
     } catch (error) {
         console.error("Error al obtener clientes:", error);
@@ -60,11 +60,6 @@ export const getClient = async (req, res) => {
         const client = await Client.findById(req.params.id);
         
         if (!client) return res.status(404).json({ message: "Cliente no encontrado" });
-        
-        if (client.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: "No autorizado para ver este cliente" });
-        }
-        
         res.json(client);
     } catch (error) {
         res.status(500).json({ message: error.message });

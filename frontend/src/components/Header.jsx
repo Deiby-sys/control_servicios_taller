@@ -19,7 +19,7 @@ function Header({ onToggleSidebar }) {
           <h1 className="header__title">Control Servicios Taller</h1>
         </div>
   
-      <span className="header__user">Admin</span>
+      <span className="header__user">V_1.0</span>
     </header>
   );
 }

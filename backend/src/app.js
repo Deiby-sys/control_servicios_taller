@@ -27,8 +27,9 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);       // Todas las auth empiezan con /api/auth
 app.use("/api/users", userRoutes);
 app.use("/api/work-orders", workOrderRoutes);
-app.use("/api", clientRoutes);
-//app.use("/api/clients", clientRoutes);
+app.use("/api/clients", clientRoutes);
 app.use("/api/vehicles", vehicleRoutes);
+app.use('/api/orders', workOrderRoutes);
+
 
 export default app;

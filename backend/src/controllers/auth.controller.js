@@ -61,20 +61,18 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const userFound = await User.findOne({ email });
-    // 1. Usuario no encontrado
     if (!userFound) return res.status(401).json({ message: "Usuario o contraseña inválidos" }); 
 
     const isMatch = await bcrypt.compare(password, userFound.password);
-    // 2. Contraseña incorrecta
     if (!isMatch) return res.status(401).json({ message: "Usuario o contraseña inválidos" });
-
 
     const token = createAccessToken(userFound);
 
     res.cookie("token", token);
     res.json({
       id: userFound._id,
-      username: userFound.username,
+      name: userFound.name,       
+      lastName: userFound.lastName,
       email: userFound.email,
       profile: userFound.profile,
     });
@@ -90,14 +88,15 @@ export const logout = (req, res) => {
 };
 
 // Profile
-export const profile = async (req, res) => {
+export const profile = async (ctx, res) => {
   try {
     const userFound = await User.findById(req.user.id, "-password");
     if (!userFound) return res.status(404).json({ message: "Usuario no encontrado" });
 
     res.json({
       id: userFound._id,
-      username: userFound.username,
+      name: userFound.name,        
+      lastName: userFound.lastName, 
       email: userFound.email,
       profile: userFound.profile,
     });

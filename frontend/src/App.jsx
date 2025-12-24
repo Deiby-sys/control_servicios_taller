@@ -45,11 +45,11 @@ function App() {
             } 
           />
           
-          {/* Clientes - Solo admin */}
+          {/* Clientes - Solo admin, asesor, jefe */}
           <Route 
             path="clients" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
                 <ClientsPage />
               </RoleGuard>
             } 
@@ -81,11 +81,11 @@ function App() {
             } 
           />
           
-          {/* Vehículos - Solo admin */}
+          {/* Vehículos - Solo admin, asesor, jefe */}
           <Route 
             path="vehicles" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
                 <VehiclesPage />
               </RoleGuard>
             } 

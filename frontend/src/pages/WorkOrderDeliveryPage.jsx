@@ -1,15 +1,16 @@
 // Página para la entrega del vehículo
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
+import { useAuth } from "../context/AuthContext"; // ← IMPORTANTE: añadir este import
 import { useParams, useNavigate } from "react-router-dom";
 import SignatureCanvas from 'react-signature-canvas';
-import { useRef } from "react";
 import "../styles/WorkOrderDeliveryPage.css";
 
 function WorkOrderDeliveryPage() {
   const { id } = useParams();
   const { getWorkOrderById, deliverWorkOrder } = useWorkOrders();
+  const { user } = useAuth(); // ← obtener el usuario actual
   const navigate = useNavigate();
 
   const [workOrder, setWorkOrder] = useState(null);
@@ -19,7 +20,20 @@ function WorkOrderDeliveryPage() {
   const signatureRef = useRef();
 
   useEffect(() => {
-    const fetchOrder = async () => {
+    const loadPage = async () => {
+      // Primero: validar perfil del usuario
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      if (!['admin', 'asesor', 'jefe'].includes(user.profile)) {
+        alert("No tienes permiso para entregar órdenes de trabajo.");
+        navigate('/ordenes');
+        return;
+      }
+
+      // Luego: cargar la orden
       try {
         setLoading(true);
         const order = await getWorkOrderById(id);
@@ -35,9 +49,10 @@ function WorkOrderDeliveryPage() {
       }
     };
 
-    if (id) fetchOrder();
-  }, [id]);
+    if (id) loadPage();
+  }, [id, user, navigate]); //  user y navigate como dependencias
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     

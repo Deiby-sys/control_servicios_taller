@@ -16,40 +16,38 @@ import "../styles/Dashboard.css";
 function Dashboard() {
   const navigate = useNavigate();
   const { counts, totalEnTaller, loading } = useWorkOrderCounts();
-  const { user } = useAuth();
+  const { user } = useAuth(); // Obtener user
 
   const handleCardClick = (path) => {
     navigate(path);
   };
 
-  // Verificar si el perfil es técnico (con tolerancia a mayúsculas/minúsculas)
-  const isTechnician = user?.profile?.toLowerCase() === 'tecnico';
+  // Obtener el nombre del usuario (con fallback seguro)
+  const userName = user?.name || "Usuario";
 
   return (
     <div className="dashboard-main">
       <h2>Estado Servicios</h2>
       
-      {/* Saludo personalizado */}
-      {isTechnician && (
-      <div className="info-message">
-        <p>👋 ¡Hola, <strong>{user.name} {user.lastName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
-        <p>Para ver tus órdenes asignadas, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
+      {/*SALUDO PERSONALIZADO*/}
+      <div className="dashboard-welcome">
+        <p>¡Hola, <strong>{userName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
+        <p>Para ver tus órdenes de trabajo, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
       </div>
-    )}
 
       <div className="dashboard-cards">
-        {/* Tarjeta de ingreso - solo admin, asesor o jefe */}
-        {!isTechnician && (
-        <div 
-          className="dashboard-card" 
-          onClick={() => handleCardClick("/ordenes/new")}
-        >
-          <img src={ingreso} alt="Ingreso" />
-          <h3>Ingreso</h3>
-        </div>
-      )}
+        {/* SOLO admin, asesor y jefe ven la tarjeta "Ingreso" */}
+        {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
+          <div 
+            className="dashboard-card" 
+            onClick={() => handleCardClick("/ordenes/new")}
+          >
+            <img src={ingreso} alt="Ingreso" />
+            <h3>Ingreso</h3>
+          </div>
+        )}
         
-        {/* Resto de tarjetas... */}
+        {/* Tarjetas */}
         <div 
           className="dashboard-card" 
           onClick={() => handleCardClick("/ordenes/status/por_asignar")}

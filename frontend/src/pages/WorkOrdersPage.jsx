@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import "../styles/WorkOrdersPage.css";
+import { getStatusLabel } from "../utils/statusLabels"; //Función labels
 
 function WorkOrdersPage() {
   const { workOrders, getWorkOrders, loading, error } = useWorkOrders();
@@ -17,18 +18,17 @@ function WorkOrdersPage() {
   const [searchAssignee, setSearchAssignee] = useState(null);
   const [users, setUsers] = useState([]);
 
-  // Opciones de estado
+  // Opciones de estado ACTUALIZADAS con nuevos labels
   const statusOptions = [
-    { value: 'por_asignar', label: 'Por Asignar' },
-    { value: 'asignado', label: 'Asignado' },
-    { value: 'en_aprobacion', label: 'En Aprobación' },
-    { value: 'por_repuestos', label: 'Por Repuestos' },
-    { value: 'en_soporte', label: 'En Soporte' },
-    { value: 'en_proceso', label: 'En Proceso' },
-    { value: 'completado', label: 'Completado' },
+    { value: 'por_asignar', label: 'Jefe' },
+    { value: 'asignado', label: 'Técnico' },
+    { value: 'en_aprobacion', label: 'Asesor' },
+    { value: 'por_repuestos', label: 'Repuestos' },
+    { value: 'en_soporte', label: 'Soporte Técnico' },
+    { value: 'en_proceso', label: 'Proceso Técnico' },
+    { value: 'completado', label: 'Listo para Entrega' },
     { value: 'entregado', label: 'Entregado' }
   ];
-
 
   // Genera la lista de responsables desde las órdenes
   useEffect(() => {
@@ -208,16 +208,9 @@ function WorkOrdersPage() {
                     <td>{order.currentMileage.toLocaleString()}</td>
                     <td>{order.serviceRequest}</td>
                     <td>
+                      {/* USO FUNCIÓN getStatusLabel */}
                       <span className={`status status-${order.status.replace(/_/g, '-')}`}>
-                        {order.status === 'por_asignar' ? 'Por Asignar' :
-                         order.status === 'asignado' ? 'Asignado' :
-                         order.status === 'en_aprobacion' ? 'En Aprobación' :
-                         order.status === 'por_repuestos' ? 'Por Repuestos' :
-                         order.status === 'en_soporte' ? 'En Soporte' :
-                         order.status === 'en_proceso' ? 'En Proceso' :
-                         order.status === 'completado' ? 'Completado' :
-                         order.status === 'entregado' ? 'Entregado' :
-                         'Estado Desconocido'}
+                        {getStatusLabel(order.status)}
                       </span>
                     </td>
                     <td>

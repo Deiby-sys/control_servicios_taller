@@ -1,3 +1,5 @@
+/* Diseño Dashboard */
+
 /* ====================== LAYOUT PRINCIPAL ====================== */
 
 .dashboard-layout {
@@ -17,14 +19,14 @@
 
 .dashboard-main {
   flex: 1;
-  padding: 2rem;
+  padding: 0.1rem 2rem !important; 
   background-color: #f8f9fa;
   overflow-y: auto;
   box-sizing: border-box;
 }
 
 .dashboard-main h2 {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem !important; 
   color: #333;
   text-align: center;
   font-size: 1.6rem;
@@ -43,7 +45,7 @@
 .dashboard-card {
   background: white;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.5rem !important;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
@@ -54,7 +56,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
+  min-height: 180px !important;
 }
 
 .dashboard-card:hover {
@@ -69,13 +71,72 @@
   object-fit: contain;
 }
 
+/* TÍTULO CON ALTURA FIJA PARA TODAS LAS TARJETAS */
 .dashboard-card h3 {
   margin: 0 0 1rem 0;
   font-size: 1.1rem;
   color: #333;
   font-weight: 600;
   text-align: center;
+  /* Limitar altura del título */
+  min-height: 2.2em; /* ← Aproximadamente 2 líneas de texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+/* ====================== TARJETA TOTAL EN TALLER ====================== */
+
+/* Tarjeta especial: Total en Taller — sin imagen, número grande */
+.dashboard-card--total {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem !important; /* ← Igualar padding al resto */
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+  min-height: 180px !important; /* ← Igualar min-height al resto */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-card--total:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-card--total h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem; /* ← Igualar font-size al resto */
+  font-weight: 600; /* ← Igualar font-weight al resto */
+  text-align: center;
+  min-height: 2.2em; /* ← Mismo tratamiento que otras tarjetas */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Número grande para Total en Taller */
+.card-count--total {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0d6efd;
+  line-height: 1;
+  margin: 0;
+  background: none;
+  border: none;
+  width: auto;
+  height: auto;
+  display: block;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* ====================== SALUDO PERSONALIZADO ====================== */
 
 /* Estilos para el saludo personalizado */
 .dashboard-welcome {
@@ -99,6 +160,109 @@
   font-weight: 600;
   font-size: 1.2rem;
 }
+
+/* ====================== ESTILOS POR ESTADO ====================== */
+
+/* Ingreso (nuevo - color neutro/destacado) */
+.dashboard-card--ingreso {
+  background-color: #e2e3e5 !important;
+  color: #383d41 !important;
+  border: 1px solid #d6d8db !important;
+}
+
+/* Por Asignar - Amarillo/Aviso */
+.dashboard-card--por-asignar {
+  background-color: #fff3cd !important;
+  color: #856404 !important;
+  border: 1px solid #ffeaa7 !important;
+}
+
+/* Asignado - Azul/Info */
+.dashboard-card--asignado {
+  background-color: #cce5ff !important;
+  color: #004085 !important;
+  border: 1px solid #b8daff !important;
+}
+
+/* En Aprobación - Azul/Info (mismo que Asignado) */
+.dashboard-card--en-aprobacion {
+  background-color: #cce5ff !important;
+  color: #004085 !important;
+  border: 1px solid #b8daff !important;
+}
+
+/* Por Repuestos - Rojo/Peligro */
+.dashboard-card--por-repuestos {
+  background-color: #f8d7da !important;
+  color: #721c24 !important;
+  border: 1px solid #f5c6cb !important;
+}
+
+/* En Soporte - Cian/Info */
+.dashboard-card--en-soporte {
+  background-color: #d1ecf1 !important;
+  color: #0c5460 !important;
+  border: 1px solid #bee5eb !important;
+}
+
+/* En Proceso - Cian/Info (mismo que En Soporte) */
+.dashboard-card--en-proceso {
+  background-color: #d1ecf1 !important;
+  color: #0c5460 !important;
+  border: 1px solid #bee5eb !important;
+}
+
+/* Completado - Verde/Éxito */
+.dashboard-card--completado {
+  background-color: #d4edda !important;
+  color: #155724 !important;
+  border: 1px solid #c3e6cb !important;
+}
+
+/* Estilos para texto e íconos dentro de las tarjetas coloreadas */
+.dashboard-card--ingreso h3,
+.dashboard-card--ingreso img,
+.dashboard-card--ingreso .card-count {
+  color: #383d41 !important;
+}
+
+.dashboard-card--por-asignar h3,
+.dashboard-card--por-asignar img,
+.dashboard-card--por-asignar .card-count {
+  color: #856404 !important;
+}
+
+.dashboard-card--asignado h3,
+.dashboard-card--asignado img,
+.dashboard-card--asignado .card-count,
+.dashboard-card--en-aprobacion h3,
+.dashboard-card--en-aprobacion img,
+.dashboard-card--en-aprobacion .card-count {
+  color: #004085 !important;
+}
+
+.dashboard-card--por-repuestos h3,
+.dashboard-card--por-repuestos img,
+.dashboard-card--por-repuestos .card-count {
+  color: #721c24 !important;
+}
+
+.dashboard-card--en-soporte h3,
+.dashboard-card--en-soporte img,
+.dashboard-card--en-soporte .card-count,
+.dashboard-card--en-proceso h3,
+.dashboard-card--en-proceso img,
+.dashboard-card--en-proceso .card-count {
+  color: #0c5460 !important;
+}
+
+.dashboard-card--completado h3,
+.dashboard-card--completado img,
+.dashboard-card--completado .card-count {
+  color: #155724 !important;
+}
+
+/* ====================== CONTADORES ====================== */
 
 /* Contador de órdenes — círculo con número visible */
 .card-count {

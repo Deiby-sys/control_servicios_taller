@@ -5,6 +5,7 @@ import { useWorkOrders } from "../context/WorkOrderContext";
 import { useParams } from "react-router-dom";
 import Select from "react-select";
 import "../styles/WorkOrdersByStatusPage.css";
+import { getStatusLabel } from "../utils/statusLabels"; //Función labels
 
 function WorkOrdersByStatusPage() {
   const { status } = useParams();
@@ -73,7 +74,8 @@ function WorkOrdersByStatusPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>{getStatusTitle(status)} ({filteredOrders.length})</h1>
+        {/* USO DE FUNCIÓN getStatusLabel para el título */}
+        <h1>Órdenes - {getStatusLabel(status)} ({filteredOrders.length})</h1>
         <button 
           onClick={() => window.history.back()}
           className="btn-secondary"
@@ -172,17 +174,5 @@ function WorkOrdersByStatusPage() {
   );
 }
 
-const getStatusTitle = (status) => {
-  const titles = {
-    'por_asignar': 'Órdenes Por Asignar',
-    'asignado': 'Órdenes Asignadas',
-    'en_aprobacion': 'Órdenes En Aprobación',
-    'por_repuestos': 'Órdenes Por Repuestos',
-    'en_soporte': 'Órdenes En Soporte',
-    'en_proceso': 'Órdenes En Proceso',
-    'completado': 'Órdenes Completadas'
-  };
-  return titles[status] || 'Órdenes';
-};
 
 export default WorkOrdersByStatusPage;

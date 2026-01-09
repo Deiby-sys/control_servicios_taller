@@ -1,55 +1,83 @@
-//Es la primera página en ser cargada por la aplicación
+// App.jsx
+// Es la primera página en ser cargada por la aplicación
 
 import { Routes, Route, Navigate } from "react-router-dom";
+
+// Páginas públicas
 import Login from "./pages/Login";
 import RegisterUser from "./pages/RegisterUser";
 import RecoverPassword from "./pages/RecoverPassword";
+
+// Layout y componentes de protección
+import DashboardLayout from "./layouts/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleGuard from "./components/RoleGuard";
+
+// Páginas del dashboard - en orden lógico
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import CotizadorPage from "./pages/CotizadorPage";
+
+// Gestión de clientes
 import ClientsPage from "./pages/ClientsPage";
 import ClientFormPage from "./pages/ClientFormPage";
+
+// Gestión de usuarios (solo admin)
 import UsersManagementPage from "./pages/UsersManagementPage";
+
+// Gestión de vehículos
 import VehiclesPage from "./pages/VehiclesPage";
 import VehicleFormPage from "./pages/VehicleFormPage";
+
+// Gestión de órdenes de trabajo
 import WorkOrdersPage from "./pages/WorkOrdersPage";
 import WorkOrderFormPage from "./pages/WorkOrderFormPage";
 import WorkOrderDetailPage from "./pages/WorkOrderDetailPage";
 import WorkOrdersByStatusPage from "./pages/WorkOrdersByStatusPage";
-import DashboardLayout from "./layouts/DashboardLayout";
-import ProtectedRoute from "./components/ProtectedRoute";
 import WorkOrderDeliveryPage from "./pages/WorkOrderDeliveryPage";
 import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
-import RoleGuard from "./components/RoleGuard";
 
 function App() {
   return (
     <Routes>
-      {/* Rutas públicas */}
+      {/* ====================== RUTAS PÚBLICAS ====================== */}
       <Route path="/login" element={<Login />} />
       <Route path="/registerUser" element={<RegisterUser />} />
       <Route path="/recuperar" element={<RecoverPassword />} />
 
-      {/* Ruta raíz: protegida */}
+      {/* ====================== RUTAS PROTEGIDAS ====================== */}
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<DashboardLayout />}>
+          {/* Dashboard principal */}
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           
-          {/* Profile - Todos los perfiles */}
+          {/* Perfil de usuario - Todos los perfiles */}
           <Route 
             path="profile" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
                 <Profile />
               </RoleGuard>
             } 
           />
           
-          {/* Clientes - Solo admin, asesor, jefe */}
+          {/* Cotizador - Todos los perfiles autorizados */}
+          <Route 
+            path="cotizador" 
+            element={
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe']}>
+                <CotizadorPage />
+              </RoleGuard>
+            } 
+          />
+          
+          {/* ====================== GESTIÓN DE CLIENTES ====================== */}
+          {/* Solo admin, asesor, jefe */}
           <Route 
             path="clients" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']}>
                 <ClientsPage />
               </RoleGuard>
             } 
@@ -57,7 +85,7 @@ function App() {
           <Route 
             path="clients/new" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin']}>
                 <ClientFormPage />
               </RoleGuard>
             } 
@@ -65,27 +93,29 @@ function App() {
           <Route 
             path="clients/:id" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin']}>
                 <ClientFormPage />
               </RoleGuard>
             } 
           />
           
-          {/* Usuarios - Solo admin */}
+          {/* ====================== GESTIÓN DE USUARIOS ====================== */}
+          {/* Solo admin */}
           <Route 
             path="usuarios" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin']}>
                 <UsersManagementPage />
               </RoleGuard>
             } 
           />
           
-          {/* Vehículos - Solo admin, asesor, jefe */}
+          {/* ====================== GESTIÓN DE VEHÍCULOS ====================== */}
+          {/* Solo admin, asesor, jefe */}
           <Route 
             path="vehicles" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']}>
                 <VehiclesPage />
               </RoleGuard>
             } 
@@ -93,7 +123,7 @@ function App() {
           <Route 
             path="vehicles/new" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin']}>
                 <VehicleFormPage />
               </RoleGuard>
             } 
@@ -101,17 +131,18 @@ function App() {
           <Route 
             path="vehicles/:id" 
             element={
-              <RoleGuard allowedRoles={['admin']} >
+              <RoleGuard allowedRoles={['admin']}>
                 <VehicleFormPage />
               </RoleGuard>
             } 
           />
           
-          {/* Órdenes de trabajo - Todos los perfiles de taller */}
+          {/* ====================== GESTIÓN DE ÓRDENES DE TRABAJO ====================== */}
+          {/* Todos los perfiles de taller */}
           <Route 
             path="ordenes" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
                 <WorkOrdersPage />
               </RoleGuard>
             } 
@@ -121,7 +152,7 @@ function App() {
           <Route 
             path="ordenes/new" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']}>
                 <WorkOrderFormPage />
               </RoleGuard>
             } 
@@ -131,7 +162,7 @@ function App() {
           <Route 
             path="ordenes/:id" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
                 <WorkOrderDetailPage />
               </RoleGuard>
             } 
@@ -141,7 +172,7 @@ function App() {
           <Route 
             path="ordenes/:id/entregar" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'jefe']}>
                 <WorkOrderDeliveryPage />
               </RoleGuard>
             } 
@@ -151,7 +182,7 @@ function App() {
           <Route 
             path="ordenes/status/:status" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
                 <WorkOrdersByStatusPage />
               </RoleGuard>
             } 
@@ -161,7 +192,7 @@ function App() {
           <Route 
             path="historial" 
             element={
-              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']} >
+              <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
                 <WorkOrderHistoryPage />
               </RoleGuard>
             } 
@@ -169,7 +200,7 @@ function App() {
         </Route>
       </Route>
 
-      {/* Redirección de rutas no encontradas */}
+      {/* ====================== RUTAS NO ENCONTRADAS ====================== */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

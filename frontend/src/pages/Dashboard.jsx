@@ -16,7 +16,7 @@ import "../styles/Dashboard.css";
 function Dashboard() {
   const navigate = useNavigate();
   const { counts, totalEnTaller, loading } = useWorkOrderCounts();
-  const { user } = useAuth(); // Obtener user
+  const { user } = useAuth();
 
   const handleCardClick = (path) => {
     navigate(path);
@@ -27,87 +27,86 @@ function Dashboard() {
 
   return (
     <div className="dashboard-main">
-      <h2>Estado Servicios</h2>
-      
-      {/*SALUDO PERSONALIZADO*/}
+            
+      {/* SALUDO PERSONALIZADO */}
       <div className="dashboard-welcome">
         <p>¡Hola, <strong>{userName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
         <p>Para ver tus órdenes de trabajo, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
       </div>
 
       <div className="dashboard-cards">
-        {/* SOLO admin, asesor y jefe ven la tarjeta "Ingreso" */}
+        {/* SOLO admin, asesor y jefe ven la tarjeta "Nueva Orden" */}
         {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
           <div 
-            className="dashboard-card" 
+            className="dashboard-card dashboard-card--ingreso"
             onClick={() => handleCardClick("/ordenes/new")}
           >
-            <img src={ingreso} alt="Ingreso" />
-            <h3>Ingreso</h3>
+            <img src={ingreso} alt="Nueva Orden" />
+            <h3>Nueva Orden</h3>
           </div>
         )}
         
-        {/* Tarjetas */}
+        {/* Tarjetas con nuevos labels por responsable */}
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--por-asignar"
           onClick={() => handleCardClick("/ordenes/status/por_asignar")}
         >
-          <img src={asignar} alt="Por Asignar" />
-          <h3>Por Asignar</h3>
+          <img src={asignar} alt="Jefe" />
+          <h3>Jefe</h3>
           {!loading && <div className="card-count">{counts.por_asignar}</div>}
         </div>
         
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--asignado"
           onClick={() => handleCardClick("/ordenes/status/asignado")}
         >
-          <img src={asignados} alt="Asignados" />
-          <h3>Asignados</h3>
+          <img src={asignados} alt="Diagnóstico Técnico" />
+          <h3>Técnico</h3>
           {!loading && <div className="card-count">{counts.asignado}</div>}
         </div>
         
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--en-aprobacion"
           onClick={() => handleCardClick("/ordenes/status/en_aprobacion")}
         >
-          <img src={aprobacion} alt="En Aprobación" />
-          <h3>En Aprobación</h3>
+          <img src={aprobacion} alt="Asesor" />
+          <h3>Asesor</h3>
           {!loading && <div className="card-count">{counts.en_aprobacion}</div>}
         </div>
         
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--por-repuestos"
           onClick={() => handleCardClick("/ordenes/status/por_repuestos")}
         >
-          <img src={repuestos} alt="Por Repuestos" />
-          <h3>Por Repuestos</h3>
+          <img src={repuestos} alt="Repuestos" />
+          <h3>Repuestos</h3>
           {!loading && <div className="card-count">{counts.por_repuestos}</div>}
         </div>
         
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--en-soporte"
           onClick={() => handleCardClick("/ordenes/status/en_soporte")}
         >
-          <img src={soporte} alt="En Soporte" />
-          <h3>En Soporte</h3>
+          <img src={soporte} alt="Soporte Técnico" />
+          <h3>Soporte Técnico</h3>
           {!loading && <div className="card-count">{counts.en_soporte}</div>}
         </div>
         
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--en-proceso"
           onClick={() => handleCardClick("/ordenes/status/en_proceso")}
         >
-          <img src={proceso} alt="En Proceso" />
-          <h3>En Proceso</h3>
+          <img src={proceso} alt="Proceso Técnico" />
+          <h3>Proceso Técnico</h3>
           {!loading && <div className="card-count">{counts.en_proceso}</div>}
         </div>
         
         <div 
-          className="dashboard-card" 
+          className="dashboard-card dashboard-card--completado"
           onClick={() => handleCardClick("/ordenes/status/completado")}
         >
-          <img src={listos} alt="Listos" />
-          <h3>Completado</h3>
+          <img src={listos} alt="Listo para Entrega" />
+          <h3>Listo para Entrega</h3>
           {!loading && <div className="card-count">{counts.completado}</div>}
         </div>
 

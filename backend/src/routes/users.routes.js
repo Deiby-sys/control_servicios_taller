@@ -6,7 +6,8 @@ import {
   getUserById,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  getPublicUsersList
 } from "../controllers/users.controller.js";
 import { authRequired } from "../middlewares/validateToken.js"; 
 import { validateSchema } from "../middlewares/validator.middleware.js";
@@ -15,9 +16,10 @@ import { updateUserSchema } from "../schemas/user.schema.js";
 
 const router = Router();
 
-// Todas las rutas requieren autenticación Y perfil de administrador
+// Ruta pública: lista de usuarios para asignación (todos los perfiles autenticados)
+router.get("/public", authRequired, getPublicUsersList);
 
-// Listar todos los usuarios
+// Listar todos los usuarios requiere autenticación Y perfil de administrador
 router.get("/", authRequired, requireRole(['admin']), getUsers);
 
 // Obtener usuario por ID  

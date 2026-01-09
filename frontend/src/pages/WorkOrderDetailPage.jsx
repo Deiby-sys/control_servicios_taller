@@ -7,6 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 import "../styles/WorkOrderDetailPage.css";
+import { getStatusLabel } from "../utils/statusLabels"; //Función labels
 
 function WorkOrderDetailPage() {
   const { id } = useParams();
@@ -31,15 +32,15 @@ function WorkOrderDetailPage() {
   const [selectedAssignees, setSelectedAssignees] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Estados disponibles
+  // Estados disponibles ACTUALIZADOS con nuevos labels
   const statusOptions = [
-    { value: 'por_asignar', label: 'Por asignar' },
-    { value: 'asignado', label: 'Asignado' },
-    { value: 'en_aprobacion', label: 'En aprobación' },
-    { value: 'por_repuestos', label: 'Por repuestos' },
-    { value: 'en_soporte', label: 'En soporte' },
-    { value: 'en_proceso', label: 'En proceso' },
-    { value: 'completado', label: 'Completado' },
+    { value: 'por_asignar', label: 'Jefe' },
+    { value: 'asignado', label: 'Técnico' },
+    { value: 'en_aprobacion', label: 'Asesor' },
+    { value: 'por_repuestos', label: 'Repuestos' },
+    { value: 'en_soporte', label: 'Soporte Técnico' },
+    { value: 'en_proceso', label: 'Proceso Técnico' },
+    { value: 'completado', label: 'Listo para Entrega' },
     { value: 'entregado', label: 'Entregado' }
   ];
 
@@ -61,10 +62,11 @@ function WorkOrderDetailPage() {
     }
   };
 
+  // Usa /api/users/public en lugar de /api/users para que todos los perfiles puedan asignar responsables
   const fetchUsers = async () => {
   try {
     // Usa la ruta pública accesible para todos los perfiles autenticados
-    const response = await fetch('/api/users', {
+    const response = await fetch('/api/users/public', {
       credentials: 'include'
     });
     
@@ -152,7 +154,7 @@ function WorkOrderDetailPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Colores de estado
+  // Colores de estado (mantener igual - los colores no cambian)
   const getStatusColor = (status) => {
     const colors = {
       'por_asignar': '#6c757d',
@@ -216,12 +218,12 @@ function WorkOrderDetailPage() {
           <div className="info-grid">
             <div><strong>Fecha de Ingreso:</strong> {new Date(workOrder.entryDate).toLocaleString('es-CO')}</div>
             <div><strong>Estado:</strong> 
-              {/* Mostrar "Entregado" si es estado entregado */}
+              {/* ✅ USO DE TU FUNCIÓN getStatusLabel */}
               <span 
                 className={`status-badge status-${workOrder.status.replace(/_/g, '-')}`}
                 style={{ backgroundColor: getStatusColor(workOrder.status) }}
               >
-                {workOrder.status === 'entregado' ? 'Entregado' : statusOptions.find(s => s.value === workOrder.status)?.label}
+                {getStatusLabel(workOrder.status)}
               </span>
             </div>
             <div><strong>Creado por:</strong> {workOrder.createdBy?.name} {workOrder.createdBy?.lastName}</div>
@@ -265,6 +267,7 @@ function WorkOrderDetailPage() {
           <div className="management-grid">
             <div className="form-group">
               <label>Estado Actual</label>
+              {/* ✅ Las opciones ya están actualizadas en statusOptions */}
               <Select
                 options={statusOptions}
                 value={statusOptions.find(option => option.value === selectedStatus)}
@@ -281,6 +284,7 @@ function WorkOrderDetailPage() {
                 value={users.filter(user => selectedAssignees.includes(user.value))}
                 onChange={(selected) => setSelectedAssignees(selected.map(u => u.value))}
                 className="select-assignees"
+                noOptionsMessage={() => "Cargando usuarios..."} // ✅ Mensaje amigable
               />
             </div>
 

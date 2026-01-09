@@ -87,20 +87,28 @@ export const logout = (req, res) => {
   return res.sendStatus(200);
 };
 
-// Profile
-export const profile = async (ctx, res) => {
-  try {
-    const userFound = await User.findById(req.user.id, "-password");
-    if (!userFound) return res.status(404).json({ message: "Usuario no encontrado" });
+// src/controllers/auth.controller.js
 
+// Profile
+export const profile = async (req, res) => {
+  try {
+    // req.user ya es el usuario completo (gracias a authRequired)
+    // No necesitamos buscarlo de nuevo en la base de datos
+    
+    if (!req.user) {
+      return res.status(401).json({ message: "No autorizado" });
+    }
+
+    // Devolver directamente req.user (ya está completo)
     res.json({
-      id: userFound._id,
-      name: userFound.name,        
-      lastName: userFound.lastName, 
-      email: userFound.email,
-      profile: userFound.profile,
+      id: req.user._id,
+      name: req.user.name,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      profile: req.user.profile,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error en profile:", error);
+    res.status(500).json({ message: "Error al obtener perfil" });
   }
 };

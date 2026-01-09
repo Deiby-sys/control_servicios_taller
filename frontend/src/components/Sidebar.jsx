@@ -1,10 +1,10 @@
-// Sidebar
+// Sidebar.jsx
 
 import "../styles/Sidebar.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-function Sidebar({ isOpen }) {
+function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -23,7 +23,7 @@ function Sidebar({ isOpen }) {
   };
 
   return (
-    <aside className={`sidebar ${isOpen ? "sidebar--open" : ""}`}>
+    <aside className="sidebar"> 
       <div className="sidebar__logo">
         <h2>Panel de Control</h2>
       </div>

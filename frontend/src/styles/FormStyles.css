@@ -8,12 +8,12 @@
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   color: #fff;
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Ajuste de espacio interno al form */
 .form-container form {
-  padding: 0 5px; /* respiración a izquierda y derecha */
+  padding: 0 5px;
 }
 
 /* Header centrado (logo + título) */
@@ -42,20 +42,7 @@
 }
 
 /* Inputs */
-.form-container input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  font-size: 14px;
-  border: 1px solid #444;
-  border-radius: 8px;
-  outline: none;
-  background: #2b2b3c;
-  color: #fff;
-  transition: border 0.3s ease;
-  box-sizing: border-box; /* asegura que padding no rompa el ancho */
-}
-
+.form-container input,
 .form-container select {
   width: 100%;
   padding: 10px;
@@ -67,15 +54,11 @@
   background: #2b2b3c;
   color: #fff;
   transition: border 0.3s ease;
-  box-sizing: border-box; /* asegura que padding no rompa el ancho */
-  /* Añadir una altura mínima para asegurar que el select se ajuste a la altura del input */
-  height: 40px; 
+  box-sizing: border-box;
+  height: 40px;
 }
 
-.form-container input:focus {
-  border: 1px solid #019afe;
-}
-
+.form-container input:focus,
 .form-container select:focus {
   border: 1px solid #019afe;
 }
@@ -119,21 +102,21 @@
 
 /* ======== React-Select personalizado ======== */
 .select .react-select__control {
-  width: 100%;   /* ocupa el mismo ancho que input */
-  background-color: #2b2b3c;   /* mismo fondo que los inputs */
+  width: 100%;
+  background-color: #2b2b3c;
   border: 1px solid #444;
   border-radius: 8px;
-  height: 40px;   /* misma altura que input */
+  height: 40px;
   min-height: 40px;
   color: #fff;
   font-size: 14px;
   box-shadow: none;
   cursor: pointer;
-  box-sizing: border-box;   /* mismo fix que input */
+  box-sizing: border-box;
 }
 
 .select .react-select__value-container {
-  padding: 0 10px;   /* igual al padding del input */
+  padding: 0 10px;
   display: flex;
   align-items: center;
 }
@@ -146,13 +129,11 @@
   color: #aaa;
 }
 
-/* borde azul cuando está enfocado */
 .select .react-select__control--is-focused {
   border-color: #019afe;
   box-shadow: 0 0 0 1px #019afe;
 }
 
-/* menú desplegable */
 .select .react-select__menu {
   background-color: #2b2b3c;
   border-radius: 8px;
@@ -161,7 +142,6 @@
   z-index: 9999;
 }
 
-/* opciones */
 .select .react-select__option {
   background-color: #2b2b3c;
   color: #fff;
@@ -178,39 +158,150 @@
   color: #fff;
 }
 
-
 /* ======== Emblema redondeado ======== */
 .emblema {
-  width: 100px;        /* ajusta tamaño */
+  width: 100px;
   height: 100px;
-  border-radius: 50%;  /* circular */
-  object-fit: cover;   /* evita deformación */
-  border: 2px solid #4da3ff; /* opcional: borde decorativo */
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4da3ff;
   margin-bottom: 10px;
 }
 
-/* ======== Header con emblema y título lado a lado ======== */
-.form-container header {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* todo centrado en el form */
-  gap: 10px; /* espacio entre imagen y texto */
-  margin-bottom: 20px;
-}
-
-.form-container header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: bold;
-  color: #019afe;
-}
-
 .form-container header .emblema {
-  width: 40px;   /* tamaño más pequeño */
+  width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #4da3ff;
-  margin: 0; /* quitamos margen extra */
+  margin: 0;
 }
 
+/* ====================== RESPONSIVIDAD ====================== */
+
+@media (max-width: 768px) {
+  .form-container {
+    max-width: 90%;
+    margin: 30px auto;
+    padding: 20px;
+  }
+  
+  .form-container h2 {
+    font-size: 22px;
+  }
+  
+  .form-container input,
+  .form-container select {
+    font-size: 16px;
+    padding: 12px;
+    height: 48px;
+  }
+  
+  .form-container .btn {
+    font-size: 18px;
+    padding: 12px;
+  }
+  
+  .emblema {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .form-container header .emblema {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .form-container label {
+    font-size: 16px;
+    margin: 12px 0 6px;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 576px) {
+  .form-container {
+    max-width: 95%;
+    margin: 25px auto;
+    padding: 18px;
+  }
+  
+  .form-container h2 {
+    font-size: 21px;
+  }
+  
+  .form-container input,
+  .form-container select {
+    font-size: 16px;
+    padding: 11px;
+    height: 46px;
+  }
+  
+  .form-container .btn {
+    font-size: 17px;
+    padding: 11px;
+  }
+  
+  .emblema {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .form-container header .emblema {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .form-container label {
+    font-size: 15px;
+    margin: 11px 0 5px;
+  }
+}
+
+/* Móviles muy pequeños (iPhone SE) */
+@media (max-width: 480px) {
+  .form-container {
+    max-width: 98%; /* ← Más ancho en iPhone SE */
+    margin: 15px auto;
+    padding: 12px;
+  }
+  
+  .form-container h2 {
+    font-size: 19px;
+    margin-bottom: 15px;
+  }
+  
+  .form-container input,
+  .form-container select {
+    font-size: 16px;
+    padding: 9px;
+    height: 42px;
+    margin-bottom: 12px;
+  }
+  
+  .form-container .btn {
+    font-size: 15px;
+    padding: 9px;
+  }
+  
+  .emblema {
+    width: 65px;
+    height: 65px;
+    margin-bottom: 8px;
+  }
+  
+  .form-container header .emblema {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .form-container label {
+    font-size: 14px;
+    margin: 10px 0 4px;
+  }
+  
+  .form-container p {
+    font-size: 13px;
+    margin-top: 12px;
+  }
+}

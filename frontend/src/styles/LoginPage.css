@@ -11,7 +11,7 @@
 
 .login-form {
   width: 100%;
-  max-width: 400px; /* Ancho más compacto */
+  max-width: 400px;
   padding: 2rem;
   background: white;
   border-radius: 8px;
@@ -88,4 +88,66 @@
   font-size: 0.875rem;
   margin: 0.5rem 0;
   text-align: center;
+}
+
+/* ====================== RESPONSIVIDAD ====================== */
+
+@media (max-width: 768px) {
+  .login-page {
+    padding: 1rem;
+  }
+  
+  .login-form {
+    max-width: 90%;
+    padding: 1.5rem;
+  }
+  
+  .login-form input {
+    font-size: 16px;
+    padding: 0.8rem;
+  }
+  
+  .login-form button {
+    font-size: 16px;
+    padding: 0.8rem;
+  }
+  
+  .login-form h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Móviles muy pequeños (iPhone SE) */
+@media (max-width: 480px) {
+  .login-page {
+    padding: 0.5rem;
+    /* Mantener min-height: 100vh para centrado perfecto */
+    min-height: 100vh;
+    /* Asegurar que no haya scroll innecesario */
+    box-sizing: border-box;
+  }
+  
+  .login-form {
+    max-width: 95%;
+    padding: 1.25rem;
+  }
+  
+  .login-form .emblema {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .login-form h2 {
+    font-size: 1.3rem;
+  }
+  
+  .login-form input,
+  .login-form button {
+    font-size: 16px;
+    padding: 0.75rem;
+  }
+  
+  .login-form .links {
+    font-size: 0.85rem;
+  }
 }

@@ -40,8 +40,8 @@
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 1rem;
-  color: #495057; /* Texto oscuro */
-  background-color: white; /* Fondo blanco */
+  color: #495057;
+  background-color: white;
 }
 
 .form-group input:focus,
@@ -85,18 +85,18 @@
 
 /* Estilo corregido para la información del vehículo */
 .vehicle-info {
-  background-color: #f8f9fa; /* Fondo claro */
-  padding: 1.5rem; /* Aumentado el padding */
+  background-color: #f8f9fa;
+  padding: 1.5rem;
   border-radius: 8px;
-  margin: 1.5rem 0; /* Aumentado el margen */
-  border: 1px solid #e9ecef; /* Borde para definir el contenedor */
-  color: #495057; /* Texto oscuro */
+  margin: 1.5rem 0;
+  border: 1px solid #e9ecef;
+  color: #495057;
 }
 
 .vehicle-info h3 {
-  margin: 0 0 1rem 0; /* Espaciado superior e inferior */
-  color: #333; /* Color del título */
-  font-size: 1.1rem; /* Tamaño de fuente */
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
 }
 
 .vehicle-grid {
@@ -107,27 +107,27 @@
 }
 
 .vehicle-grid div {
-  color: #495057; /* Texto oscuro */
-  font-size: 0.9rem; /* Tamaño de fuente */
+  color: #495057;
+  font-size: 0.9rem;
 }
 
 .vehicle-grid strong {
-  color: #212529; /* Negrita más oscura */
+  color: #212529;
   display: inline-block;
-  min-width: 100px; /* Ancho fijo para alinear */
+  min-width: 100px;
 }
 
 /* ✅ Estilo mejorado para la firma digital */
 .signature-container {
-  border: 2px dashed #ced4da; /* Borde punteado */
+  border: 2px dashed #ced4da;
   border-radius: 8px;
-  padding: 2rem; /* Aumentado el padding */
-  background-color: white; /* Fondo blanco */
-  margin: 1.5rem 0; /* Aumentado el margen */
+  padding: 2rem;
+  background-color: white;
+  margin: 1.5rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 250px; /* Altura mínima */
+  min-height: 250px;
   position: relative;
 }
 
@@ -146,8 +146,10 @@
 .signature-canvas {
   border: 1px solid #ced4da;
   border-radius: 4px;
-  margin-bottom: 1.5rem; /* Aumentado el margen inferior */
+  margin-bottom: 1.5rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 500px;
 }
 
 .signature-actions {
@@ -202,11 +204,30 @@
   cursor: not-allowed;
 }
 
-/* Responsive */
+/* ====================== RESPONSIVIDAD ====================== */
+
 @media (max-width: 768px) {
-  .form-container {
+  .form-page {
     padding: 1rem;
+  }
+  
+  .form-container {
+    padding: 1.5rem;
     margin: 1rem;
+  }
+  
+  .form-container h1 {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Evita zoom en iOS */
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .plate-search input {
+    font-size: 16px;
+    padding: 0.8rem;
   }
   
   .vehicle-grid {
@@ -218,7 +239,157 @@
     padding: 1.5rem;
   }
   
+  .signature-canvas {
+    max-width: 100%;
+  }
+  
   .form-actions {
     flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-cancel,
+  .btn-primary {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+  
+  .btn-search {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 576px) {
+  .form-page {
+    padding: 0.75rem;
+  }
+  
+  .form-container {
+    padding: 1.25rem;
+    margin: 0.75rem;
+  }
+  
+  .form-container h1 {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .plate-search input {
+    padding: 0.75rem;
+    font-size: 16px;
+  }
+  
+  .vehicle-info {
+    padding: 1.25rem;
+    margin: 1.25rem 0;
+  }
+  
+  .vehicle-info h3 {
+    font-size: 1rem;
+  }
+  
+  .signature-container {
+    min-height: 190px;
+    padding: 1.25rem;
+  }
+  
+  .signature-canvas {
+    height: 180px;
+  }
+  
+  .btn-cancel,
+  .btn-primary,
+  .btn-search {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Móviles muy pequeños (iPhone SE) */
+@media (max-width: 480px) {
+  .form-page {
+    padding: 0.5rem;
+  }
+  
+  .form-container {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  .form-container h1 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group label {
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea,
+  .plate-search input {
+    padding: 0.7rem;
+    font-size: 16px;
+  }
+  
+  .vehicle-info {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .vehicle-info h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .vehicle-grid div {
+    font-size: 0.85rem;
+  }
+  
+  .signature-container {
+    min-height: 170px;
+    padding: 1rem;
+  }
+  
+  .signature-container::before {
+    font-size: 0.8rem;
+    top: -10px;
+  }
+  
+  .signature-canvas {
+    height: 140px;
+    margin-bottom: 1rem;
+  }
+  
+  .signature-actions {
+    margin-top: 0.75rem;
+  }
+  
+  .signature-actions button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .form-actions {
+    margin-top: 1.5rem;
+  }
+  
+  .btn-cancel,
+  .btn-primary,
+  .btn-search {
+    padding: 0.7rem;
+    font-size: 0.9rem;
   }
 }

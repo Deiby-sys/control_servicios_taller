@@ -48,10 +48,10 @@
   background-color: #34495e;
 }
 
-/*BOTÓN AL FONDO - con buen espaciado */
+/* BOTÓN AL FONDO - con buen espaciado */
 .sidebar__footer {
-  padding: 15rem 1.5rem 1.5rem; /* ↑ Más espacio arriba (2rem) para separar del contenido */
-  margin-top: auto; /* ← Empuja el footer al final absoluto */
+  padding: 2rem 1.5rem 1.5rem; /* ← Corregido: 2rem en lugar de 15rem */
+  margin-top: auto;
   border-top: 1px solid #34495e;
 }
 
@@ -70,4 +70,31 @@
 
 .sidebar__logout-btn:hover {
   background-color: #2980b9;
+}
+
+/* Sidebar en móviles pequeños */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+    font-size: 0.9rem;
+  }
+  
+  .sidebar__link {
+    padding: 0.6rem 1rem;
+  }
+  
+  .sidebar__logo h2 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 180px;
+    font-size: 0.85rem;
+  }
+  
+  .sidebar__link {
+    padding: 0.5rem 0.8rem;
+  }
 }

@@ -2,7 +2,7 @@
 
 .header {
   display: flex;
-  justify-content: center; /* ← Centra el contenido principal */
+  justify-content: center;
   align-items: center;
   padding: 0 1.5rem;
   height: 60px;
@@ -35,8 +35,47 @@
 }
 
 .header__user {
-  position: absolute; /* Posiciona la versión en la esquina derecha */
+  position: absolute;
   right: 1.5rem;
   font-size: 0.95rem;
   color: #555;
+}
+
+/* ====================== RESPONSIVIDAD ====================== */
+
+/* Tablets y móviles */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+  }
+  
+  .header__logo-container {
+    gap: 0.5rem;
+  }
+  
+  .emblema {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .header__title {
+    font-size: 1.2rem;
+  }
+  
+  .header__user {
+    right: 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 375px) {
+  .header__title {
+    font-size: 1.1rem;
+  }
+  
+  .emblema {
+    width: 30px;
+    height: 30px;
+  }
 }

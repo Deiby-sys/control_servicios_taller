@@ -1,4 +1,4 @@
-/* Usa los mismos estilos que otras páginas de listado */
+/* Diseño ordenens de trabajo */
 
 .page {
   padding: 2rem;
@@ -57,11 +57,14 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px;
 }
 
 .data-table th,
@@ -158,6 +161,7 @@
 .table-actions {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .btn-view {
@@ -168,6 +172,7 @@
   border-radius: 4px;
   font-size: 0.875rem;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
 .btn-view:hover {
@@ -182,6 +187,7 @@
   border-radius: 4px;
   font-size: 0.875rem;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
 .btn-edit:hover {
@@ -196,6 +202,7 @@
   border-radius: 4px;
   font-size: 0.875rem;
   transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
 .btn-delete:hover {
@@ -268,7 +275,8 @@
   background-color: #5a6268;
 }
 
-/* Responsive */
+/* ====================== RESPONSIVIDAD ====================== */
+
 @media (max-width: 768px) {
   .page {
     padding: 1rem;
@@ -291,15 +299,137 @@
   
   .status {
     font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
   }
   
   .advanced-search {
     grid-template-columns: 1fr;
   }
   
-  /* Responsive para columna de días */
   .data-table td:nth-child(8),
   .data-table th:nth-child(8) {
     text-align: center;
+  }
+  
+  .table-actions {
+    gap: 0.25rem;
+  }
+  
+  .btn-view,
+  .btn-edit,
+  .btn-delete {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Móviles medianos */
+@media (max-width: 576px) {
+  .page {
+    padding: 0.75rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .search-input {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .data-table {
+    font-size: 0.8rem;
+    min-width: 700px;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.4rem;
+  }
+  
+  .status {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+  }
+  
+  .btn-view,
+  .btn-edit,
+  .btn-delete {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.7rem;
+  }
+  
+  .btn-primary {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .search-container {
+    padding: 0.75rem;
+  }
+}
+
+/* Móviles muy pequeños (iPhone SE) */
+@media (max-width: 480px) {
+  .page {
+    padding: 0.5rem;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+  
+  .search-bar {
+    margin-bottom: 1rem;
+  }
+  
+  .search-input {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .data-table {
+    font-size: 0.75rem;
+    min-width: 600px;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.3rem;
+  }
+  
+  .status {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.25rem;
+  }
+  
+  .btn-view,
+  .btn-edit,
+  .btn-delete {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.65rem;
+  }
+  
+  .search-container {
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .clear-filters {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 }

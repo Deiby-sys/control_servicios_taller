@@ -2,6 +2,15 @@
 
 import User from "../models/user.model.js";
 
+// Helper para sanitizar texto
+const sanitizeText = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .replace(/[<>'"&]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 // Crear nuevo usuario (solo admin)
 export const createUser = async (req, res) => {
   try {
@@ -11,20 +20,25 @@ export const createUser = async (req, res) => {
 
     const { name, lastName, email, password, profile } = req.body;
     
+    // Sanitizar campos de texto
+    const sanitizedName = sanitizeText(name);
+    const sanitizedLastName = sanitizeText(lastName);
+    const sanitizedEmail = email ? email.toLowerCase().trim() : email;
+
     const validProfiles = ['admin', 'asesor', 'bodega', 'jefe', 'tecnico'];
     if (!validProfiles.includes(profile)) {
       return res.status(400).json({ message: "Perfil no válido" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: sanitizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email ya registrado" });
     }
 
     const newUser = new User({
-      name,
-      lastName,
-      email,
+      name: sanitizedName,
+      lastName: sanitizedLastName,
+      email: sanitizedEmail,
       password,
       profile
     });
@@ -80,7 +94,17 @@ export const updateUser = async (req, res) => {
       return res.status(403).json({ message: "No autorizado para actualizar este usuario" });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+    // Sanitizar campos de texto en la actualización
+    const sanitizedBody = {};
+    for (const [key, value] of Object.entries(req.body)) {
+      if (typeof value === 'string') {
+        sanitizedBody[key] = sanitizeText(value);
+      } else {
+        sanitizedBody[key] = value;
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, sanitizedBody, {
       new: true,
       select: "-password",
     });

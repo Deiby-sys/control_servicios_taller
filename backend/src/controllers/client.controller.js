@@ -2,6 +2,15 @@
 
 import Client from '../models/client.model.js';
 
+// Helper para sanitizar texto
+const sanitizeText = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .replace(/[<>'"&]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 // 1. CREAR un nuevo cliente
 export const createClient = async (req, res) => {
     try {
@@ -17,20 +26,25 @@ export const createClient = async (req, res) => {
             address 
         } = req.body;
         
-        const clientFound = await Client.findOne({ identificationNumber });
+        // Sanitizar campos de texto
+        const sanitizedData = {
+            identificationType: sanitizeText(identificationType),
+            identificationNumber: sanitizeText(identificationNumber),
+            name: sanitizeText(name),
+            lastName: sanitizeText(lastName),
+            email: email ? email.toLowerCase().trim() : email,
+            phone: sanitizeText(phone),
+            city: sanitizeText(city),
+            address: sanitizeText(address)
+        };
+        
+        const clientFound = await Client.findOne({ identificationNumber: sanitizedData.identificationNumber });
         if (clientFound) {
             return res.status(400).json({ message: "Ya existe un cliente con este número de identificación." });
         }
 
         const newClient = new Client({
-            identificationType,
-            identificationNumber,
-            name,
-            lastName,
-            email,
-            phone,
-            city,
-            address,
+            ...sanitizedData,
             user: req.user.id, 
         });
 
@@ -69,8 +83,18 @@ export const getClient = async (req, res) => {
 // 4. ACTUALIZAR un cliente
 export const updateClient = async (req, res) => {
     try {
-        // Mongoose usará los campos presentes en req.body
-        const client = await Client.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        // Sanitizar campos de texto en la actualización
+        const sanitizedBody = {};
+        for (const [key, value] of Object.entries(req.body)) {
+            if (typeof value === 'string') {
+                sanitizedBody[key] = sanitizeText(value);
+            } else {
+                sanitizedBody[key] = value;
+            }
+        }
+        
+        // Mongoose usará los campos presentes en sanitizedBody
+        const client = await Client.findByIdAndUpdate(req.params.id, sanitizedBody, { new: true });
         
         if (!client) return res.status(404).json({ message: "Cliente no encontrado para actualizar" });
         

@@ -6,12 +6,21 @@ import Client from "../models/client.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
+// Helper para sanitizar texto
+const sanitizeText = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .replace(/[<>'"&]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 // --- FUNCIONES DE BÚSQUEDA (GET) ---
 
 export const getVehicleByPlate = async (req, res) => {
   try {
     const { plate } = req.params;
-    const cleanPlate = plate.trim().toUpperCase();
+    const cleanPlate = sanitizeText(plate).trim().toUpperCase();
 
     const vehicle = await Vehicle.findOne({ plate: cleanPlate })
       .populate('client', 'name lastName identificationNumber phone city email');
@@ -30,7 +39,7 @@ export const getVehicleByPlate = async (req, res) => {
 export const getClientByIdentification = async (req, res) => {
   try {
     const { identification } = req.params;
-    const cleanId = identification.trim();
+    const cleanId = sanitizeText(identification).trim();
 
     const client = await Client.findOne({ 
       identificationNumber: cleanId 
@@ -122,7 +131,8 @@ export const getWorkOrdersByStatus = async (req, res) => {
 export const getWorkOrdersByPlate = async (req, res) => {
   try {
     const { plate } = req.params;
-    const vehicleId = await Vehicle.findOne({ plate: plate.toUpperCase() }).select('_id');
+    const cleanPlate = sanitizeText(plate).toUpperCase();
+    const vehicleId = await Vehicle.findOne({ plate: cleanPlate }).select('_id');
     
     if (!vehicleId) {
       return res.status(200).json([]);
@@ -189,6 +199,10 @@ export const createWorkOrder = async (req, res) => {
 
     const { vehicle, currentMileage, serviceRequest, clientSignature } = req.body;
 
+    // Sanitizar campos de texto
+    const sanitizedServiceRequest = sanitizeText(serviceRequest);
+    const sanitizedClientSignature = clientSignature ? sanitizeText(clientSignature) : clientSignature;
+
     if (!vehicle || !mongoose.Types.ObjectId.isValid(vehicle)) {
       return res.status(400).json({ message: "ID de vehículo inválido" });
     }
@@ -222,8 +236,8 @@ export const createWorkOrder = async (req, res) => {
       client: clientDoc._id,
       createdBy: req.user._id,
       currentMileage,
-      serviceRequest,
-      clientSignature
+      serviceRequest: sanitizedServiceRequest,
+      clientSignature: sanitizedClientSignature
     });
 
     const savedOrder = await newOrder.save();
@@ -254,6 +268,9 @@ export const addNoteToWorkOrder = async (req, res) => {
     const { content } = req.body;
     const author = req.user._id;
 
+    // Sanitizar el contenido de la nota
+    const sanitizedContent = sanitizeText(content);
+
     const workOrder = await WorkOrder.findById(id);
     if (!workOrder) {
       return res.status(404).json({ message: "Orden no encontrada" });
@@ -266,7 +283,7 @@ export const addNoteToWorkOrder = async (req, res) => {
       });
     }
 
-    workOrder.notes.push({ author, content });
+    workOrder.notes.push({ author, content: sanitizedContent });
     await workOrder.save();
 
     const updatedOrder = await WorkOrder.findById(id)
@@ -356,6 +373,10 @@ export const deliverWorkOrder = async (req, res) => {
       });
     }
 
+    // Sanitizar campos de entrega
+    const sanitizedDeliveryNote = sanitizeText(deliveryNote);
+    const sanitizedDeliverySignature = sanitizeText(deliverySignature);
+
     const workOrder = await WorkOrder.findById(id);
     if (!workOrder) {
       return res.status(404).json({ message: "Orden no encontrada" });
@@ -370,17 +391,17 @@ export const deliverWorkOrder = async (req, res) => {
       return res.status(400).json({ message: "La orden debe estar en estado 'completado' para entregar" });
     }
 
-    if (!deliveryNote || !deliveryNote.trim()) {
+    if (!sanitizedDeliveryNote || !sanitizedDeliveryNote.trim()) {
       return res.status(400).json({ message: "La nota de resumen de actividades es obligatoria" });
     }
 
-    if (!deliverySignature) {
+    if (!sanitizedDeliverySignature) {
       return res.status(400).json({ message: "La firma del cliente es obligatoria" });
     }
 
     workOrder.status = 'entregado';
-    workOrder.deliverySignature = deliverySignature;
-    workOrder.deliveryNote = deliveryNote;
+    workOrder.deliverySignature = sanitizedDeliverySignature;
+    workOrder.deliveryNote = sanitizedDeliveryNote;
     workOrder.deliveryDate = new Date();
     workOrder.deliveredBy = req.user._id;
 
@@ -531,7 +552,7 @@ export const checkActiveOrderByPlate = async (req, res) => {
       return res.status(400).json({ message: "Placa requerida" });
     }
 
-    const cleanPlate = plate.trim().toUpperCase();
+    const cleanPlate = sanitizeText(plate).trim().toUpperCase();
     console.log("Placa buscada:", cleanPlate);
 
     const vehicle = await Vehicle.findOne({ plate: cleanPlate });

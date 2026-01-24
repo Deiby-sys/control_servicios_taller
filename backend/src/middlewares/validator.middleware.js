@@ -4,7 +4,12 @@
 
 export const validateSchema = (schema) => (req, res, next) => {
   try {
-    schema.parse(req.body);
+    // Parsear y OBTENER los datos transformados
+    const parsedData = schema.parse(req.body);
+    
+    // Actualizar req.body con los datos sanitizados
+    req.body = parsedData;
+    
     next();
   } catch (error) {
     // Extraer solo los mensajes de error

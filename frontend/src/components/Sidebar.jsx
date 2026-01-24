@@ -98,6 +98,7 @@ function Sidebar({ isExpanded = true, onClose }) {
           </li>
           
           {/* Cotizador */}
+          {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
           <li>
             <button 
               onClick={() => handleNavigation('/cotizador')}
@@ -106,6 +107,7 @@ function Sidebar({ isExpanded = true, onClose }) {
               Cotizador
             </button>
           </li>
+          )}
           
           {/* Solo admin */}
           {user?.profile === 'admin' && (

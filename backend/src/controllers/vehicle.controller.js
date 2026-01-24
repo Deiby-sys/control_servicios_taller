@@ -1,7 +1,16 @@
 // Controlador de vehículos
 
 import Vehicle from "../models/vehicle.model.js";
-import Client from "../models/client.model.js"; // Importo el modelo de clientes
+import Client from "../models/client.model.js"; 
+
+// Helper para sanitizar texto
+const sanitizeText = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .replace(/[<>'"&]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
 
 export const getVehicles = async (req, res) => {
   try {
@@ -19,6 +28,13 @@ export const createVehicle = async (req, res) => {
   try {
     const { plate, vin, brand, line, model, color, client } = req.body;
 
+    // Sanitizar campos de texto
+    const sanitizedPlate = sanitizeText(plate).toUpperCase();
+    const sanitizedVin = sanitizeText(vin);
+    const sanitizedBrand = sanitizeText(brand);
+    const sanitizedLine = sanitizeText(line);
+    const sanitizedColor = sanitizeText(color);
+
     // Verificar que el cliente exista
     const clientExists = await Client.findById(client);
     if (!clientExists) {
@@ -26,24 +42,24 @@ export const createVehicle = async (req, res) => {
     }
 
     // Verificar que la placa no exista
-    const plateExists = await Vehicle.findOne({ plate });
+    const plateExists = await Vehicle.findOne({ plate: sanitizedPlate });
     if (plateExists) {
       return res.status(400).json({ message: "La placa ya está registrada" });
     }
 
     // Verificar que el VIN no exista
-    const vinExists = await Vehicle.findOne({ vin });
+    const vinExists = await Vehicle.findOne({ vin: sanitizedVin });
     if (vinExists) {
       return res.status(400).json({ message: "El VIN ya está registrado" });
     }
 
     const newVehicle = new Vehicle({
-      plate,
-      vin,
-      brand,
-      line,
+      plate: sanitizedPlate,
+      vin: sanitizedVin,
+      brand: sanitizedBrand,
+      line: sanitizedLine,
       model: parseInt(model),
-      color,
+      color: sanitizedColor,
       client
     });
 
@@ -80,6 +96,13 @@ export const updateVehicle = async (req, res) => {
     const { id } = req.params;
     const { plate, vin, brand, line, model, color, client } = req.body;
 
+    // Sanitizar campos de texto
+    const sanitizedPlate = sanitizeText(plate).toUpperCase();
+    const sanitizedVin = sanitizeText(vin);
+    const sanitizedBrand = sanitizeText(brand);
+    const sanitizedLine = sanitizeText(line);
+    const sanitizedColor = sanitizeText(color);
+
     // Verificar cliente
     const clientExists = await Client.findById(client);
     if (!clientExists) {
@@ -88,7 +111,15 @@ export const updateVehicle = async (req, res) => {
 
     const updatedVehicle = await Vehicle.findByIdAndUpdate(
       id,
-      { plate, vin, brand, line, model: parseInt(model), color, client },
+      { 
+        plate: sanitizedPlate, 
+        vin: sanitizedVin, 
+        brand: sanitizedBrand, 
+        line: sanitizedLine, 
+        model: parseInt(model), 
+        color: sanitizedColor, 
+        client 
+      },
       { new: true, runValidators: true }
     ).populate('client', 'name lastName identificationNumber phone city');
 
@@ -117,13 +148,13 @@ export const deleteVehicle = async (req, res) => {
     console.error("Error al eliminar vehículo:", error);
     res.status(500).json({ message: "Error al eliminar vehículo" });
   }
-}; // 👈 Aquí estaba faltando la llave de cierre
+};
 
 //Buscar el vehículo por placa
 export const getVehicleByPlate = async (req, res) => {
   try {
     const { plate } = req.params;
-    const cleanPlate = plate.trim().toUpperCase();
+    const cleanPlate = sanitizeText(plate).trim().toUpperCase();
     
     const vehicle = await Vehicle.findOne({ plate: cleanPlate })
       .populate('client', 'name lastName identificationNumber phone city');

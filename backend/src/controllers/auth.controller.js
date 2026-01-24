@@ -1,13 +1,36 @@
 // Registro y Login de usuarios
 
-// Vamos a crear las funciones para las auth
-
-
-// src/controllers/auth.controller.js
 import User from '../models/user.model.js';  
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../config.js";
+
+// Configuración de DOMPurify para Node.js
+import { JSDOM } from 'jsdom';
+const window = new JSDOM('').window;
+import DOMPurify from 'dompurify';
+const purify = DOMPurify(window);
+
+// Helper para sanitizar texto con DOMPurify (versión final)
+const sanitizeText = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  
+  // Primero, sanitizar con DOMPurify
+  let clean = purify.sanitize(str, { 
+    ALLOWED_TAGS: [], 
+    ALLOWED_ATTR: [],
+    FORBID_TAGS: ['script', 'img', 'iframe', 'object', 'embed'],
+    FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover']
+  });
+  
+  // Luego, eliminar cualquier comilla restante y normalizar espacios
+  clean = clean
+    .replace(/["']/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+    
+  return clean;
+};
 
 // Helper para crear token
 function createAccessToken(user) {
@@ -25,16 +48,24 @@ function createAccessToken(user) {
 // Registro
 export const register = async (req, res) => {
   try {
+    console.log("Datos recibidos:", req.body);
+    
     const { name, lastName, email, password, profile } = req.body;
 
-    const userFound = await User.findOne({ email });
+    const sanitizedName = sanitizeText(name);
+    const sanitizedLastName = sanitizeText(lastName);
+    const sanitizedEmail = email ? email.toLowerCase().trim() : email;
+
+    console.log("Datos sanitizados:", { sanitizedName, sanitizedLastName, sanitizedEmail });
+
+    const userFound = await User.findOne({ email: sanitizedEmail });
     if (userFound) return res.status(400).json({ message: "Email ya registrado" });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const newUser = new User({
-      name,
-      lastName,
-      email,
+      name: sanitizedName,
+      lastName: sanitizedLastName,
+      email: sanitizedEmail,
       password: passwordHash,
       profile: profile || "user",
     });
@@ -51,6 +82,7 @@ export const register = async (req, res) => {
       profile: savedUser.profile,
     });
   } catch (error) {
+    console.error("Error en register:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -87,19 +119,13 @@ export const logout = (req, res) => {
   return res.sendStatus(200);
 };
 
-// src/controllers/auth.controller.js
-
 // Profile
 export const profile = async (req, res) => {
   try {
-    // req.user ya es el usuario completo (gracias a authRequired)
-    // No necesitamos buscarlo de nuevo en la base de datos
-    
     if (!req.user) {
       return res.status(401).json({ message: "No autorizado" });
     }
 
-    // Devolver directamente req.user (ya está completo)
     res.json({
       id: req.user._id,
       name: req.user.name,

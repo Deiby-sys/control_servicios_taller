@@ -11,6 +11,7 @@ import proceso from "../images/proceso.png";
 import listos from "../images/listos.png";
 import { useWorkOrderCounts } from "../hooks/useWorkOrderCounts";
 import { useAuth } from "../context/AuthContext";
+import DOMPurify from 'dompurify';
 import "../styles/Dashboard.css";
 
 function Dashboard() {
@@ -22,15 +23,15 @@ function Dashboard() {
     navigate(path);
   };
 
-  // Obtener el nombre del usuario (con fallback seguro)
-  const userName = user?.name || "Usuario";
+  // Sanitizar el nombre del usuario para prevenir XSS
+  const safeUserName = user?.name ? DOMPurify.sanitize(user.name) : "Usuario";
 
   return (
     <div className="dashboard-main">
             
       {/* SALUDO PERSONALIZADO */}
       <div className="dashboard-welcome">
-        <p>¡Hola, <strong>{userName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
+        <p>¡Hola, <strong>{safeUserName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
         <p>Para ver tus órdenes de trabajo, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
       </div>
 

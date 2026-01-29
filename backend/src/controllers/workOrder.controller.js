@@ -6,13 +6,31 @@ import Client from "../models/client.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
-// Helper para sanitizar texto
+// Configuración de DOMPurify para Node.js
+import { JSDOM } from 'jsdom';
+const window = new JSDOM('').window;
+import DOMPurify from 'dompurify';
+const purify = DOMPurify(window);
+
+// Helper para sanitizar texto con DOMPurify (versión final)
 const sanitizeText = (str) => {
   if (!str || typeof str !== 'string') return str;
-  return str
-    .replace(/[<>'"&]/g, '')
+  
+  // Primero, sanitizar con DOMPurify
+  let clean = purify.sanitize(str, { 
+    ALLOWED_TAGS: [], 
+    ALLOWED_ATTR: [],
+    FORBID_TAGS: ['script', 'img', 'iframe', 'object', 'embed'],
+    FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover']
+  });
+  
+  // Luego, eliminar cualquier comilla restante y normalizar espacios
+  clean = clean
+    .replace(/["']/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+    
+  return clean;
 };
 
 // --- FUNCIONES DE BÚSQUEDA (GET) ---

@@ -62,8 +62,14 @@ function Login() {
           />
         </div>
 
-        {/* Errores del contexto */}
-        {errors.length > 0 && <p className="error">{errors[0]}</p>}
+        {/* Mostrar todos los errores del contexto */}
+        {errors.length > 0 && (
+          <div className="error-messages" aria-live="polite">
+            {errors.map((err, index) => (
+              <p key={index} className="error">{err}</p>
+            ))}
+          </div>
+        )}
 
         <button type="submit" className="btn" disabled={loading}>
           {loading ? "Ingresando..." : "Ingresar"}

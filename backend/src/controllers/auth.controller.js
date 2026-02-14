@@ -4,6 +4,8 @@ import User from '../models/user.model.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../config.js";
+import { generateResetToken, hashResetToken } from "../utils/tokenUtils.js";
+import { sendPasswordResetEmail } from "../config/email.js";
 
 // Configuración de DOMPurify para Node.js
 import { JSDOM } from 'jsdom';
@@ -136,5 +138,109 @@ export const profile = async (req, res) => {
   } catch (error) {
     console.error("Error en profile:", error);
     res.status(500).json({ message: "Error al obtener perfil" });
+  }
+};
+
+// Recuperar contraseña
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Buscar usuario
+    const user = await User.findOne({ email });
+    
+    if (user) {
+      // Generar token y hash
+      const resetToken = generateResetToken();
+      const hashedToken = hashResetToken(resetToken);
+      
+      // Guardar en base de datos
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutos
+      await user.save();
+
+      // Enviar email
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      
+      try {
+        await sendPasswordResetEmail(user.email, resetUrl);
+      } catch (emailError) {
+        console.error('Error al enviar email:', emailError);
+        // No devolvemos error al cliente por seguridad
+      }
+    }
+
+    // Mensaje genérico por seguridad
+    res.json({
+      message: "Si el correo está registrado, recibirás un enlace para recuperar tu contraseña."
+    });
+
+  } catch (error) {
+    console.error("Error en forgotPassword:", error);
+    res.status(500).json({ message: "Error al procesar la solicitud." });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    // Validar que se envió contraseña
+    if (!password) {
+      return res.status(400).json({ message: "Contraseña requerida." });
+    }
+
+    // Hashear el token recibido
+    const hashedToken = hashResetToken(token);
+
+    // Buscar usuario con token válido
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        message: "Token inválido o expirado." 
+      });
+    }
+
+    // Actualizar contraseña
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: "Contraseña actualizada correctamente." });
+
+  } catch (error) {
+    console.error("Error en resetPassword:", error);
+    res.status(500).json({ message: "Error al restablecer la contraseña." });
+  }
+};
+
+// Reset password
+export const validateResetToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.json({ valid: false });
+    }
+
+    const hashedToken = hashResetToken(token);
+    
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    res.json({ valid: !!user });
+
+  } catch (error) {
+    console.error("Error validating token:", error);
+    res.json({ valid: false });
   }
 };

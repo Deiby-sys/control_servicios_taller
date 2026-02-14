@@ -1,4 +1,4 @@
-//Header superior
+//Header
 
 import emblema from "../images/Emblema.png";
 import "../styles/Header.css";

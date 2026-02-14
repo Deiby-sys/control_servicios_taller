@@ -5,6 +5,7 @@ import Vehicle from "../models/vehicle.model.js";
 import Client from "../models/client.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
+import { sendOrderStatusNotification } from "../config/email.js";
 
 // Configuración de DOMPurify para Node.js
 import { JSDOM } from 'jsdom';
@@ -317,6 +318,7 @@ export const addNoteToWorkOrder = async (req, res) => {
   }
 };
 
+
 /**
  * Actualiza estado y responsables — NO permite entregar ni editar órdenes entregadas.
  */
@@ -325,13 +327,17 @@ export const updateWorkOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status, assignedTo } = req.body;
 
-    const workOrder = await WorkOrder.findById(id);
-    if (!workOrder) {
+    // Obtener la orden actual antes de actualizar
+    const currentOrder = await WorkOrder.findById(id)
+      .populate('assignedTo', 'email name')
+      .populate('vehicle', 'plate');
+
+    if (!currentOrder) {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
 
     // Bloquear cualquier modificación si ya está entregada
-    if (workOrder.status === 'entregado') {
+    if (currentOrder.status === 'entregado') {
       return res.status(400).json({ 
         message: "No se puede modificar una orden ya entregada" 
       });
@@ -358,16 +364,77 @@ export const updateWorkOrderStatus = async (req, res) => {
       return res.status(400).json({ message: "Estado no válido" });
     }
 
-    if (status) workOrder.status = status;
-    if (assignedTo) workOrder.assignedTo = assignedTo;
+    // Función auxiliar para comparar ObjectIds de forma segura
+    const areObjectIdsEqual = (id1, id2) => {
+      if (!id1 && !id2) return true;
+      if (!id1 || !id2) return false;
+      return id1.toString() === id2.toString();
+    };
 
-    await workOrder.save();
+    // Verificar si hay cambios
+    const statusChanged = currentOrder.status !== status;
+    const currentAssignedId = currentOrder.assignedTo?._id || currentOrder.assignedTo;
+    const assignmentChanged = assignedTo && !areObjectIdsEqual(currentAssignedId, assignedTo);
+    
+    // Si no hay cambios, no hacer nada
+    if (!statusChanged && !assignmentChanged) {
+      const unchangedOrder = await WorkOrder.findById(id)
+        .populate('vehicle', 'plate brand model')
+        .populate('client', 'name lastName')
+        .populate('assignedTo', 'name lastName email')
+        .populate('notes.author', 'name lastName');
+      return res.json(unchangedOrder);
+    }
 
-    const updatedOrder = await WorkOrder.findById(id)
+    // Actualizar la orden
+    let updateObj = {};
+    if (status) updateObj.status = status;
+    if (assignedTo) updateObj.assignedTo = assignedTo;
+
+    const updatedOrder = await WorkOrder.findByIdAndUpdate(
+      id,
+      updateObj,
+      { new: true }
+    )
       .populate('vehicle', 'plate brand model')
       .populate('client', 'name lastName')
-      .populate('assignedTo', 'name lastName')
+      .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
+
+    // ENVIAR EMAIL DE NOTIFICACIÓN SI HAY RESPONSABLE ASIGNADO
+    if (updatedOrder.assignedTo && (statusChanged || assignmentChanged)) {
+      try {
+        // Mapear estados a descripciones amigables
+        const statusLabels = {
+          'por_asignar': 'Por asignar',
+          'asignado': 'Asignado',
+          'en_aprobacion': 'En aprobación',
+          'por_repuestos': 'Esperando repuestos',
+          'en_soporte': 'En soporte técnico',
+          'en_proceso': 'En proceso',
+          'completado': 'Completado'
+        };
+
+        const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
+
+        // ✅ Llamada corregida
+        await sendOrderStatusNotification(
+          updatedOrder.assignedTo.email,
+          updatedOrder.assignedTo.name,
+          {
+            placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
+            cliente: updatedOrder.client?.name || 'Cliente no especificado',
+            actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
+            orderId: updatedOrder._id,
+            nuevoEstado: statusDescription
+          }
+        );
+        console.log("📧 Email de notificación enviado a:", updatedOrder.assignedTo.email);
+        console.log("📝 Nuevo estado:", statusDescription);
+      } catch (emailError) {
+        console.error("❌ Error enviando email de notificación:", emailError);
+      }
+    }
 
     res.json(updatedOrder);
   } catch (error) {

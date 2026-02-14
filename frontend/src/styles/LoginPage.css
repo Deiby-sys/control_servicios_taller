@@ -90,6 +90,41 @@
   text-align: center;
 }
 
+/* Mensajes de error */
+.error {
+  color: #dc3545; /* rojo Bootstrap */
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+  text-align: center;
+}
+
+/* Contenedor de múltiples errores */
+.error-messages {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background-color: #f8d7da; /* fondo rojo claro */
+  border: 1px solid #f5c2c7;
+  border-radius: 4px;
+  text-align: left;
+}
+
+/* Mensajes informativos */
+.info {
+  color: #198754; /* verde Bootstrap */
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+  text-align: center;
+}
+
+/* Mensajes de éxito */
+.success {
+  color: #0d6efd; /* azul */
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  text-align: center;
+  font-weight: 500;
+}
+
 /* ====================== RESPONSIVIDAD ====================== */
 
 @media (max-width: 768px) {

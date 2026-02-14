@@ -1,11 +1,10 @@
 // Centralizar en un solo lugar toda la lógica de autenticación (login, logout, registro, perfil)
 
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "../api/axios.js"; // configuración base de axios
+import axios from "../api/axios.js";
 
 const AuthContext = createContext();
 
-// Hook para usar el contexto fácilmente
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -14,24 +13,37 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState([]);
 
-  // Verificar sesión activa al cargar la app
   useEffect(() => {
+    let isMounted = true;
+    
     const checkLogin = async () => {
       try {
         const res = await axios.get("/auth/profile", { withCredentials: true });
-        setUser(res.data);
-        setIsAuthenticated(true);
+        if (isMounted) {
+          setUser(res.data);
+          setIsAuthenticated(true);
+          setErrors([]);
+        }
       } catch (err) {
-        setUser(null);
-        setIsAuthenticated(false);
+        if (isMounted) {
+          setUser(null);
+          setIsAuthenticated(false);
+          // No establecer errores aquí para evitar bucles
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
+    
     checkLogin();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Función de login
   const login = async (data) => {
     try {
       const res = await axios.post("/auth/login", data, { withCredentials: true });
@@ -43,7 +55,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Función de registro
   const register = async (data) => {
     try {
       const res = await axios.post("/auth/register", data, { withCredentials: true });
@@ -55,11 +66,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Función de logout
   const logout = async () => {
-    await axios.post("/auth/logout", {}, { withCredentials: true });
-    setUser(null);
-    setIsAuthenticated(false);
+    try {
+      await axios.post("/auth/logout", {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      setErrors([]);
+    }
   };
 
   return (
@@ -74,8 +90,7 @@ export const AuthProvider = ({ children }) => {
         logout,
       }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
-

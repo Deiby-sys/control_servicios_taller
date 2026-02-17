@@ -35,7 +35,7 @@ function Login() {
       <form onSubmit={handleSubmit} className="login-form">
         <header>
           <img src={emblema} className="emblema" alt="emblema" />
-          <h2>Control Servicios Taller</h2>
+          <h2>Control Taller</h2>
         </header>
 
         <div className="form-group">

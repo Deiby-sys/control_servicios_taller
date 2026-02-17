@@ -32,7 +32,7 @@ function Dashboard() {
       {/* SALUDO PERSONALIZADO */}
       <div className="dashboard-welcome">
         <p>¡Hola, <strong>{safeUserName}</strong>! Bienvenido al sistema de gestión de órdenes de trabajo.</p>
-        <p>Para ver tus órdenes de trabajo, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
+        <p>Para ver tus asignados, haz clic en <strong>"Órdenes de Trabajo"</strong> en el menú lateral.</p>
       </div>
 
       <div className="dashboard-cards">

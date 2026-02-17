@@ -309,7 +309,7 @@ export const addNoteToWorkOrder = async (req, res) => {
       .populate('vehicle', 'plate brand model')
       .populate('client', 'name lastName')
       .populate('notes.author', 'name lastName')
-      .populate('assignedTo', 'name lastName');
+      .populate('assignedTo', 'name lastName email');
 
     res.json(updatedOrder);
   } catch (error) {
@@ -401,26 +401,31 @@ export const updateWorkOrderStatus = async (req, res) => {
       .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
 
-    // ENVIAR EMAIL DE NOTIFICACIÓN SI HAY RESPONSABLE ASIGNADO
-    if (updatedOrder.assignedTo && (statusChanged || assignmentChanged)) {
-      try {
-        // Mapear estados a descripciones amigables
+    // ENVIAR EMAIL DE NOTIFICACIÓN SI HAY RESPONSABLE ASIGNADO CON EMAIL VÁLIDO
+    if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
+    try {
+      const assignedUser = updatedOrder.assignedTo[0]; // primer usuario asignado
+      const assignedUserEmail = assignedUser.email;
+      const assignedUserName = assignedUser.name;
+
+      if (!assignedUserEmail || !assignedUserEmail.trim()) {
+        console.log("📧 Usuario asignado no tiene email válido, omitiendo notificación");
+      } else {
         const statusLabels = {
-          'por_asignar': 'Por asignar',
-          'asignado': 'Asignado',
-          'en_aprobacion': 'En aprobación',
-          'por_repuestos': 'Esperando repuestos',
-          'en_soporte': 'En soporte técnico',
-          'en_proceso': 'En proceso',
-          'completado': 'Completado'
+          'por_asignar': 'Jefe',
+          'asignado': 'Técnico',
+          'en_aprobacion': 'Asesor',
+          'por_repuestos': 'Bodega',
+          'en_soporte': 'Soporte técnico',
+          'en_proceso': 'Proceso técnico',
+          'completado': 'Listo para entrega'
         };
 
         const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
 
-        // ✅ Llamada corregida
         await sendOrderStatusNotification(
-          updatedOrder.assignedTo.email,
-          updatedOrder.assignedTo.name,
+          assignedUserEmail.trim(),
+          assignedUserName || 'Usuario',
           {
             placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
             cliente: updatedOrder.client?.name || 'Cliente no especificado',
@@ -429,13 +434,13 @@ export const updateWorkOrderStatus = async (req, res) => {
             nuevoEstado: statusDescription
           }
         );
-        console.log("📧 Email de notificación enviado a:", updatedOrder.assignedTo.email);
+        console.log("📧 Email de notificación enviado a:", assignedUserEmail);
         console.log("📝 Nuevo estado:", statusDescription);
-      } catch (emailError) {
-        console.error("❌ Error enviando email de notificación:", emailError);
       }
+    } catch (emailError) {
+      console.error("❌ Error enviando email de notificación:", emailError);
     }
-
+  }
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar orden:", error);

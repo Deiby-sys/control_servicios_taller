@@ -24,7 +24,7 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Recuperación de contraseña - Control Servicios Taller',
+    subject: 'Recuperación de contraseña - Control Taller',
     html: `
       <h2>Recuperación de contraseña</h2>
       <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>

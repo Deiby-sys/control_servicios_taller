@@ -6,6 +6,7 @@ import Client from "../models/client.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 import { sendOrderStatusNotification } from "../config/email.js";
+import configureCloudinary from '../config/cloudinary.js';
 
 // Configuración de DOMPurify para Node.js
 import { JSDOM } from 'jsdom';
@@ -401,46 +402,51 @@ export const updateWorkOrderStatus = async (req, res) => {
       .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
 
-    // ENVIAR EMAIL DE NOTIFICACIÓN SI HAY RESPONSABLE ASIGNADO CON EMAIL VÁLIDO
-    if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
-    try {
-      const assignedUser = updatedOrder.assignedTo[0]; // primer usuario asignado
-      const assignedUserEmail = assignedUser.email;
-      const assignedUserName = assignedUser.name;
+// ENVIAR EMAIL DE NOTIFICACIÓN SI HAY RESPONSABLES ASIGNADOS CON EMAIL VÁLIDO
+if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
+  try {
+    const statusLabels = {
+      'por_asignar': 'Jefe',
+      'asignado': 'Técnico',
+      'en_aprobacion': 'Asesor',
+      'por_repuestos': 'Bodega',
+      'en_soporte': 'Soporte técnico',
+      'en_proceso': 'Proceso técnico',
+      'completado': 'Listo para entrega'
+    };
+
+    const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
+
+    // Iterar sobre todos los usuarios asignados
+    for (const user of updatedOrder.assignedTo) {
+      const assignedUserEmail = user.email;
+      const assignedUserName = user.name;
 
       if (!assignedUserEmail || !assignedUserEmail.trim()) {
         console.log("📧 Usuario asignado no tiene email válido, omitiendo notificación");
-      } else {
-        const statusLabels = {
-          'por_asignar': 'Jefe',
-          'asignado': 'Técnico',
-          'en_aprobacion': 'Asesor',
-          'por_repuestos': 'Bodega',
-          'en_soporte': 'Soporte técnico',
-          'en_proceso': 'Proceso técnico',
-          'completado': 'Listo para entrega'
-        };
-
-        const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
-
-        await sendOrderStatusNotification(
-          assignedUserEmail.trim(),
-          assignedUserName || 'Usuario',
-          {
-            placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
-            cliente: updatedOrder.client?.name || 'Cliente no especificado',
-            actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
-            orderId: updatedOrder._id,
-            nuevoEstado: statusDescription
-          }
-        );
-        console.log("📧 Email de notificación enviado a:", assignedUserEmail);
-        console.log("📝 Nuevo estado:", statusDescription);
+        continue; // pasa al siguiente usuario
       }
-    } catch (emailError) {
-      console.error("❌ Error enviando email de notificación:", emailError);
+
+      await sendOrderStatusNotification(
+        assignedUserEmail.trim(),
+        assignedUserName || 'Usuario',
+        {
+          placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
+          cliente: updatedOrder.client?.name || 'Cliente no especificado',
+          actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
+          orderId: updatedOrder._id,
+          nuevoEstado: statusDescription
+        }
+      );
+
+      console.log("📧 Email de notificación enviado a:", assignedUserEmail);
     }
+
+    console.log("📝 Nuevo estado:", statusDescription);
+  } catch (emailError) {
+    console.error("❌ Error enviando email de notificación:", emailError);
   }
+}
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar orden:", error);
@@ -512,7 +518,6 @@ export const deliverWorkOrder = async (req, res) => {
 };
 
 // --- Adjuntos ---
-
 export const uploadAttachment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -526,20 +531,60 @@ export const uploadAttachment = async (req, res) => {
       return res.status(404).json({ message: "Orden no encontrada" });
     }
 
-    // Bloquear si ya está entregada
     if (workOrder.status === 'entregado') {
       return res.status(400).json({ 
         message: "No se pueden adjuntar archivos a una orden ya entregada" 
       });
     }
 
+    // Determinar tipo de recurso para Cloudinary
+    const isVideo = req.file.mimetype.startsWith('video/');
+    const resourceType = isVideo ? 'video' : 'image';
+
+    // Obtener instancia configurada de Cloudinary
+    const cloudinaryInstance = configureCloudinary();
+
+    // Subir a Cloudinary con modo privado autenticado
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinaryInstance.uploader.upload_stream(
+        {
+          resource_type: resourceType,
+          folder: `work_orders/${id}`,
+          type: 'authenticated', // ← ESTA ES LA CLAVE
+          access_mode: 'authenticated',
+          quality: isVideo ? 'auto' : 'auto:good',
+          fetch_format: isVideo ? undefined : 'auto'
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+      
+      uploadStream.end(req.file.buffer);
+    });
+    
+    // 🔍 LOGS DE DEPURACIÓN
+    console.log('🔍 Upload result:', {
+      public_id: uploadResult.public_id,
+      secure_url: uploadResult.secure_url,
+      resource_type: uploadResult.resource_type
+    });
+
+    // Guardar solo la información esencial en MongoDB
     workOrder.attachments.push({
-      filename: req.file.filename,
+      cloudinaryId: uploadResult.public_id,
+      url: uploadResult.secure_url,
+      type: resourceType,
       originalName: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype,
-      path: req.file.path,
-      uploadedBy: req.user._id
+      uploadedBy: req.user._id,
+      private: true,
+      createdAt: new Date()
     });
 
     await workOrder.save();
@@ -552,9 +597,13 @@ export const uploadAttachment = async (req, res) => {
       .populate('attachments.uploadedBy', 'name lastName');
 
     res.status(201).json(populatedOrder);
+    
   } catch (error) {
-    console.error("Error al subir archivo:", error);
-    res.status(500).json({ message: "Error al subir archivo" });
+    console.error("Error al subir archivo a Cloudinary:", error);
+    res.status(500).json({ 
+      message: "Error al subir archivo",
+      error: error.message 
+    });
   }
 };
 
@@ -572,16 +621,37 @@ export const downloadAttachment = async (req, res) => {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
+    // Verificar permisos
     const hasPermission = req.user._id.equals(workOrder.createdBy) || 
-                         workOrder.assignedTo.some(user => user.equals(req.user._id));
+                         workOrder.assignedTo.some(user => user.equals(req.user._id)) ||
+                         req.user.profile === 'admin';
     
     if (!hasPermission) {
       return res.status(403).json({ message: "No autorizado" });
     }
 
-    res.download(attachment.path, attachment.originalName);
+    // Obtener instancia configurada de Cloudinary
+    const cloudinaryInstance = configureCloudinary();
+
+    // Extraer el formato del mimetype
+    const format = attachment.mimetype.split('/')[1] || 'auto';
+    
+    // Generar URL firmada usando el public_id directamente
+    const signedUrl = cloudinaryInstance.url(attachment.cloudinaryId, {
+      type: 'authenticated',
+      resource_type: attachment.type,
+      sign_url: true,
+      expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hora
+      format: format
+    });
+
+    console.log('🔍 URL firmada generada:', signedUrl);
+
+    // Redirigir a la URL firmada
+    res.redirect(signedUrl);
+    
   } catch (error) {
-    console.error("Error al descargar archivo:", error);
+    console.error("Error al generar URL de descarga:", error);
     res.status(500).json({ message: "Error al descargar archivo" });
   }
 };
@@ -600,10 +670,21 @@ export const deleteAttachment = async (req, res) => {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
-    if (!attachment.uploadedBy.equals(req.user._id) && !workOrder.createdBy.equals(req.user._id)) {
+    // Verificar permisos para eliminación
+    const isOwner = attachment.uploadedBy && attachment.uploadedBy.equals(req.user._id);
+    const isCreator = workOrder.createdBy && workOrder.createdBy.equals(req.user._id);
+    const isAdmin = req.user.profile === 'admin';
+    
+    // Solo el creador de la orden, el que subió el archivo, o admin pueden eliminar
+    if (!isOwner && !isCreator && !isAdmin) {
       return res.status(403).json({ message: "No autorizado para eliminar este archivo" });
     }
 
+    // Eliminar del Cloudinary
+    const cloudinaryInstance = configureCloudinary();
+    await cloudinaryInstance.uploader.destroy(attachment.cloudinaryId);
+
+    // Eliminar de la base de datos
     workOrder.attachments.pull({ _id: fileId });
     await workOrder.save();
 

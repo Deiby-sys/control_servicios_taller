@@ -106,7 +106,24 @@ const workOrderSchema = new mongoose.Schema({
   notes: [noteSchema],
   
   // Archivos adjuntos
-  attachments: [fileSchema],
+  attachments: [{
+  cloudinaryId: { type: String }, // ID único en Cloudinary
+  url: { type: String, required: true },
+  type: { 
+    type: String, 
+    enum: ['image', 'video', 'document'],
+    default: 'image'
+  },
+  originalName: String,
+  size: Number,
+  mimetype: String,
+  uploadedBy: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  },
+  private: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+}],
   
   // Firma y PDF
   clientSignature: {

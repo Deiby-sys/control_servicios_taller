@@ -1,50 +1,46 @@
 // middlewares para los adjuntos
 
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/attachments/'); // Carpeta donde se guardarán los archivos
-  },
-  filename: function (req, file, cb) {
-    // Nombre único para evitar conflictos
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+const storage = multer.memoryStorage();
 
 // Filtros para tipos de archivo permitidos
 const fileFilter = (req, file, cb) => {
-  // Permitir imágenes, PDFs, Word, Excel, etc.
   const allowedTypes = [
-    'image/jpeg', 'image/png', 'image/gif',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/plain',
-    'application/zip'
+    'image/jpeg',
+    'image/png', 
+    'image/jpg',
+    'image/gif',
+    'video/mp4',
+    'video/avi',
+    'video/mov',
+    'video/webm',
+    'application/pdf'
   ];
   
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Tipo de archivo no permitido'), false);
+  // Tamaño máximo: 50MB para videos, 10MB para otros
+  const maxSize = file.mimetype.startsWith('video/') ? 
+    50 * 1024 * 1024 : // 50MB para videos
+    10 * 1024 * 1024;   // 10MB para imágenes y PDFs
+  
+  if (!allowedTypes.includes(file.mimetype)) {
+    return cb(new Error('Tipo de archivo no permitido. Solo se permiten: JPG, PNG, GIF, MP4, AVI, MOV, WEBM, PDF'), false);
   }
+  
+  if (file.size > maxSize) {
+    const maxSizeMB = file.mimetype.startsWith('video/') ? 50 : 10;
+    return cb(new Error(`Archivo demasiado grande. Máximo ${maxSizeMB}MB`), false);
+  }
+  
+  cb(null, true);
 };
 
-// Tamaño máximo: 10MB
+// Tamaño máximo: 50MB para videos, 10MB para otros archivos
 const upload = multer({ 
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
+    fileSize: 50 * 1024 * 1024 // 50MB máximo
   }
 });
 

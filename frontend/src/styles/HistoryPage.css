@@ -269,3 +269,14 @@
     font-size: 0.75rem;
   }
 }
+
+/* Móviles en horizontal */
+@media (max-height: 500px) and (orientation: landscape) {
+  .dashboard-card {
+    min-height: 100px;
+    padding: 0.5rem;
+  }
+  .card-count {
+    font-size: 1rem;
+  }
+}

@@ -18,7 +18,7 @@ const app = express();
 // Rate limiting para endpoints sensibles
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // máximo 5 intentos
+  max: 10, // máximo 10 intentos
   message: {
     message: "Demasiados intentos. Inténtalo de nuevo en 15 minutos."
   },

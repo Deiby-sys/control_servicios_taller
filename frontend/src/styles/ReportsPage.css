@@ -1,0 +1,116 @@
+/* Estilos para informes */
+
+.reports-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.reports-title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.reports-period {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.reports-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.report-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+  text-align: center;
+}
+
+.report-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.report-value {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 1.5rem 0;
+}
+
+.report-bar-container {
+  height: 24px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.report-bar {
+  height: 100%;
+  border-radius: 12px;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Colores por tipo */
+.report-card--ingresos .report-value,
+.report-card--ingresos h3 {
+  color: #383d41;
+}
+
+.report-bar--ingresos {
+  background: linear-gradient(90deg, #e2e3e5, #adb5bd);
+}
+
+.report-card--completados .report-value,
+.report-card--completados h3 {
+  color: #155724;
+}
+
+.report-bar--completados {
+  background: linear-gradient(90deg, #d4edda, #28a745);
+}
+
+.report-card--entregados .report-value,
+.report-card--entregados h3 {
+  color: #004085;
+}
+
+.report-bar--entregados {
+  background: linear-gradient(90deg, #cce5ff, #007bff);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 1rem;
+  }
+  
+  .report-value {
+    font-size: 2rem;
+  }
+  
+  .reports-cards {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-value {
+    font-size: 1.8rem;
+  }
+  
+  .reports-cards {
+    grid-template-columns: 1fr;
+  }
+}

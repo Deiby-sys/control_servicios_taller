@@ -88,12 +88,23 @@ function Sidebar({ isExpanded = true, onClose }) {
             </>
           )}
           
+          {/* Histórico */}
           <li>
             <button 
               onClick={() => handleNavigation('/historial')}
               className={`sidebar__link ${isActive('/historial') ? 'active' : ''}`}
             >
               Histórico
+            </button>
+          </li>
+
+          {/* Informes */}
+          <li>
+            <button 
+              onClick={() => handleNavigation('/informes')}
+              className={`sidebar__link ${isActive('/informes') ? 'active' : ''}`}
+            >
+              Informes
             </button>
           </li>
           

@@ -11,6 +11,7 @@ import userRoutes from "./routes/users.routes.js";
 import clientRoutes from "./routes/client.routes.js";
 import vehicleRoutes from "./routes/vehicles.routes.js";
 import workOrderRoutes from "./routes/workOrders.routes.js";
+import reportsRoutes from "./routes/reports.routes.js";
 import { securityLogger } from './middlewares/securityLogger.js';
 
 const app = express();
@@ -48,6 +49,7 @@ app.use("/api/work-orders", workOrderRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/vehicles", vehicleRoutes);
 app.use('/api/orders', workOrderRoutes);
+app.use("/api/reports", reportsRoutes);
 
 
 export default app;

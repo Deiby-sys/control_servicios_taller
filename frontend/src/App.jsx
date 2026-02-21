@@ -38,6 +38,9 @@ import WorkOrdersByStatusPage from "./pages/WorkOrdersByStatusPage";
 import WorkOrderDeliveryPage from "./pages/WorkOrderDeliveryPage";
 import WorkOrderHistoryPage from "./pages/WorkOrderHistoryPage";
 
+// Informes
+import ReportsPage from './pages/ReportsPage';
+
 function App() {
   return (
     <Routes>
@@ -204,6 +207,16 @@ function App() {
           element={
             <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
               <WorkOrderHistoryPage />
+            </RoleGuard>
+          } 
+        />
+
+        {/* Informes */}
+        <Route 
+          path="informes" 
+          element={
+            <RoleGuard allowedRoles={['admin', 'asesor', 'bodega', 'jefe', 'tecnico']}>
+              <ReportsPage />
             </RoleGuard>
           } 
         />

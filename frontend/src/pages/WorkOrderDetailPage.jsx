@@ -135,16 +135,23 @@ function WorkOrderDetailPage() {
   };
 
   const handleDeleteAttachment = async (fileId) => {
-    if (window.confirm('¿Estás seguro de eliminar este archivo?')) {
-      try {
-        const updatedOrder = await deleteAttachment(workOrder._id, fileId);
-        setWorkOrder(updatedOrder); // Actualizar el estado local
-        alert('Archivo eliminado correctamente');
-      } catch (error) {
-        alert('Error al eliminar archivo: ' + error.message);
-      }
+  if (window.confirm('¿Estás seguro de eliminar este archivo?')) {
+    try {
+      await deleteAttachment(workOrder._id, fileId);
+      
+      // Actualizar localmente sin recargar toda la orden
+      setWorkOrder(prevOrder => ({
+        ...prevOrder,
+        attachments: prevOrder.attachments.filter(att => att._id !== fileId)
+      }));
+      
+      alert('Archivo eliminado correctamente');
+    } catch (error) {
+      console.error('Error al eliminar archivo:', error);
+      alert('Error al eliminar archivo: ' + (error.message || 'Error desconocido'));
     }
-  };
+  }
+};
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';

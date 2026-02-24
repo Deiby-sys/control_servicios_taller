@@ -80,13 +80,32 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Header */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .header {
+    height: 45px; /* ← Más compacto para poca altura */
+    padding: 0 0.75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   }
-  .card-count {
+  
+  .header__logo-container {
+    gap: 0.4rem;
+  }
+  
+  .emblema {
+    width: 28px;
+    height: 28px;
+    border-width: 1.5px;
+  }
+  
+  .header__title {
     font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .header__user {
+    right: 0.75rem;
+    font-size: 0.8rem;
+    color: #666;
   }
 }

@@ -375,13 +375,84 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Página de clientes */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  /* Ajustar padding general */
+  .page {
+    padding: 0.75rem 0.5rem;
   }
-  .card-count {
-    font-size: 1rem;
+  
+  /* Header más compacto */
+  .page-header {
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+  }
+  
+  .page-header h2 {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+  
+  /* Botón primario más pequeño */
+  .btn-primary {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    height: auto;
+  }
+  
+  /* Barra de búsqueda más compacta */
+  .search-input {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    height: auto;
+  }
+  
+  /* Tabla optimizada para horizontal */
+  .data-table {
+    font-size: 0.7rem;
+    min-width: 350px; /* Reducido para horizontal */
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.3rem;
+  }
+  
+  /* Columna de email más ajustada */
+  .data-table th:nth-child(5),
+  .data-table td:nth-child(5) {
+    min-width: 120px;
+    width: 18%;
+  }
+  
+  /* Botones de acción más compactos */
+  .btn-edit,
+  .btn-delete,
+  .btn-save,
+  .btn-cancel,
+  .btn-export {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.65rem;
+    margin-right: 0.1rem;
+    height: auto;
+  }
+  
+  /* Formulario de edición más compacto */
+  .edit-form-inline {
+    gap: 0.3rem;
+    padding: 0.3rem 0;
+  }
+  
+  .edit-form-inline input {
+    min-width: 50px;
+    max-width: 90px;
+    padding: 0.25rem;
+    font-size: 0.7rem;
+    height: auto;
+  }
+  
+  /* Contenedor de tabla con mejor manejo de scroll */
+  .table-container {
+    border-radius: 4px;
   }
 }

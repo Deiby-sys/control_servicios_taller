@@ -427,13 +427,106 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Formulario de vehículos */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .form-page {
+    padding: 0.75rem;
   }
-  .card-count {
+  
+  .form-container {
+    padding: 1rem;
+    margin: 0 0.5rem;
+  }
+  
+  .form-container h1 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Formulario más compacto */
+  .vehicle-form {
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+  }
+  
+  .form-group input,
+  .client-search-input {
+    padding: 0.6rem;
+    font-size: 14px;
+    height: auto;
+  }
+  
+  .client-search-container {
+    gap: 0.3rem;
+  }
+  
+  .selected-client {
+    padding: 0.5rem;
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  .form-actions {
+    margin-top: 1.2rem;
+    gap: 0.3rem;
+  }
+  
+  .btn-secondary {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    height: auto;
+  }
+  
+  /* Modal más compacto */
+  .modal {
+    width: 95%;
+    margin: 0.5rem;
+    max-height: 85vh;
+  }
+  
+  .modal-header {
+    padding: 0.7rem;
+  }
+  
+  .modal-header h3 {
     font-size: 1rem;
+  }
+  
+  .modal-close {
+    font-size: 1.4rem;
+  }
+  
+  .modal-form {
+    padding: 0.7rem;
+  }
+  
+  .modal-form .form-group {
+    margin-bottom: 0.6rem;
+  }
+  
+  .modal-form .form-group label {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  
+  .modal-form .form-group input,
+  .modal-form .form-select {
+    padding: 0.45rem;
+    font-size: 14px;
+    height: auto;
+  }
+  
+  .error-message {
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
   }
 }

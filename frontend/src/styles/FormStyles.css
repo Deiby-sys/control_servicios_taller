@@ -306,13 +306,45 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Formularios */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .form-container {
+    max-width: 95%;
+    margin: 10px auto;
+    padding: 10px;
   }
-  .card-count {
-    font-size: 1rem;
+  
+  .form-container h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  
+  .form-container input,
+  .form-container select {
+    font-size: 14px;
+    padding: 8px;
+    height: 38px;
+    margin-bottom: 10px;
+  }
+  
+  .form-container .btn {
+    font-size: 14px;
+    padding: 8px;
+    border-radius: 20px;
+  }
+  
+  .form-container header .emblema {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .form-container label {
+    font-size: 13px;
+    margin: 8px 0 3px;
+  }
+  
+  .form-container p {
+    font-size: 12px;
+    margin-top: 10px;
   }
 }

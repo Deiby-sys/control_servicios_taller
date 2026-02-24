@@ -296,13 +296,75 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Historial de órdenes entregadas */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .page {
+    padding: 0.75rem;
   }
-  .card-count {
-    font-size: 1rem;
+  
+  .page-header {
+    margin-bottom: 1.25rem;
+    gap: 0.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+  
+  .btn-primary {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    height: auto;
+  }
+  
+  .search-container {
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+  }
+  
+  .search-input {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    height: auto;
+  }
+  
+  .data-table {
+    font-size: 0.7rem;
+    min-width: 450px; /* ← Reducido para horizontal */
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.35rem;
+  }
+  
+  .data-table th {
+    font-size: 0.8rem;
+  }
+  
+  .data-table td:nth-child(7) {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.2rem;
+  }
+  
+  .btn-view {
+    padding: 0.1rem 0.2rem;
+    font-size: 0.65rem;
+    height: auto;
+  }
+  
+  .table-container {
+    border-radius: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+  
+  .advanced-search {
+    gap: 0.75rem;
+  }
+  
+  .search-select .react-select__control {
+    min-height: 36px;
+    font-size: 0.85rem;
   }
 }

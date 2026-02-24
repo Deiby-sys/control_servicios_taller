@@ -121,13 +121,34 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Sidebar también se optimiza */
 @media (max-height: 500px) and (orientation: landscape) {
   .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+    min-height: 90px;
+    padding: 0.4rem;
   }
+  
   .card-count {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .dashboard-card h3 {
+    font-size: 0.85rem;
+    min-height: 1.4em;
+    margin: 0 0 0.3rem 0;
+  }
+  
+  /* Sidebar más compacto en horizontal */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 160px;
+    }
+    
+    .dashboard-content {
+      margin-left: 160px;
+      width: calc(100% - 160px);
+    }
   }
 }

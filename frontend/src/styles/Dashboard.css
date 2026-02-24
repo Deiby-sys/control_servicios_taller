@@ -64,7 +64,6 @@
   height: 60px;
   margin-bottom: 1rem;
   object-fit: contain;
-  loading: lazy;
   display: block;
 }
 
@@ -432,13 +431,73 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Dashboard completo */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .dashboard-main {
+    padding: 0.75rem 1rem; /* Más compacto */
   }
+  
+  .dashboard-cards {
+    gap: 0.4rem; /* Espaciado más ajustado */
+    padding: 0 0.2rem;
+    max-width: 95%;
+  }
+  
+  .dashboard-card {
+    min-height: 90px; /* Aún más compacto */
+    padding: 0.4rem;
+    height: auto; /* Permitir altura flexible */
+  }
+  
+  .dashboard-card img {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 0.3rem;
+  }
+  
   .card-count {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .card-count--total {
+    font-size: 1.6rem; /* Más pequeño para poca altura */
+  }
+  
+  .dashboard-card h3 {
+    font-size: 0.85rem;
+    min-height: 1.4em;
+    margin: 0 0 0.3rem 0;
+    line-height: 1.2;
+  }
+  
+  /* Saludo personalizado más compacto */
+  .dashboard-welcome {
+    padding: 0.4rem;
+    margin: 0.5rem auto 0.8rem auto;
+    font-size: 0.8rem;
+    border-left-width: 3px;
+  }
+  
+  .dashboard-welcome p:first-child {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .dashboard-welcome p {
+    margin: 0.2rem 0;
+    line-height: 1.2;
+  }
+  
+  /* Tarjeta total optimizada */
+  .dashboard-card--total {
+    min-height: 120px;
+    padding: 0.8rem 0.6rem;
+  }
+  
+  .dashboard-card--total h3 {
+    font-size: 0.9rem;
+    margin: 0 0 0.3rem 0;
   }
 }

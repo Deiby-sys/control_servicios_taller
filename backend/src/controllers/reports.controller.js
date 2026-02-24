@@ -3,17 +3,22 @@
 import WorkOrder from '../models/workOrder.model.js';
 import mongoose from 'mongoose';
 
-export const getSevenDayReports = async (req, res) => {
+export const getReports = async (req, res) => {
   try {
     const today = new Date();
+
+    // Fechas de referencia
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(today.getDate() - 7);
 
-    // Pipeline para ingresos (usando createdAt, sin importar estado)
-    const ingresosPipeline = [
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    // Pipeline para ingresos (createdAt)
+    const ingresosPipeline = (fromDate) => [
       {
         $match: {
-          createdAt: { $gte: sevenDaysAgo, $lte: today }
+          createdAt: { $gte: fromDate, $lte: today }
         }
       },
       {
@@ -21,11 +26,11 @@ export const getSevenDayReports = async (req, res) => {
       }
     ];
 
-    // Pipeline para completados y entregados (usando updatedAt)
-    const estadosPipeline = [
+    // Pipeline para completados y entregados (updatedAt)
+    const estadosPipeline = (fromDate) => [
       {
         $match: {
-          updatedAt: { $gte: sevenDaysAgo, $lte: today }
+          updatedAt: { $gte: fromDate, $lte: today }
         }
       },
       {
@@ -41,22 +46,38 @@ export const getSevenDayReports = async (req, res) => {
       }
     ];
 
-    // Ejecutar ambos pipelines
-    const ingresosResult = await WorkOrder.aggregate(ingresosPipeline);
-    const estadosResult = await WorkOrder.aggregate(estadosPipeline);
+    // Ejecutar pipelines para 7 días
+    const ingresos7 = await WorkOrder.aggregate(ingresosPipeline(sevenDaysAgo));
+    const estados7 = await WorkOrder.aggregate(estadosPipeline(sevenDaysAgo));
 
-    const ingresos = ingresosResult[0]?.ingresos || 0;
-    const completados = estadosResult[0]?.completados || 0;
-    const entregados = estadosResult[0]?.entregados || 0;
+    // Ejecutar pipelines para 30 días
+    const ingresos30 = await WorkOrder.aggregate(ingresosPipeline(thirtyDaysAgo));
+    const estados30 = await WorkOrder.aggregate(estadosPipeline(thirtyDaysAgo));
 
-    res.json({
-      ingresos,
-      completados,
-      entregados,
+    // Extraer resultados
+    const sevenDayReports = {
+      ingresos: ingresos7[0]?.ingresos || 0,
+      completados: estados7[0]?.completados || 0,
+      entregados: estados7[0]?.entregados || 0,
       period: {
         from: sevenDaysAgo.toISOString().split('T')[0],
         to: today.toISOString().split('T')[0]
       }
+    };
+
+    const thirtyDayReports = {
+      ingresos: ingresos30[0]?.ingresos || 0,
+      completados: estados30[0]?.completados || 0,
+      entregados: estados30[0]?.entregados || 0,
+      period: {
+        from: thirtyDaysAgo.toISOString().split('T')[0],
+        to: today.toISOString().split('T')[0]
+      }
+    };
+
+    res.json({
+      last7Days: sevenDayReports,
+      last30Days: thirtyDayReports
     });
 
   } catch (error) {

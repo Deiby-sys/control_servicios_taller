@@ -349,13 +349,91 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Página de entrega de órdenes */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .page {
+    padding: 0.75rem;
   }
-  .card-count {
-    font-size: 1rem;
+  
+  .delivery-container {
+    padding: 1rem;
+    margin: 0 0.5rem;
+  }
+  
+  .page-header {
+    margin-bottom: 1.25rem;
+    gap: 0.5rem;
+  }
+  
+  .page-header h1 {
+    font-size: 1.15rem;
+    margin: 0;
+  }
+  
+  .page-header h2 {
+    font-size: 1.05rem;
+  }
+  
+  .order-info {
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .order-info h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .order-info div {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  
+  .delivery-form {
+    gap: 1rem;
+  }
+  
+  .form-group {
+    gap: 0.75rem;
+  }
+  
+  .form-group label {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  
+  .form-group textarea {
+    padding: 0.6rem;
+    font-size: 14px;
+    min-height: 80px;
+    height: auto;
+  }
+  
+  .signature-canvas {
+    height: 120px; /* ← Más compacto para poca altura */
+    max-width: 100%;
+  }
+  
+  .signature-container {
+    padding: 0.6rem;
+    margin: 0.6rem 0;
+  }
+  
+  .signature-container button {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+    height: auto;
+  }
+  
+  .form-actions {
+    margin-top: 0.6rem;
+    gap: 0.3rem;
+  }
+  
+  .btn-secondary,
+  .btn-primary {
+    padding: 0.55rem;
+    font-size: 0.85rem;
+    height: auto;
   }
 }

@@ -99,13 +99,33 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Sidebar */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .sidebar {
+    width: 160px;
+    font-size: 0.8rem;
   }
-  .card-count {
-    font-size: 1rem;
+  
+  .sidebar__logo {
+    padding: 1rem;
+  }
+  
+  .sidebar__logo h2 {
+    font-size: 0.9rem;
+  }
+  
+  .sidebar__link {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.85rem;
+  }
+  
+  .sidebar__footer {
+    padding: 1.5rem 1rem 1rem;
+  }
+  
+  .sidebar__logout-btn {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
   }
 }

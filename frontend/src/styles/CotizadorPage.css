@@ -121,13 +121,44 @@
   }
 }
 
-/* Móviles en horizontal */
+/* Móviles en horizontal - Página de cotizador */
 @media (max-height: 500px) and (orientation: landscape) {
-  .dashboard-card {
-    min-height: 100px;
-    padding: 0.5rem;
+  .cotizador-page {
+    min-height: auto; /* ← Eliminar altura mínima fija */
+    padding: 1rem;    /* ← Más compacto */
+    padding-top: 1.5rem; /* ← Ajustar para header */
   }
-  .card-count {
-    font-size: 1rem;
+  
+  .cotizador-container {
+    padding: 1.5rem 1rem; /* ← Más compacto */
+    margin: 0 0.5rem;
+    max-width: 95%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* ← Sombra más sutil */
+  }
+  
+  .cotizador-title {
+    font-size: 1.2rem; /* ← Más pequeño para poca altura */
+    margin-bottom: 0.5rem;
+  }
+  
+  .cotizador-message {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+  
+  .cotizador-submessage {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  
+  .cotizador-icon {
+    font-size: 1.8rem; /* ← Más pequeño */
+    margin-bottom: 0.75rem;
+  }
+  
+  .cotizador-footer {
+    padding-top: 1rem;
+    font-size: 0.8rem;
   }
 }

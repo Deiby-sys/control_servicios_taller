@@ -1,16 +1,14 @@
 // Registro de usuarios
 
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Select from "react-select";
-import emblema from "../images/Emblema.png";
 import "../styles/FormStyles.css";
 import { useAuth } from "../context/AuthContext";
 
 function RegisterUser() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { register, errors } = useAuth(); // usamos register del contexto
+  const { register, errors } = useAuth();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -53,10 +51,9 @@ function RegisterUser() {
 
     try {
       await register(formData);
-
-      // Redirección después de registro
-      const from = location.state?.from?.pathname || "/principal";
-      navigate(from, { replace: true });
+      
+      // Redirigir a la página de gestión de usuarios después del registro
+      navigate("/usuarios", { replace: true });
     } catch (error) {
       // errores vienen de AuthContext → `errors`
     } finally {
@@ -64,89 +61,121 @@ function RegisterUser() {
     }
   };
 
+  const handleCancel = () => {
+    navigate("/usuarios");
+  };
+
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit}>
-        <header>
-          <img src={emblema} className="emblema" alt="emblema" />
-          <h2>Registro Usuario</h2>
-        </header>
+    <div className="page">
+      <div className="form-container">
+        <h1>Registro de Nuevo Usuario</h1>
+        
+        <form onSubmit={handleSubmit} className="user-form">
+          <div className="form-group">
+            <label htmlFor="name">Nombre:</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Nombre completo"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label htmlFor="name">Nombre:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Tu nombre completo"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="lastName">Apellido:</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              placeholder="Apellido completo"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label htmlFor="lastName">Apellido:</label>
-        <input
-          type="text"
-          id="lastName"
-          name="lastName"
-          placeholder="Tu apellido completo"
-          value={formData.lastName}
-          onChange={handleChange}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="email">Correo:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Correo electrónico"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label htmlFor="email">Correo:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="Tu correo"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="profile">Perfil:</label>
+            <Select
+              options={perfiles}
+              placeholder="Selecciona el perfil"
+              onChange={handleProfileChange}
+              className="select"
+              classNamePrefix="react-select"
+              isClearable={false}
+            />
+          </div>
 
-        <label htmlFor="profile">Perfil:</label>
-        <Select
-          options={perfiles}
-          placeholder="Selecciona tu perfil"
-          onChange={handleProfileChange}
-          className="select"
-          classNamePrefix="react-select"
-        />
+          <div className="form-group">
+            <label htmlFor="password">Contraseña:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Contraseña"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label htmlFor="password">Contraseña:</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Contraseña"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirmar Contraseña:</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="Repite la contraseña"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label htmlFor="confirmPassword">Confirmar Contraseña:</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          name="confirmPassword"
-          placeholder="Repite la contraseña"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-        />
+          {/* Errores desde AuthContext */}
+          {errors.length > 0 && (
+            <div className="error-messages">
+              {errors.map((err, index) => (
+                <p key={index} className="error">{err}</p>
+              ))}
+            </div>
+          )}
 
-        {/* Errores desde AuthContext */}
-        {errors.length > 0 && <p className="error">{errors[0]}</p>}
-
-        <button type="submit" className="btn" disabled={loading}>
-          {loading ? "Registrando..." : "Registrarse"}
-        </button>
-
-        <p>
-          <Link to="/">Volver a Login</Link>
-        </p>
-      </form>
+          <div className="form-actions">
+            <button 
+              type="button" 
+              className="btn-secondary"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              className="btn-primary"
+              disabled={loading}
+            >
+              {loading ? "Registrando..." : "Registrar Usuario"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

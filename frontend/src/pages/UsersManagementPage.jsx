@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import "../styles/UsersManagementPage.css";
 
@@ -23,7 +24,7 @@ function UsersManagementPage() {
   const perfiles = [
     { label: "Admin", value: "admin" },
     { label: "Asesor", value: "asesor" },
-    { label: "Bodega", value: "bodega" },
+    { label: "Repuestos", value: "bodega" },
     { label: "Jefe", value: "jefe" },
     { label: "Técnico", value: "tecnico" },
   ];
@@ -147,7 +148,13 @@ function UsersManagementPage() {
 
   return (
     <div className="page">
-      <h1>Gestión de Usuarios</h1>
+      <div className="page-header">
+        <h1>Gestión de Usuarios</h1>
+        {/* Registro usuarios */}
+        <Link to="/registerUser" className="btn-primary">
+          Registrar Nuevo Usuario
+        </Link>
+      </div>
 
       {/* Barra de búsqueda */}
       <div className="search-bar">

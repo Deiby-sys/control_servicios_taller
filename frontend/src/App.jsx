@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 // Páginas públicas
 import Login from "./pages/Login";
-import RegisterUser from "./pages/RegisterUser";
+// import RegisterUser from "./pages/RegisterUser"; // ← Ya no se usa en rutas públicas
 import RecoverPassword from "./pages/RecoverPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -25,6 +25,7 @@ import ClientFormPage from "./pages/ClientFormPage";
 
 // Gestión de usuarios (solo admin)
 import UsersManagementPage from "./pages/UsersManagementPage";
+import RegisterUser from "./pages/RegisterUser"; // ← Import aquí
 
 // Gestión de vehículos
 import VehiclesPage from "./pages/VehiclesPage";
@@ -49,7 +50,7 @@ function App() {
 
       {/* ====================== RUTAS PÚBLICAS ====================== */}
       <Route path="/login" element={<Login />} />
-      <Route path="/registerUser" element={<RegisterUser />} />
+      {/* <Route path="/registerUser" element={<RegisterUser />} /> ← ELIMINADA */}
       <Route path="/recuperar" element={<RecoverPassword />} />
 
       {/* ====================== RUTAS PROTEGIDAS ====================== */}
@@ -119,6 +120,17 @@ function App() {
           element={
             <RoleGuard allowedRoles={['admin']}>
               <UsersManagementPage />
+            </RoleGuard>
+          } 
+        />
+        
+        {/* ====================== REGISTRO DE USUARIOS ====================== */}
+        {/* Solo admin */}
+        <Route 
+          path="registerUser" 
+          element={
+            <RoleGuard allowedRoles={['admin']}>
+              <RegisterUser />
             </RoleGuard>
           } 
         />

@@ -62,9 +62,9 @@ function RecoverPassword() {
         </button>
 
         <div className="links">
+          <br />
           <Link to="/login">Volver a Login</Link>
           <br />
-          <Link to="/registerUser">Registro Usuario</Link>
         </div>
       </form>
     </div>

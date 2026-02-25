@@ -32,7 +32,7 @@ function Sidebar({ isExpanded = true, onClose }) {
   return (
     <nav className={sidebarClasses}>
       <div className="sidebar__logo">
-        <h2>Sistema Taller</h2>
+        <h2>Sistema</h2>
       </div>
       
       <div className="sidebar__nav">

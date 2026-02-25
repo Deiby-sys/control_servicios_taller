@@ -35,7 +35,7 @@ function Login() {
       <form onSubmit={handleSubmit} className="login-form">
         <header>
           <img src={emblema} className="emblema" alt="emblema" />
-          <h2>Control Taller</h2>
+          <h2>GestorTaller</h2>
         </header>
 
         <div className="form-group">
@@ -76,9 +76,9 @@ function Login() {
         </button>
 
         <div className="links">
+          <br/>
           <Link to="/recuperar">Recuperar Contraseña</Link>
           <br />
-          <Link to="/registerUser">Registro Usuario</Link>
         </div>
       </form>
     </div>

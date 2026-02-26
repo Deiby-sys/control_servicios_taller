@@ -145,6 +145,9 @@
 }
 
 /* Notas de seguimiento */
+
+/* Notas de seguimiento - PRESERVAR SALTOS DE LÍNEA */
+
 .add-note-form {
   display: flex;
   gap: 1rem;

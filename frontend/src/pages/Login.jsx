@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import emblema from "../images/Emblema.png";
+import emblema from "../images/emblema.png";
 import "../styles/LoginPage.css";
 import { useAuth } from "../context/AuthContext";
 

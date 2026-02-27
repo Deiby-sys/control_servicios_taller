@@ -33,7 +33,10 @@ app.use("/api/auth/register", authLimiter);
 
 // Habilitar CORS con cookies
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173', // desarrollo local
+    'https://mytallerapp.vercel.app' // producción
+  ],
   credentials: true
 }));
 

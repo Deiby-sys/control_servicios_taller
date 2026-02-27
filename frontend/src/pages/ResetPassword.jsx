@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import emblema from "../images/Emblema.png";
+import emblema from "../images/emblema.png";
 import axios from "../api/axios.js";
 import "../styles/LoginPage.css";
 

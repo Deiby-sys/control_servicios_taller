@@ -124,7 +124,11 @@ export const login = async (req, res) => {
 
 // Logout
 export const logout = (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none'
+  });
   return res.sendStatus(200);
 };
 

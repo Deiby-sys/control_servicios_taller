@@ -1,37 +1,27 @@
-
 import axios from 'axios';
 
-// La URL base del backend
-
-// src/api/auth.js
-import axios from 'axios';
-
-// Construir la URL base del backend SIN espacios ni barras innecesarias
+// 1. Detectar la URL de manera automática y segura
 const getApiBaseUrl = () => {
-  if (process.env.REACT_APP_API_URL) {
-    // Usa la variable de entorno (Vercel)
-    return process.env.REACT_APP_API_URL.trim();
-  }
-  // Fallback para desarrollo local
-  return process.env.NODE_ENV === 'production'
+  // Vite usa import.meta.env, no process.env
+  const urlVercel = import.meta.env.VITE_API_URL;
+  
+  if (urlVercel) return urlVercel.trim();
+
+  return import.meta.env.MODE === 'production'
     ? 'https://taller-backend-7oz8.onrender.com'
     : 'http://localhost:4000';
 };
 
 const API_BASE = getApiBaseUrl();
 
-// Función para el REGISTRO de usuarios
-export const registerRequest = (user) =>
-  axios.post(`${API_BASE}/api/auth/register`, user, {
-    withCredentials: true
-  });
+// 2. Configuración de la instancia de Axios
+// Esto evita repetir la URL en cada función
+const api = axios.create({
+  baseURL: `${API_BASE}/api`,
+  withCredentials: true // Mantener si usas cookies/tokens en cookies
+});
 
-// Función para el LOGIN de usuarios
-export const loginRequest = (user) =>
-  axios.post(`${API_BASE}/api/auth/login`, user, {
-    withCredentials: true
-  });
-
-// Función para verificar autenticación
-export const verifyAuth = () =>
-  axios.get(`${API_BASE}/api/auth/verify`, { withCredentials: true });
+// Funciones simplificadas
+export const registerRequest = (user) => api.post('/auth/register', user);
+export const loginRequest = (user) => api.post('/auth/login', user);
+export const verifyAuth = () => api.get('/auth/verify');

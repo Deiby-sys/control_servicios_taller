@@ -19,15 +19,13 @@ router.post('/validate-reset-token', validateResetToken); // se crea la función
 
 router.get('/verify', (req, res) => {
   const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ authenticated: false });
-  }
+  if (!token) return res.json({ authenticated: false });
 
   try {
     jwt.verify(token, process.env.TOKEN_SECRET);
     res.json({ authenticated: true });
   } catch (err) {
-    res.status(401).json({ authenticated: false });
+    res.json({ authenticated: false });
   }
 });
 

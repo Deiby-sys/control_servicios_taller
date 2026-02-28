@@ -105,8 +105,8 @@ export const login = async (req, res) => {
     // Configuración correcta para producción
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // true en producción
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: true,        // ← obligatorio en HTTPS
+      sameSite: 'none',    // ← obligatorio para cross-origin
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 

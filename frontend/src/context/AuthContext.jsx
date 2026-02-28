@@ -1,96 +1,59 @@
 // Centralizar en un solo lugar toda la lógica de autenticación (login, logout, registro, perfil)
 
-import { createContext, useContext, useState, useEffect } from "react";
-import axios from "../api/axios.js";
+import { createContext, useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [errors, setErrors] = useState([]);
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const checkLogin = async () => {
-      try {
-        const res = await axios.get("/auth/profile", { withCredentials: true });
-        if (isMounted) {
-          setUser(res.data);
-          setIsAuthenticated(true);
-          setErrors([]);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setUser(null);
-          setIsAuthenticated(false);
-          // No establecer errores aquí para evitar bucles
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-    
-    checkLogin();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const login = async (data) => {
+  const checkAuth = async () => {
     try {
-      const res = await axios.post("/auth/login", data, { withCredentials: true });
-      setUser(res.data);
-      setIsAuthenticated(true);
-      setErrors([]);
-    } catch (err) {
-      setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en login"]);
+      // Usa la URL dinámica desde .env
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+      const response = await axios.get(`${API_URL}/api/auth/verify`, {
+        withCredentials: true // ← ¡clave para enviar cookies!
+      });
+      setIsAuthenticated(response.data.authenticated);
+    } catch (error) {
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const register = async (data) => {
-    try {
-      const res = await axios.post("/auth/register", data, { withCredentials: true });
-      setUser(res.data);
-      setIsAuthenticated(true);
-      setErrors([]);
-    } catch (err) {
-      setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en registro"]);
-    }
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const login = async (credentials) => {
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+    const res = await axios.post(`${API_URL}/api/auth/login`, credentials, {
+      withCredentials: true
+    });
+    setIsAuthenticated(true);
+    return res.data;
   };
 
   const logout = async () => {
-    try {
-      await axios.post("/auth/logout", {}, { withCredentials: true });
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      setUser(null);
-      setIsAuthenticated(false);
-      setErrors([]);
-    }
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+    await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        loading,
-        errors,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {!loading && children}
+    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };

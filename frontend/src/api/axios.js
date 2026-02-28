@@ -11,15 +11,14 @@ const instance = axios.create({
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("Error en petición Axios:", error.response?.data || error.message);
+    const data = error.response?.data;
+    const message = typeof data === "string" ? "Respuesta inesperada del servidor" : (data?.message || error.message);
+
+    console.error("Error en petición Axios:", message);
 
     if (error.response?.status === 401) {
       console.warn("Sesión expirada o no autorizada.");
-
       const path = window.location.pathname;
-
-      // Solo redirigir si el usuario ya estaba dentro de la app
-      // Evitamos redirigir en /login, /registerUser o /recuperar
       if (
         !path.includes("/login") &&
         !path.includes("/registerUser") &&
@@ -33,5 +32,3 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-export default instance;

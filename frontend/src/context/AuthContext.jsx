@@ -1,7 +1,8 @@
 // Centralizar en un solo lugar toda la lógica de autenticación (login, logout, registro, perfil)
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+// Importamos las funciones que ya tienen la lógica de URL de producción/Vite
+import { verifyAuth, loginRequest } from '../api/auth'; 
 
 const AuthContext = createContext();
 
@@ -14,25 +15,21 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null); // Tip: guarda los datos del usuario aquí
+  const [user, setUser] = useState(null);
 
-  // CENTRALIZAR URL (Vite usa import.meta.env)
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-
+  // Función para verificar si el usuario ya está logueado al cargar la página
   const checkAuth = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/verify`, {
-        withCredentials: true
-      });
-      // Si el backend responde con éxito
+      // Usamos verifyAuth() que viene de '../api/auth'
+      const response = await verifyAuth(); 
       setIsAuthenticated(true);
-      setUser(response.data.user); 
+      // Asegúrate de usar .user si tu backend devuelve { user: {...} }
+      setUser(response.data.user || response.data); 
     } catch (error) {
       console.error("Error de verificación:", error.message);
       setIsAuthenticated(false);
       setUser(null);
     } finally {
-      // Solo dejamos de cargar cuando la petición termine (bien o mal)
       setLoading(false);
     }
   };
@@ -43,25 +40,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const res = await axios.post(`${API_URL}/api/auth/login`, credentials, {
-        withCredentials: true
-      });
+      // Usamos loginRequest() que viene de '../api/auth'
+      const res = await loginRequest(credentials);
       setIsAuthenticated(true);
-      setUser(res.data.user);
+      setUser(res.data.user || res.data);
       return res.data;
     } catch (error) {
       setIsAuthenticated(false);
-      throw error; // Re-lanzar para que el formulario de login muestre el error
+      setUser(null);
+      throw error; 
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
-    } finally {
-      // Siempre limpiar el estado local aunque el servidor falle
+      // Puedes crear logoutRequest en api/auth o usar axios aquí
+      // Lo importante es limpiar el estado al final
       setIsAuthenticated(false);
       setUser(null);
+    } catch (error) {
+      console.error("Error al cerrar sesión", error);
     }
   };
 

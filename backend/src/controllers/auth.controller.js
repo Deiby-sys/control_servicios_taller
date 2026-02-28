@@ -103,11 +103,11 @@ export const login = async (req, res) => {
     const token = createAccessToken(userFound);
 
     // Configuración correcta para producción
-    res.cookie("token", token, {
+    res.cookie('token', token, {
       httpOnly: true,
-      secure: true,        // ← Obligatorio en HTTPS
-      sameSite: 'none',    // ← Obligatorio para cross-origin
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+      secure: process.env.NODE_ENV === 'production', // true en producción
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     res.json({

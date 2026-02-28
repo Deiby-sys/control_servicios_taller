@@ -5,7 +5,7 @@ import axios from 'axios';
 const API = process.env.NODE_ENV === 'production'
   ? 'https://taller-backend-7oz8.onrender.com/api'
   : 'http://localhost:4000/api';
-
+  
 // Función para el REGISTRO de usuarios
 export const registerRequest = (user) => 
     axios.post(

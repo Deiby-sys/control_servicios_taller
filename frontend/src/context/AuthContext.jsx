@@ -53,15 +53,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try {
-      // Puedes crear logoutRequest en api/auth o usar axios aquí
-      // Lo importante es limpiar el estado al final
-      setIsAuthenticated(false);
-      setUser(null);
-    } catch (error) {
-      console.error("Error al cerrar sesión", error);
-    }
-  };
+  try {
+    // Intentamos avisar al servidor
+    await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
+  } catch (error) {
+    console.error("Error al avisar al servidor del logout", error);
+  } finally {
+    // ESTO ES LO IMPORTANTE: Limpiamos el estado local pase lo que pase
+    setIsAuthenticated(false);
+    setUser(null);
+    // Forzamos la redirección manual si es necesario
+    window.location.href = "/login";
+  }
+};
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, loading, login, logout, user }}>

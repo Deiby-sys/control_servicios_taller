@@ -102,7 +102,12 @@ export const login = async (req, res) => {
 
     const token = createAccessToken(userFound);
 
-    res.cookie("token", token);
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true,        // ← obligatorio en HTTPS
+      sameSite: 'none',    // ← obligatorio para cross-origin
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
     res.json({
       id: userFound._id,
       name: userFound.name,       

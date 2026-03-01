@@ -32,11 +32,14 @@ app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
 // Habilitar CORS con cookies
+// Habilitar CORS con cookies
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',           // desarrollo local
+    'https://mytallerapp.vercel.app'   // producción
+  ],
   credentials: true
 }));
-
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
@@ -51,5 +54,15 @@ app.use("/api/vehicles", vehicleRoutes);
 app.use('/api/orders', workOrderRoutes);
 app.use("/api/reports", reportsRoutes);
 
+// 👇 Captura errores globales (crítico para Render)
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  process.exit(1);
+});
 
 export default app;

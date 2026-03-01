@@ -1,75 +1,96 @@
 // Centralizar en un solo lugar toda la lógica de autenticación (login, logout, registro, perfil)
 
-import { createContext, useContext, useEffect, useState } from 'react';
-// Importamos las funciones que ya tienen la lógica de URL de producción/Vite
-import { verifyAuth, loginRequest } from '../api/auth'; 
+import { createContext, useContext, useState, useEffect } from "react";
+import axios from "../api/axios.js";
 
 const AuthContext = createContext();
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [errors, setErrors] = useState([]);
 
-  // Función para verificar si el usuario ya está logueado al cargar la página
-  const checkAuth = async () => {
+  useEffect(() => {
+    let isMounted = true;
+    
+    const checkLogin = async () => {
+      try {
+        const res = await axios.get("/auth/profile", { withCredentials: true });
+        if (isMounted) {
+          setUser(res.data);
+          setIsAuthenticated(true);
+          setErrors([]);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setUser(null);
+          setIsAuthenticated(false);
+          // No establecer errores aquí para evitar bucles
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+    
+    checkLogin();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const login = async (data) => {
     try {
-      // Usamos verifyAuth() que viene de '../api/auth'
-      const response = await verifyAuth(); 
+      const res = await axios.post("/auth/login", data, { withCredentials: true });
+      setUser(res.data);
       setIsAuthenticated(true);
-      // Asegúrate de usar .user si tu backend devuelve { user: {...} }
-      setUser(response.data.user || response.data); 
-    } catch (error) {
-      console.error("Error de verificación:", error.message);
-      setIsAuthenticated(false);
-      setUser(null);
-    } finally {
-      setLoading(false);
+      setErrors([]);
+    } catch (err) {
+      setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en login"]);
     }
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const login = async (credentials) => {
+  const register = async (data) => {
     try {
-      // Usamos loginRequest() que viene de '../api/auth'
-      const res = await loginRequest(credentials);
+      const res = await axios.post("/auth/register", data, { withCredentials: true });
+      setUser(res.data);
       setIsAuthenticated(true);
-      setUser(res.data.user || res.data);
-      return res.data;
-    } catch (error) {
-      setIsAuthenticated(false);
-      setUser(null);
-      throw error; 
+      setErrors([]);
+    } catch (err) {
+      setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en registro"]);
     }
   };
 
   const logout = async () => {
-  try {
-    // Intentamos avisar al servidor
-    await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
-  } catch (error) {
-    console.error("Error al avisar al servidor del logout", error);
-  } finally {
-    // ESTO ES LO IMPORTANTE: Limpiamos el estado local pase lo que pase
-    setIsAuthenticated(false);
-    setUser(null);
-    // Forzamos la redirección manual si es necesario
-    window.location.href = "/login";
-  }
-};
+    try {
+      await axios.post("/auth/logout", {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      setErrors([]);
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout, user }}>
-      {children}
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        errors,
+        login,
+        register,
+        logout,
+      }}
+    >
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

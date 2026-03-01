@@ -267,7 +267,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #4da3ff;
-  margin-bottom: 0px;
+  margin-bottom: 15px;
   box-shadow: 0 4px 15px rgba(77, 163, 255, 0.3);
   transition: transform 0.3s ease;
 }
@@ -343,13 +343,13 @@
   }
   
   .emblema {
-    width: 85px;
-    height: 85px;
+    width: 30px;
+    height: 30px;
   }
   
   .form-container header .emblema {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
   }
   
   .form-container label {
@@ -384,13 +384,13 @@
   }
   
   .emblema {
-    width: 80px;
-    height: 80px;
+    width: 30px;
+    height: 30px;
   }
   
   .form-container header .emblema {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
   }
   
   .form-container label {
@@ -428,14 +428,14 @@
   }
   
   .emblema {
-    width: 70px;
-    height: 70px;
+    width: 30px;
+    height: 30px;
     margin-bottom: 12px;
   }
   
   .form-container header .emblema {
-    width: 32px;
-    height: 32px;
+    width: 20px;
+    height: 20px;
   }
   
   .form-container label {

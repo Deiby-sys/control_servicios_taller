@@ -102,14 +102,7 @@ export const login = async (req, res) => {
 
     const token = createAccessToken(userFound);
 
-    // Configuración correcta para producción
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,        // ← obligatorio en HTTPS
-      sameSite: 'none',    // ← obligatorio para cross-origin
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
-
+    res.cookie("token", token);
     res.json({
       id: userFound._id,
       name: userFound.name,       
@@ -124,11 +117,7 @@ export const login = async (req, res) => {
 
 // Logout
 export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none'
-  });
+  res.clearCookie("token");
   return res.sendStatus(200);
 };
 

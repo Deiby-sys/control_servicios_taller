@@ -1,24 +1,29 @@
-// src/api/auth.js
 
 import axios from 'axios';
 
-const getApiBaseUrl = () => {
-  const envUrl = process.env.REACT_APP_API_URL;
-  if (envUrl) {
-    return envUrl.trim(); // ← ¡elimina espacios!
-  }
-  return process.env.NODE_ENV === 'production'
-    ? 'https://taller-backend-7oz8.onrender.com'
-    : 'http://localhost:4000';
-};
+// La URL base del backend
+const API = 'http://localhost:4000/api'; 
 
-const API_BASE = getApiBaseUrl();
+// Función para el REGISTRO de usuarios
+export const registerRequest = (user) => 
+    axios.post(
+        `${API}/auth/register`, // Asegúrate de que tu ruta de backend sea /api/auth/register
+        user,
+        {
+            withCredentials: true // Permite enviar y recibir cookies
+        }
+    );
 
-export const registerRequest = (user) =>
-  axios.post(`${API_BASE}/api/auth/register`, user, { withCredentials: true });
-
-export const loginRequest = (user) =>
-  axios.post(`${API_BASE}/api/auth/login`, user, { withCredentials: true });
-
-export const verifyAuth = () =>
-  axios.get(`${API_BASE}/api/auth/verify`, { withCredentials: true });
+// Nueva Función para el LOGIN de usuarios
+export const loginRequest = (user) => 
+    axios.post(
+        `${API}/auth/login`, // Apunta al endpoint de login en tu backend: /api/auth/login
+        user,
+        {
+            withCredentials: true // ¡CLAVE! Permite que el navegador reciba la cookie JWT del servidor
+        }
+    );
+//se instala Axios es una biblioteca de JavaScript que actúa como un cliente HTTP 
+// basado en promesas, permitiendo realizar solicitudes a servidores de manera eficiente 
+// tanto en el navegador como en Node.js. Es ampliamente utilizada para consumir APIs REST 
+// y manejar datos JSON de forma sencilla

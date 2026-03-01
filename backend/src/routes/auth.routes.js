@@ -5,7 +5,6 @@ import {register, login, logout, profile, forgotPassword, resetPassword, validat
 import { authRequired } from "../middlewares/validateToken.js";
 import {validateSchema} from '../middlewares/validator.middleware.js';
 import {registerSchema, loginSchema} from '../schemas/auth.schema.js';
-import jwt from 'jsonwebtoken';
 
 const router = Router();
 
@@ -16,17 +15,5 @@ router.get('/profile', authRequired, profile); //se crea la función para consul
 router.post('/forgot-password', forgotPassword); //se crea la función para recuperar contraseña
 router.post('/reset-password/:token', resetPassword); // se crea la función para resetear contraseña
 router.post('/validate-reset-token', validateResetToken); // se crea la función para resetear contraseña
-
-router.get('/verify', (req, res) => {
-  const token = req.cookies.token;
-  if (!token) return res.json({ authenticated: false });
-
-  try {
-    jwt.verify(token, process.env.TOKEN_SECRET);
-    res.json({ authenticated: true });
-  } catch (err) {
-    res.json({ authenticated: false });
-  }
-});
 
 export default router; //exporto el enrutador

@@ -2,7 +2,13 @@
 import axios from 'axios';
 
 // La URL base del backend
-const API = 'http://localhost:4000/api'; 
+const getApiBaseUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim(); // elimina espacios
+  return process.env.NODE_ENV === 'production'
+    ? 'https://control-servicios-taller.onrender.com'
+    : 'http://localhost:4000';
+};
 
 // Función para el REGISTRO de usuarios
 export const registerRequest = (user) => 

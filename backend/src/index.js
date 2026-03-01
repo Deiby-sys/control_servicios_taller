@@ -22,5 +22,5 @@ connectDB();
 // Puerto desde .env o por defecto 4000
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`🚀 Servidor corriendo en puerto ${PORT} | NODE_ENV=${process.env.NODE_ENV}`);
 });

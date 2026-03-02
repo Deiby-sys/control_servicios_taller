@@ -38,7 +38,9 @@ app.use(cors({
     'http://localhost:5173',           // desarrollo local
     'https://mytallerapp.vercel.app'   // producción
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(morgan('dev'));
 app.use(express.json());

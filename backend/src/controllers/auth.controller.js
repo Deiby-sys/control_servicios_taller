@@ -226,6 +226,24 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+// Verificar autenticación (usado por ProtectedRoute)
+export const verifyAuth = (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(200).json({ authenticated: false });
+  }
+
+  try {
+    // Verifica el token con la clave secreta
+    jwt.verify(token, TOKEN_SECRET);
+    res.status(200).json({ authenticated: true });
+  } catch (err) {
+    // Token inválido, expirado o mal firmado
+    res.status(200).json({ authenticated: false });
+  }
+};
+
 // Reset password
 export const validateResetToken = async (req, res) => {
   try {

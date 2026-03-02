@@ -1,6 +1,6 @@
 // Api módulo vehículos
 
-import axios from './api/axios';
+import axios from "axios";
 
 const apiClient = axios.create({
   baseURL: "/api",

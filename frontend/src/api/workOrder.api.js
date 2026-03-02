@@ -1,6 +1,6 @@
 //api orden de trabajo
 
-import axios from "axios";
+import axios from './api/axios';
 
 // Configuración base de Axios para incluir credenciales
 const apiClient = axios.create({

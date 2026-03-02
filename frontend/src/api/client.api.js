@@ -1,6 +1,6 @@
 // API para clientes
 
-import axios from 'axios';
+import axios from './api/axios';
 
 // Esta URL debe coincidir con el puerto del backend
 const API = 'http://localhost:4000/api'; 

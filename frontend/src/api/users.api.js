@@ -1,6 +1,6 @@
 // api usuarios
 
-import axios from './axios.js';
+import axios from './api/axios';
 
 export const getUsers = async () => {
   return await axios.get('/api/users');

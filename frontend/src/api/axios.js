@@ -1,10 +1,21 @@
 // Centralizar la URL base del backend
 
-import axios from "axios";
+// src/api/axios.js
+import axios from 'axios';
+
+const getApiBaseUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim();
+  return process.env.NODE_ENV === 'production'
+    ? 'https://control-servicios-taller.onrender.com'
+    : 'http://localhost:4000';
+};
+
+const API_BASE = getApiBaseUrl();
 
 const instance = axios.create({
-  baseURL: "/api", // prefijo común para todas las rutas
-  withCredentials: true, // asegura que se envíen cookies
+  baseURL: `${API_BASE}/api`, // ✅ URL completa + /api
+  withCredentials: true,
 });
 
 // Interceptor de respuesta
@@ -18,8 +29,6 @@ instance.interceptors.response.use(
 
       const path = window.location.pathname;
 
-      // Solo redirigir si el usuario ya estaba dentro de la app
-      // Evitamos redirigir en /login, /registerUser o /recuperar
       if (
         !path.includes("/login") &&
         !path.includes("/registerUser") &&

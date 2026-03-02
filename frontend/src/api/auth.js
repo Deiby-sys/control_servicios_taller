@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from './api/axios';
 
 // La URL base del backend
 const getApiBaseUrl = () => {

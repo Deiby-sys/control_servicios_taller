@@ -2,13 +2,18 @@
 
 import axios from "axios";
 
-// Configuración de instancia Axios
+// Fallback para desarrollo
+const DEFAULT_API_URL = process.env.NODE_ENV === 'production'
+  ? 'https://control-servicios-taller.onrender.com'
+  : 'http://localhost:4000';
+
+const API_URL = process.env.REACT_APP_API_URL || DEFAULT_API_URL;
+
 const instance = axios.create({
-  // En producción tomará la variable REACT_APP_API_URL definida en Vercel
-  // y le agregamos el prefijo /api para que coincida con las rutas del backend
-  baseURL: `${process.env.REACT_APP_API_URL}/api`,
-  withCredentials: true, // asegura que se envíen cookies
+  baseURL: `${API_URL}/api`,
+  withCredentials: true,
 });
+
 
 // Interceptor de respuesta
 instance.interceptors.response.use(

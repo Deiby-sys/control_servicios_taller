@@ -1,51 +1,61 @@
-// src/api/auth.js
 import axios from 'axios';
 
-// Configuración segura de la URL base
+// La URL base del backend
+console.log("API URL:", process.env.REACT_APP_API_URL);
 const getApiBaseUrl = () => {
   const envUrl = process.env.REACT_APP_API_URL;
   if (envUrl) return envUrl.trim();
   return process.env.NODE_ENV === 'production'
-    ? 'https://control-servicios-taller.onrender.com' // ✅ sin espacios
+    ? 'https://control-servicios-taller.onrender.com'
     : 'http://localhost:4000';
 };
 
-const API_BASE = getApiBaseUrl();
-
-// Crea una instancia reutilizable (opcional pero recomendado)
-const apiClient = axios.create({
-  baseURL: `${API_BASE}/api`,
-  withCredentials: true,
-});
+const API = getApiBaseUrl();
 
 // Registro
 export const registerRequest = (user) =>
-  apiClient.post('/auth/register', user);
+  axios.post(`${API}/api/auth/register`, user, {
+    withCredentials: true,
+  });
 
 // Login
 export const loginRequest = (user) =>
-  apiClient.post('/auth/login', user);
+  axios.post(`${API}/api/auth/login`, user, {
+    withCredentials: true,
+  });
 
 // Perfil
 export const profileRequest = () =>
-  apiClient.get('/auth/profile');
+  axios.get(`${API}/api/auth/profile`, {
+    withCredentials: true,
+  });
 
 // Logout
 export const logoutRequest = () =>
-  apiClient.post('/auth/logout');
+  axios.post(`${API}/api/auth/logout`, {}, {
+    withCredentials: true,
+  });
 
 // Recuperar contraseña
 export const forgotPasswordRequest = (email) =>
-  apiClient.post('/auth/forgot-password', { email });
+  axios.post(`${API}/api/auth/forgot-password`, { email }, {
+    withCredentials: true,
+  });
 
 // Resetear contraseña
 export const resetPasswordRequest = (token, password) =>
-  apiClient.post(`/auth/reset-password/${token}`, { password });
+  axios.post(`${API}/api/auth/reset-password/${token}`, { password }, {
+    withCredentials: true,
+  });
 
 // Validar token de reset
 export const validateResetTokenRequest = (token) =>
-  apiClient.post('/auth/validate-reset-token', { token });
+  axios.post(`${API}/api/auth/validate-reset-token`, { token }, {
+    withCredentials: true,
+  });
 
 // Verificar autenticación
 export const verifyAuth = () =>
-  apiClient.get('/auth/verify');
+  axios.get(`${API}/api/auth/verify`, {
+    withCredentials: true,
+  });

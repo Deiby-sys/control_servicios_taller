@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "/api", // prefijo común para todas las rutas
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:4000/api",
   withCredentials: true, // asegura que se envíen cookies
 });
 
@@ -15,11 +15,8 @@ instance.interceptors.response.use(
 
     if (error.response?.status === 401) {
       console.warn("Sesión expirada o no autorizada.");
-
       const path = window.location.pathname;
 
-      // Solo redirigir si el usuario ya estaba dentro de la app
-      // Evitamos redirigir en /login, /registerUser o /recuperar
       if (
         !path.includes("/login") &&
         !path.includes("/registerUser") &&

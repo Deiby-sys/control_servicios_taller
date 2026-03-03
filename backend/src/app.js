@@ -56,7 +56,7 @@ app.use("/api/vehicles", vehicleRoutes);
 app.use('/api/orders', workOrderRoutes);
 app.use("/api/reports", reportsRoutes);
 
-// 👇 Captura errores globales (crítico para Render)
+// Captura errores globales (crítico para Render)
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Rejection:', err);
   process.exit(1);

@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 // La URL base del backend
+console.log("API URL:", process.env.REACT_APP_API_URL);
 const getApiBaseUrl = () => {
   const envUrl = process.env.REACT_APP_API_URL;
   if (envUrl) return envUrl.trim();

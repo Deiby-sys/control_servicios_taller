@@ -2,12 +2,15 @@
 
 import axios from "axios";
 
+// Configuración de instancia Axios
 const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL, // siempre usa la variable
-  withCredentials: true,
+  // En producción tomará la variable REACT_APP_API_URL definida en Vercel
+  // y le agregamos el prefijo /api para que coincida con las rutas del backend
+  baseURL: `${process.env.REACT_APP_API_URL}/api`,
+  withCredentials: true, // asegura que se envíen cookies
 });
 
-// Interceptor de respuestas
+// Interceptor de respuesta
 instance.interceptors.response.use(
   (response) => response,
   (error) => {

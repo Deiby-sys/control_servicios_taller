@@ -3,11 +3,11 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:4000/api",
-  withCredentials: true, // asegura que se envíen cookies
+  baseURL: process.env.REACT_APP_API_URL, // siempre usa la variable
+  withCredentials: true,
 });
 
-// Interceptor de respuesta
+// Interceptor de respuestas
 instance.interceptors.response.use(
   (response) => response,
   (error) => {

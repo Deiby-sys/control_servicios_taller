@@ -1,11 +1,6 @@
 // api usuarios
 
-import axios from './axios.js';
+import { getUsersRequest, getResponsiblesListRequest } from './auth';
 
-export const getUsers = async () => {
-  return await axios.get('/api/users');
-};
-
-export const getResponsiblesList = async () => {
-  return await axios.get('/api/users/responsibles');
-};
+export const getUsers = () => getUsersRequest();
+export const getResponsiblesList = () => getResponsiblesListRequest();

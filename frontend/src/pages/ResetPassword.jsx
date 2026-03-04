@@ -1,9 +1,10 @@
 // Página para ResetPassword
 
+// src/pages/ResetPassword.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import emblema from "../images/emblema.png";
-import axios from "../api/axios.js";
+import { validateResetTokenRequest, resetPasswordRequest } from "../api/auth"; // ✅ Usa auth.js
 import "../styles/LoginPage.css";
 
 function ResetPassword() {
@@ -20,7 +21,7 @@ function ResetPassword() {
   useEffect(() => {
     if (!token) return;
 
-    axios.post("/auth/validate-reset-token", { token })
+    validateResetTokenRequest(token)
       .then(res => {
         setIsValidToken(res.data.valid);
         if (!res.data.valid) {
@@ -50,7 +51,7 @@ function ResetPassword() {
     setLoading(true);
 
     try {
-      await axios.post(`/auth/reset-password/${token}`, { password });
+      await resetPasswordRequest(token, password); // ✅ Usa la función corregida
       setMessage("Contraseña actualizada correctamente. Redirigiendo al login...");
       setTimeout(() => {
         navigate("/login");

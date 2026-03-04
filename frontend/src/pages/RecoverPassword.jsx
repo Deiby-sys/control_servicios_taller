@@ -1,9 +1,10 @@
 //Recuperar contraseña
 
+// src/pages/RecoverPassword.jsx
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import emblema from "../images/emblema.png";
-import axios from "../api/axios.js";
+import { forgotPasswordRequest } from "../api/auth"; // ✅ Usa auth.js
 import "../styles/LoginPage.css";
 
 function RecoverPassword() {
@@ -17,7 +18,7 @@ function RecoverPassword() {
     setLoading(true);
 
     try {
-      await axios.post("/auth/forgot-password", { email });
+      await forgotPasswordRequest(email); // ✅ Usa la función corregida
       setMessage("Si el correo está registrado, recibirás un enlace para recuperar tu contraseña.");
       setEmail("");
     } catch (error) {

@@ -1,5 +1,6 @@
+// src/pages/ReportsPage.jsx
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getReportsSummary } from '../api/auth'; // ✅ Usa auth.js
 import { useAuth } from '../context/AuthContext';
 import '../styles/ReportsPage.css';
 
@@ -9,8 +10,8 @@ const ReportsPage = () => {
     last30Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } }
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("last7Days"); // pestaña activa
-  const { token } = useAuth();
+  const [activeTab, setActiveTab] = useState("last7Days");
+  const { user } = useAuth(); // ✅ No necesitas token si usas cookies
 
   useEffect(() => {
     fetchReports();
@@ -18,9 +19,7 @@ const ReportsPage = () => {
 
   const fetchReports = async () => {
     try {
-      const response = await axios.get('/api/reports/summary', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await getReportsSummary(); // ✅ Usa la función corregida
       setReports(response.data);
       setLoading(false);
     } catch (error) {

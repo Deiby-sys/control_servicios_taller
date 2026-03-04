@@ -1,15 +1,20 @@
 // API para clientes
 
+// src/api/clientApi.js
 import axios from 'axios';
 
-// Esta URL debe coincidir con el puerto del backend
-const API = 'http://localhost:4000/api'; 
+// Reutiliza la misma lógica de URL base que en auth.js
+const getApiBaseUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim();
+  return process.env.NODE_ENV === 'production'
+    ? 'https://control-servicios-taller.onrender.com'
+    : 'http://localhost:4000';
+};
 
-// Configuramos una instancia de axios para asegurar que todas las peticiones 
-// envíen automáticamente la cookie de autenticación (JWT).
 const clientApi = axios.create({
-    baseURL: API,
-    withCredentials: true,
+  baseURL: `${getApiBaseUrl()}/api`,
+  withCredentials: true,
 });
 
 // GET: Obtener todos los clientes
@@ -19,7 +24,6 @@ export const getClientsRequest = () => clientApi.get('/clients');
 export const getClientRequest = (id) => clientApi.get(`/clients/${id}`);
 
 // POST: Crear un nuevo cliente
-// El objeto 'client' debe contener 'name', 'lastName', 'phone', 'city', etc.
 export const createClientRequest = (client) => clientApi.post('/clients', client);
 
 // PUT: Actualizar un cliente por ID

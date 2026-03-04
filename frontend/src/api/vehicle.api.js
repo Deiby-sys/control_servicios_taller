@@ -1,9 +1,19 @@
 // Api módulo vehículos
 
-import axios from "axios";
+// src/api/vehiclesApi.js
+import axios from 'axios';
+
+// Reutiliza la misma lógica de URL base
+const getApiBaseUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim();
+  return process.env.NODE_ENV === 'production'
+    ? 'https://control-servicios-taller.onrender.com'
+    : 'http://localhost:4000';
+};
 
 const apiClient = axios.create({
-  baseURL: "/api",
+  baseURL: `${getApiBaseUrl()}/api`,
   withCredentials: true,
 });
 

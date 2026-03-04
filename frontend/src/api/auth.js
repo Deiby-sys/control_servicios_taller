@@ -3,18 +3,18 @@
 
 import axios from 'axios';
 
-// Configuración segura de la URL base del backend
 const getApiBaseUrl = () => {
-  const envUrl = process.env.REACT_APP_API_URL;
+  const envUrl = import.meta.env.REACT_APP_API_URL;
   if (envUrl) return envUrl.trim();
-  return process.env.NODE_ENV === 'production'
+  return import.meta.env.MODE === 'production'
     ? 'https://control-servicios-taller.onrender.com'
     : 'http://localhost:4000';
 };
 
-// Crea una instancia reutilizable de Axios
+const API_BASE = getApiBaseUrl();
+
 const apiClient = axios.create({
-  baseURL: `${getApiBaseUrl()}/api`,
+  baseURL: `${API_BASE}/api`,
   withCredentials: true,
 });
 
@@ -65,3 +65,7 @@ export const validateResetTokenRequest = (token) =>
   apiClient.post('/auth/validate-reset-token', { token });
 
 export const getReportsSummary = () => apiClient.get('/reports/summary');
+
+export const getUsersRequest = () => apiClient.get('/users');
+
+export const getResponsiblesListRequest = () => apiClient.get('/users/responsibles');

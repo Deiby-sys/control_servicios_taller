@@ -1,13 +1,11 @@
-//api orden de trabajo
-
 // src/api/workOrdersApi.js
 import axios from "axios";
 
 // Reutiliza la misma lógica de URL base
 const getApiBaseUrl = () => {
-  const envUrl = process.env.REACT_APP_API_URL;
+  const envUrl = import.meta.env.REACT_APP_API_URL; //import.meta.env
   if (envUrl) return envUrl.trim();
-  return process.env.NODE_ENV === 'production'
+  return import.meta.env.MODE === 'production' //import.meta.env.MODE
     ? 'https://control-servicios-taller.onrender.com'
     : 'http://localhost:4000';
 };

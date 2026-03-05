@@ -1,5 +1,4 @@
 // Sidebar.jsx
-
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Sidebar.css';
@@ -11,8 +10,8 @@ function Sidebar({ isExpanded = true, onClose }) {
 
   const handleNavigation = (path) => {
     navigate(path);
-    // Cerrar sidebar solo en móviles pequeños
-    if (window.innerWidth <= 480) {
+    // Cerrar sidebar si está colapsable (el layout ya lo decide)
+    if (!isExpanded) {
       onClose();
     }
   };
@@ -21,12 +20,10 @@ function Sidebar({ isExpanded = true, onClose }) {
     return location.pathname === path;
   };
 
-  // Solo aplicar clases de colapso en móviles pequeños
-  const shouldCollapse = window.innerWidth <= 480;
+  // ✅ Solo usa la prop isExpanded para las clases
   const sidebarClasses = [
     'sidebar',
-    shouldCollapse && !isExpanded ? 'collapsed' : '',
-    shouldCollapse && isExpanded ? 'expanded' : ''
+    !isExpanded ? 'collapsed' : 'expanded'
   ].filter(Boolean).join(' ');
 
   return (
@@ -46,7 +43,6 @@ function Sidebar({ isExpanded = true, onClose }) {
             </button>
           </li>
           
-          {/* Órdenes de Trabajo - Todos los perfiles de taller */}
           <li>
             <button 
               onClick={() => handleNavigation('/ordenes')}
@@ -56,7 +52,6 @@ function Sidebar({ isExpanded = true, onClose }) {
             </button>
           </li>
           
-          {/* Solo admin, asesor, jefe */}
           {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
             <>
               <li>
@@ -88,7 +83,6 @@ function Sidebar({ isExpanded = true, onClose }) {
             </>
           )}
           
-          {/* Histórico */}
           <li>
             <button 
               onClick={() => handleNavigation('/historial')}
@@ -98,7 +92,6 @@ function Sidebar({ isExpanded = true, onClose }) {
             </button>
           </li>
 
-          {/* Informes */}
           <li>
             <button 
               onClick={() => handleNavigation('/informes')}
@@ -108,19 +101,17 @@ function Sidebar({ isExpanded = true, onClose }) {
             </button>
           </li>
           
-          {/* Cotizador */}
           {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
-          <li>
-            <button 
-              onClick={() => handleNavigation('/cotizador')}
-              className={`sidebar__link ${isActive('/cotizador') ? 'active' : ''}`}
-            >
-              Cotizador
-            </button>
-          </li>
+            <li>
+              <button 
+                onClick={() => handleNavigation('/cotizador')}
+                className={`sidebar__link ${isActive('/cotizador') ? 'active' : ''}`}
+              >
+                Cotizador
+              </button>
+            </li>
           )}
           
-          {/* Solo admin */}
           {user?.profile === 'admin' && (
             <li>
               <button 
@@ -128,7 +119,7 @@ function Sidebar({ isExpanded = true, onClose }) {
                 className={`sidebar__link ${isActive('/usuarios') ? 'active' : ''}`}
               >
                 Usuarios
-            </button>
+              </button>
             </li>
           )}
         </ul>

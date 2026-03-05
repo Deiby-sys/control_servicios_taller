@@ -5,7 +5,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 // Páginas públicas
 import Login from "./pages/Login";
-// import RegisterUser from "./pages/RegisterUser"; // ← Ya no se usa en rutas públicas
 import RecoverPassword from "./pages/RecoverPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -25,7 +24,7 @@ import ClientFormPage from "./pages/ClientFormPage";
 
 // Gestión de usuarios (solo admin)
 import UsersManagementPage from "./pages/UsersManagementPage";
-import RegisterUser from "./pages/RegisterUser"; // ← Import aquí
+import RegisterUser from "./pages/RegisterUser";
 
 // Gestión de vehículos
 import VehiclesPage from "./pages/VehiclesPage";
@@ -45,15 +44,21 @@ import ReportsPage from './pages/ReportsPage';
 function App() {
   return (
     <Routes>
-      {/* ====================== RUTA DE RESET PASSWORD (PRIMERO!) ====================== */}
+      {/* ====================== RUTA DE RESET PASSWORD ====================== */}
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* ====================== RUTAS PÚBLICAS ====================== */}
       <Route path="/login" element={<Login />} />
-      {/* <Route path="/registerUser" element={<RegisterUser />} /> ← ELIMINADA */}
       <Route path="/recuperar" element={<RecoverPassword />} />
 
+      {/* 🔒 CAMBIO CLAVE: 
+          Cualquier acceso a la raíz "/" redirige FORZOSAMENTE a "/login".
+          Esto obliga a pasar por el login sin importar si hay sesión activa.
+      */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       {/* ====================== RUTAS PROTEGIDAS ====================== */}
+      {/* Nota: Ahora el path base es "/" pero las rutas hijas son las específicas */}
       <Route 
         path="/" 
         element={
@@ -62,11 +67,10 @@ function App() {
           </ProtectedRoute>
         }
       >
-        {/* Dashboard principal */}
-        <Route index element={<Dashboard />} />
+        {/* Dashboard principal (accesible vía /dashboard) */}
         <Route path="dashboard" element={<Dashboard />} />
         
-        {/* Perfil de usuario - Todos los perfiles */}
+        {/* Perfil de usuario */}
         <Route 
           path="profile" 
           element={
@@ -76,7 +80,7 @@ function App() {
           } 
         />
         
-        {/* Cotizador - Todos los perfiles autorizados */}
+        {/* Cotizador */}
         <Route 
           path="cotizador" 
           element={
@@ -86,8 +90,7 @@ function App() {
           } 
         />
         
-        {/* ====================== GESTIÓN DE CLIENTES ====================== */}
-        {/* Solo admin, asesor, jefe */}
+        {/* Gestión de Clientes */}
         <Route 
           path="clients" 
           element={
@@ -113,8 +116,7 @@ function App() {
           } 
         />
         
-        {/* ====================== GESTIÓN DE USUARIOS ====================== */}
-        {/* Solo admin */}
+        {/* Gestión de Usuarios */}
         <Route 
           path="usuarios" 
           element={
@@ -124,8 +126,7 @@ function App() {
           } 
         />
         
-        {/* ====================== REGISTRO DE USUARIOS ====================== */}
-        {/* Solo admin */}
+        {/* Registro de Usuarios */}
         <Route 
           path="registerUser" 
           element={
@@ -135,8 +136,7 @@ function App() {
           } 
         />
         
-        {/* ====================== GESTIÓN DE VEHÍCULOS ====================== */}
-        {/* Solo admin, asesor, jefe */}
+        {/* Gestión de Vehículos */}
         <Route 
           path="vehicles" 
           element={
@@ -162,8 +162,7 @@ function App() {
           } 
         />
         
-        {/* ====================== GESTIÓN DE ÓRDENES DE TRABAJO ====================== */}
-        {/* Todos los perfiles de taller */}
+        {/* Gestión de Órdenes de Trabajo */}
         <Route 
           path="ordenes" 
           element={
@@ -173,7 +172,6 @@ function App() {
           } 
         />
         
-        {/* Crear órdenes - Solo admin, asesor y jefe */}
         <Route 
           path="ordenes/new" 
           element={
@@ -183,7 +181,6 @@ function App() {
           } 
         />
         
-        {/* Detalle de órdenes - Todos los perfiles de taller */}
         <Route 
           path="ordenes/:id" 
           element={
@@ -193,7 +190,6 @@ function App() {
           } 
         />
         
-        {/* Entrega de órdenes - Solo admin, asesor y jefe */}
         <Route 
           path="ordenes/:id/entregar" 
           element={
@@ -203,7 +199,6 @@ function App() {
           } 
         />
         
-        {/* Órdenes por estado - Todos los perfiles de taller */}
         <Route 
           path="ordenes/status/:status" 
           element={
@@ -213,7 +208,7 @@ function App() {
           } 
         />
         
-        {/* Histórico - Todos los perfiles de taller */}
+        {/* Histórico */}
         <Route 
           path="historial" 
           element={

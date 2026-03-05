@@ -1,17 +1,32 @@
 // Centralizar en un solo lugar toda la lógica de autenticación (login, logout, registro, perfil)
 
-// src/context/AuthProvider.jsx
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import {
   loginRequest,
   registerRequest,
-  logoutRequest, // Importamos la función preparada
+  logoutRequest,
   profileRequest,
-} from "../api/auth"; 
+} from "../api/auth";
 
 const AuthContext = createContext();
-
 export const useAuth = () => useContext(AuthContext);
+
+// Función auxiliar para borrar cookies
+const clearCookies = () => {
+  // Obtenemos todas las cookies
+  const cookies = document.cookie.split(";");
+  
+  // Iteramos y las borramos estableciendo una fecha de expiración en el pasado
+  cookies.forEach(cookie => {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+    // Borramos la cookie para el dominio actual y la ruta raíz
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    // También intentamos borrarla específicamente para el dominio (a veces necesario en producción)
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.vercel.app";
+  });
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -19,21 +34,18 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState([]);
 
-  // Verificar sesión al cargar la app
   useEffect(() => {
     let isMounted = true;
     
     const checkLogin = async () => {
       try {
-        // Intenta obtener el perfil. Si falla (401), significa que no hay sesión válida
-        const res = await profileRequest(); 
+        const res = await profileRequest();
         if (isMounted) {
           setUser(res.data);
           setIsAuthenticated(true);
           setErrors([]);
         }
       } catch (err) {
-        // Si falla, limpiamos todo
         if (isMounted) {
           setUser(null);
           setIsAuthenticated(false);
@@ -58,7 +70,6 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
       setIsAuthenticated(true);
       setErrors([]);
-      // Opcional: Redirigir aquí si quieres, pero usualmente lo hace el ProtectedRoute
     } catch (err) {
       setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en login"]);
     }
@@ -77,36 +88,32 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // 1. Llamamos al backend para destruir la sesión (cookie)
-      await logoutRequest(); 
+      // 1. Intentar cerrar sesión en el backend (para invalidar la sesión en el servidor)
+      await logoutRequest();
     } catch (err) {
       console.error("Error al cerrar sesión en backend:", err);
-      // Incluso si falla el backend, limpiamos localmente por seguridad
+      // Continuamos incluso si falla el backend, por seguridad local
     } finally {
-      // 2. Limpiamos el estado local inmediatamente
+      // 2. LIMPIEZA LOCAL AGRESIVA
       setUser(null);
       setIsAuthenticated(false);
       setErrors([]);
+      
+      // 3. BORRAR COOKIES MANUALMENTE (Crítico para seguridad)
+      clearCookies();
+      
+      // 4. LIMPIAR LOCALSTORAGE (por si acaso hay tokens residuales)
+      localStorage.clear();
+      sessionStorage.clear();
 
-      // 3. FORZAMOS RECARGA COMPLETA DEL NAVEGADOR
-      // Esto es CLAVE: window.location.href recarga la página desde cero,
-      // asegurando que no quede ningún estado en memoria de React.
-      window.location.href = '/login';
+      // 5. FORZAR RECARGA COMPLETA DEL NAVEGADOR
+      // Usamos window.location.replace para que no puedan usar el botón "Atrás"
+      window.location.replace('/login');
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        loading,
-        errors,
-        login,
-        register,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, errors, login, register, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

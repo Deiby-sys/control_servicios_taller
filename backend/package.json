@@ -19,7 +19,7 @@
     "express": "^5.1.0",
     "express-handlebars": "^8.0.2",
     "express-rate-limit": "^8.2.1",
-    "express-session": "^1.18.1",
+    "express-session": "^1.19.0",
     "helmet": "^8.1.0",
     "html2canvas": "^1.4.1",
     "jsdom": "^27.4.0",

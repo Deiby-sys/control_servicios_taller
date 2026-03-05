@@ -121,9 +121,23 @@ export const login = async (req, res) => {
 };
 
 // Logout
-export const logout = (req, res) => {
-  res.clearCookie("token");
-  return res.sendStatus(200);
+export const logout = async (req, res) => {
+  // Destruir la sesión en el servidor
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "No se pudo cerrar la sesión correctamente" });
+    }
+    
+    // Limpiar la cookie en el navegador del cliente
+    res.clearCookie('connect.sid', { 
+      path: '/', 
+      httpOnly: true, 
+      secure: true, // Debe coincidir con la config de app.js (true en prod)
+      sameSite: 'none'
+    });
+    
+    res.json({ message: "Sesión cerrada exitosamente" });
+  });
 };
 
 // Profile

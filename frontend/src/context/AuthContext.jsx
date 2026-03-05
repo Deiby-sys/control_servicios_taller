@@ -1,46 +1,40 @@
 // Centralizar en un solo lugar toda la lógica de autenticación (login, logout, registro, perfil)
-
 // src/context/AuthContext.jsx
+
 import { createContext, useContext, useState, useEffect } from "react";
-// Importamos las funciones de tu API actual (que ya tienen la URL de Render configurada)
-import { 
-  loginRequest, 
-  registerRequest, 
-  logoutRequest, 
-  profileRequest 
-} from "../api/auth"; 
+import axios from "axios"; // Usamos axios directo
 
 const AuthContext = createContext();
-
 export const useAuth = () => useContext(AuthContext);
 
-// --- FUNCIÓN DE LIMPIEZA MANUAL DE COOKIES (CRÍTICA) ---
-// Esta función asegura que la cookie se borre del navegador sin importar lo que haga el backend
+// Función para obtener la URL base (igual que en tus archivos de API)
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim();
+  return import.meta.env.MODE === 'production'
+    ? 'https://control-servicios-taller.onrender.com' // Sin espacios
+    : 'http://localhost:4000';
+};
+
+const API_URL = getApiBaseUrl() + '/api';
+
+// --- FUNCIÓN DE LIMPIEZA MANUAL DE COOKIES (CRÍTICA PARA SEGURIDAD) ---
 const clearAllCookies = () => {
   const cookies = document.cookie.split(";");
-  const domain = window.location.hostname; // ej: mytallerapp.vercel.app
+  const domain = window.location.hostname;
   
   cookies.forEach(cookie => {
     const eqPos = cookie.indexOf("=");
     const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
     
-    // Intentamos borrar con múltiples combinaciones de dominio y ruta
-    // 1. Ruta raíz sin dominio específico
+    // Borrar con múltiples combinaciones para asegurar
     document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-    
-    // 2. Con dominio actual (ej: .mytallerapp.vercel.app)
     document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${domain}`;
-    
-    // 3. Con dominio exacto
     document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
-    
-    // 4. Dominio genérico de Vercel (por si la cookie se guardó así)
     if (domain.includes('vercel.app')) {
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.vercel.app`;
     }
   });
-
-  // Limpieza extra de almacenamiento local
   localStorage.clear();
   sessionStorage.clear();
 };
@@ -51,14 +45,15 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState([]);
 
-  // Verificar sesión al montar el componente
   useEffect(() => {
     let isMounted = true;
     
     const checkLogin = async () => {
       try {
-        // Usamos profileRequest que ya tiene la URL de Render configurada
-        const res = await profileRequest(); 
+        // Llamada directa con axios, igual que tu versión antigua que funcionaba
+        const res = await axios.get(`${API_URL}/auth/profile`, { 
+          withCredentials: true 
+        });
         
         if (isMounted) {
           setUser(res.data);
@@ -66,7 +61,6 @@ export const AuthProvider = ({ children }) => {
           setErrors([]);
         }
       } catch (err) {
-        // Si falla (401), asumimos que no hay sesión válida
         if (isMounted) {
           setUser(null);
           setIsAuthenticated(false);
@@ -79,15 +73,14 @@ export const AuthProvider = ({ children }) => {
     };
     
     checkLogin();
-    
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   const login = async (data) => {
     try {
-      const res = await loginRequest(data);
+      const res = await axios.post(`${API_URL}/auth/login`, data, { 
+        withCredentials: true 
+      });
       setUser(res.data);
       setIsAuthenticated(true);
       setErrors([]);
@@ -98,7 +91,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (data) => {
     try {
-      const res = await registerRequest(data);
+      const res = await axios.post(`${API_URL}/auth/register`, data, { 
+        withCredentials: true 
+      });
       setUser(res.data);
       setIsAuthenticated(true);
       setErrors([]);
@@ -110,40 +105,28 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     // 1. LIMPIEZA MANUAL INMEDIATA (Antes de llamar al backend)
     clearAllCookies();
-    
-    // 2. Actualizar estado local para bloquear acceso UI
     setUser(null);
     setIsAuthenticated(false);
     setErrors([]);
 
     try {
-      // 3. Llamar al backend para cerrar sesión formalmente
-      // Si falla, no importa, ya limpiamos localmente
-      await logoutRequest().catch(() => {}); 
+      // 2. Llamada directa al backend para cerrar sesión
+      await axios.post(`${API_URL}/auth/logout`, {}, { 
+        withCredentials: true 
+      }).catch(() => {}); // Ignorar errores de red aquí
     } catch (err) {
-      console.error("Error al cerrar sesión en backend:", err);
+      console.error("Logout error:", err);
     } finally {
-      // 4. SEGUNDA LIMPIEZA POR SEGURIDAD
+      // 3. SEGUNDA LIMPIEZA POR SEGURIDAD
       clearAllCookies();
-
-      // 5. REDIRECCIÓN FORZADA SIN HISTORIAL
-      // Esto recarga la página y evita el botón "Atrás"
+      
+      // 4. REDIRECCIÓN FORZADA SIN HISTORIAL
       window.location.replace('/login');
     }
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        loading,
-        errors,
-        login,
-        register,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, errors, login, register, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

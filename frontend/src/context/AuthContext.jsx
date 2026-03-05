@@ -2,50 +2,45 @@
 
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import {
-  loginRequest,
-  registerRequest,
-  logoutRequest,
-  profileRequest,
-} from "../api/auth";
+// Importamos las funciones de tu API actual (que ya tienen la URL de Render configurada)
+import { 
+  loginRequest, 
+  registerRequest, 
+  logoutRequest, 
+  profileRequest 
+} from "../api/auth"; 
 
 const AuthContext = createContext();
+
 export const useAuth = () => useContext(AuthContext);
 
-// Función NUCLEAR para borrar cookies
-const nuclearCookieClear = () => {
+// --- FUNCIÓN DE LIMPIEZA MANUAL DE COOKIES (CRÍTICA) ---
+// Esta función asegura que la cookie se borre del navegador sin importar lo que haga el backend
+const clearAllCookies = () => {
+  const cookies = document.cookie.split(";");
   const domain = window.location.hostname; // ej: mytallerapp.vercel.app
-  const domainsToTry = [
-    domain,
-    `.${domain}`,
-    '.vercel.app',
-    '' // Sin dominio específico
-  ];
-
-  const pathsToTry = ['/', ''];
   
-  // Nombres comunes de cookies de sesión
-  const cookieNames = ['connect.sid', 'sid', 'session', 'jwt', 'auth_token'];
-
-  cookieNames.forEach(name => {
-    domainsToTry.forEach(d => {
-      pathsToTry.forEach(p => {
-        // Intentamos borrar con diferentes combinaciones
-        let cookieString = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${p}`;
-        if (d) cookieString += `;domain=${d}`;
-        
-        // Importante: Las cookies Secure solo se borran si se especifica Secure al borrar? 
-        // No necesariamente, pero probemos también sin atributos extra.
-        document.cookie = cookieString;
-        
-        // Versión explícita para producción HTTPS
-        if (window.location.protocol === 'https:') {
-           document.cookie = `${cookieString};secure`;
-        }
-      });
-    });
+  cookies.forEach(cookie => {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+    
+    // Intentamos borrar con múltiples combinaciones de dominio y ruta
+    // 1. Ruta raíz sin dominio específico
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    
+    // 2. Con dominio actual (ej: .mytallerapp.vercel.app)
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${domain}`;
+    
+    // 3. Con dominio exacto
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
+    
+    // 4. Dominio genérico de Vercel (por si la cookie se guardó así)
+    if (domain.includes('vercel.app')) {
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.vercel.app`;
+    }
   });
 
+  // Limpieza extra de almacenamiento local
   localStorage.clear();
   sessionStorage.clear();
 };
@@ -55,28 +50,23 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState([]);
-  
-  // Estado para bloquear verificación tras logout manual
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Verificar sesión al montar el componente
   useEffect(() => {
-    // Si estamos en proceso de logout, NO verificar sesión
-    if (isLoggingOut) {
-      setLoading(false);
-      return;
-    }
-
     let isMounted = true;
     
     const checkLogin = async () => {
       try {
-        const res = await profileRequest();
+        // Usamos profileRequest que ya tiene la URL de Render configurada
+        const res = await profileRequest(); 
+        
         if (isMounted) {
           setUser(res.data);
           setIsAuthenticated(true);
           setErrors([]);
         }
       } catch (err) {
+        // Si falla (401), asumimos que no hay sesión válida
         if (isMounted) {
           setUser(null);
           setIsAuthenticated(false);
@@ -90,11 +80,12 @@ export const AuthProvider = ({ children }) => {
     
     checkLogin();
     
-    return () => { isMounted = false; };
-  }, [isLoggingOut]);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const login = async (data) => {
-    setIsLoggingOut(false); // Resetear bloqueo
     try {
       const res = await loginRequest(data);
       setUser(res.data);
@@ -106,7 +97,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (data) => {
-    setIsLoggingOut(false);
     try {
       const res = await registerRequest(data);
       setUser(res.data);
@@ -118,34 +108,42 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    // 1. BLOQUEAR VERIFICACIÓN INMEDIATAMENTE
-    setIsLoggingOut(true);
+    // 1. LIMPIEZA MANUAL INMEDIATA (Antes de llamar al backend)
+    clearAllCookies();
     
-    // 2. LIMPIEZA NUCLEAR ANTES DE LLAMAR AL BACKEND
-    // Limpiamos primero localmente para que si el backend falla, ya estamos "fuera"
-    nuclearCookieClear();
+    // 2. Actualizar estado local para bloquear acceso UI
     setUser(null);
     setIsAuthenticated(false);
+    setErrors([]);
 
     try {
-      // Llamamos al backend para limpieza formal (aunque ya limpiamos local)
+      // 3. Llamar al backend para cerrar sesión formalmente
+      // Si falla, no importa, ya limpiamos localmente
       await logoutRequest().catch(() => {}); 
     } catch (err) {
-      console.error("Logout backend error:", err);
+      console.error("Error al cerrar sesión en backend:", err);
     } finally {
-      // 3. SEGUNDA LIMPIEZA POR SEGURIDAD
-      nuclearCookieClear();
+      // 4. SEGUNDA LIMPIEZA POR SEGURIDAD
+      clearAllCookies();
 
-      // 4. REDIRECCIÓN FORZADA SIN HISTORIAL
-      // Usamos un pequeño delay para asegurar que el navegador procese el borrado de cookies
-      setTimeout(() => {
-        window.location.replace('/login');
-      }, 200);
+      // 5. REDIRECCIÓN FORZADA SIN HISTORIAL
+      // Esto recarga la página y evita el botón "Atrás"
+      window.location.replace('/login');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, errors, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        errors,
+        login,
+        register,
+        logout,
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

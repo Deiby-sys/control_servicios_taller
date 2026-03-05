@@ -8,7 +8,7 @@ import {
   logoutRequest,
   profileRequest,
   verifyAuth
-} from "../api/auth"; // ✅ Usa auth.js, no axios.js
+} from "../api/auth"; // Usa auth.js, no axios.js
 
 const AuthContext = createContext();
 
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
     
     const checkLogin = async () => {
       try {
-        const res = await profileRequest(); // ✅ Usa profileRequest()
+        const res = await profileRequest(); // Usa profileRequest()
         if (isMounted) {
           setUser(res.data);
           setIsAuthenticated(true);
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (data) => {
     try {
-      const res = await loginRequest(data); // ✅ Usa loginRequest()
+      const res = await loginRequest(data); // Usa loginRequest()
       setUser(res.data);
       setIsAuthenticated(true);
       setErrors([]);
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (data) => {
     try {
-      const res = await registerRequest(data); // ✅ Usa registerRequest()
+      const res = await registerRequest(data); // Usa registerRequest()
       setUser(res.data);
       setIsAuthenticated(true);
       setErrors([]);
@@ -73,16 +73,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try {
-      await logoutRequest(); // ✅ Usa logoutRequest()
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      setUser(null);
-      setIsAuthenticated(false);
-      setErrors([]);
-    }
-  };
+  try {
+    await apiClient.post('/auth/logout'); // Llama al backend para invalidar la sesión
+  } catch (error) {
+    console.error("Error al cerrar sesión en backend:", error);
+  } finally {
+    // Limpieza LOCAL obligatoria
+    localStorage.removeItem('token'); // Si usas tokens
+    localStorage.removeItem('user');
+    
+    // Redirección forzada
+    window.location.href = '/login'; 
+    // Usar window.location.href recarga la página completa y asegura que el estado de React se resetee
+  }
+};
 
   return (
     <AuthContext.Provider

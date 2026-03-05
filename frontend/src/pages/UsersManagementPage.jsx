@@ -1,9 +1,9 @@
 // Página para mostrar usuarios en dashboard
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import Select from "react-select";
+import { getUsersRequest } from "../api/usersApi";
 import "../styles/UsersManagementPage.css";
 
 function UsersManagementPage() {
@@ -49,34 +49,35 @@ function UsersManagementPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("/api/users", {
-        credentials: 'include',
-      });
+      // ✅ 2. Usar la función de API en lugar de fetch directo
+      const response = await getUsersRequest(); 
       
-      if (res.status === 401) {
-        logout();
-        return;
-      }
+      // ✅ 3. Los datos vienen en response.data porque usamos axios
+      const data = response.data; 
       
-      if (!res.ok) throw new Error("Error al cargar usuarios");
-      
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("La respuesta no es JSON válido");
-      }
-
-      const data = await res.json();
       setUsers(data);
       setFilteredUsers(data);
     } catch (err) {
       console.error("Error al cargar usuarios:", err);
-      setError(err.message);
+      
+      // Manejo de error 401 para cerrar sesión
+      if (err.response?.status === 401) {
+        logout();
+        return;
+      }
+
+      setError(err.message || "Error desconocido al cargar usuarios");
     } finally {
       setLoading(false);
     }
   };
 
-  // Iniciar edición de un usuario
+  // ... El resto de tu código (startEdit, handleEditSubmit, etc.) se mantiene igual ...
+  // Solo asegúrate de que las otras llamadas fetch también usen usersApi si fallan.
+  
+  // Para mantener consistencia, te recomiendo actualizar también handleEditSubmit y handleDelete
+  // pero primero probemos solo la carga (fetchUsers).
+
   const startEdit = (user) => {
     setEditingUser(user._id);
     setEditForm({
@@ -87,15 +88,14 @@ function UsersManagementPage() {
     });
   };
 
-  // Guardar cambios del usuario editado
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/users/${editingUser}`, {
+      // Aquí podrías crear una función updateUserRequest en usersApi.js más adelante
+      // Por ahora, dejaremos este fetch pero asegurándonos de que la URL sea absoluta si falla
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://control-servicios-taller.onrender.com'}/api/users/${editingUser}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: 'include',
         body: JSON.stringify(editForm),
       });
@@ -106,21 +106,17 @@ function UsersManagementPage() {
       }
       
       const updatedUser = await res.json();
-      setUsers((prev) =>
-        prev.map((u) => (u._id === editingUser ? updatedUser : u))
-      );
+      setUsers((prev) => prev.map((u) => (u._id === editingUser ? updatedUser : u)));
       setEditingUser(null);
     } catch (err) {
       alert("Error al actualizar: " + err.message);
     }
   };
 
-  // Eliminar un usuario
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`¿Eliminar a ${name}? Esta acción no se puede deshacer.`))
-      return;
+    if (!window.confirm(`¿Eliminar a ${name}? Esta acción no se puede deshacer.`)) return;
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://control-servicios-taller.onrender.com'}/api/users/${id}`, {
         method: "DELETE",
         credentials: 'include',
       });
@@ -137,11 +133,8 @@ function UsersManagementPage() {
     }
   };
 
-  const handleEditChange = (e) =>
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
-
-  const handleProfileEditChange = (option) =>
-    setEditForm({ ...editForm, profile: option ? option.value : "" });
+  const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  const handleProfileEditChange = (option) => setEditForm({ ...editForm, profile: option ? option.value : "" });
 
   if (loading) return <div className="page">Cargando usuarios...</div>;
   if (error) return <div className="page error">Error: {error}</div>;
@@ -150,13 +143,9 @@ function UsersManagementPage() {
     <div className="page">
       <div className="page-header">
         <h1>Gestión de Usuarios</h1>
-        {/* Registro usuarios */}
-        <Link to="/registerUser" className="btn-primary">
-          Registrar Nuevo Usuario
-        </Link>
+        <Link to="/registerUser" className="btn-primary">Registrar Nuevo Usuario</Link>
       </div>
 
-      {/* Barra de búsqueda */}
       <div className="search-bar">
         <input
           type="text"
@@ -167,16 +156,11 @@ function UsersManagementPage() {
         />
       </div>
 
-      {/* Tabla de usuarios */}
       <div className="table-container">
         <table className="users-table">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Correo</th>
-              <th>Perfil</th>
-              <th>Acciones</th>
+              <th>Nombre</th><th>Apellido</th><th>Correo</th><th>Perfil</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -186,38 +170,12 @@ function UsersManagementPage() {
                   {editingUser === user._id ? (
                     <td colSpan="5">
                       <form onSubmit={handleEditSubmit} className="edit-form-inline">
-                        <input
-                          name="name"
-                          placeholder="Nombre"
-                          value={editForm.name}
-                          onChange={handleEditChange}
-                          required
-                        />
-                        <input
-                          name="lastName"
-                          placeholder="Apellido"
-                          value={editForm.lastName}
-                          onChange={handleEditChange}
-                          required
-                        />
+                        <input name="name" placeholder="Nombre" value={editForm.name} onChange={handleEditChange} required />
+                        <input name="lastName" placeholder="Apellido" value={editForm.lastName} onChange={handleEditChange} required />
                         <span className="edit-email">{user.email}</span>
-                        <Select
-                          options={perfiles}
-                          value={perfiles.find((p) => p.value === editForm.profile) || null}
-                          onChange={handleProfileEditChange}
-                          className="select-small"
-                          classNamePrefix="react-select"
-                        />
-                        <button type="submit" className="btn-save">
-                          Guardar
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-cancel"
-                          onClick={() => setEditingUser(null)}
-                        >
-                          Cancelar
-                        </button>
+                        <Select options={perfiles} value={perfiles.find((p) => p.value === editForm.profile) || null} onChange={handleProfileEditChange} className="select-small" classNamePrefix="react-select" />
+                        <button type="submit" className="btn-save">Guardar</button>
+                        <button type="button" className="btn-cancel" onClick={() => setEditingUser(null)}>Cancelar</button>
                       </form>
                     </td>
                   ) : (
@@ -227,29 +185,15 @@ function UsersManagementPage() {
                       <td>{user.email}</td>
                       <td>{user.profile}</td>
                       <td>
-                        <button
-                          className="btn-edit"
-                          onClick={() => startEdit(user)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="btn-delete"
-                          onClick={() => handleDelete(user._id, user.name)}
-                        >
-                          Eliminar
-                        </button>
+                        <button className="btn-edit" onClick={() => startEdit(user)}>Editar</button>
+                        <button className="btn-delete" onClick={() => handleDelete(user._id, user.name)}>Eliminar</button>
                       </td>
                     </>
                   )}
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="5" className="no-data">
-                  No se encontraron usuarios
-                </td>
-              </tr>
+              <tr><td colSpan="5" className="no-data">No se encontraron usuarios</td></tr>
             )}
           </tbody>
         </table>

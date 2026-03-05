@@ -12,20 +12,42 @@ import {
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
-// Función auxiliar para borrar cookies
-const clearCookies = () => {
-  // Obtenemos todas las cookies
-  const cookies = document.cookie.split(";");
+// Función NUCLEAR para borrar cookies
+const nuclearCookieClear = () => {
+  const domain = window.location.hostname; // ej: mytallerapp.vercel.app
+  const domainsToTry = [
+    domain,
+    `.${domain}`,
+    '.vercel.app',
+    '' // Sin dominio específico
+  ];
+
+  const pathsToTry = ['/', ''];
   
-  // Iteramos y las borramos estableciendo una fecha de expiración en el pasado
-  cookies.forEach(cookie => {
-    const eqPos = cookie.indexOf("=");
-    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-    // Borramos la cookie para el dominio actual y la ruta raíz
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-    // También intentamos borrarla específicamente para el dominio (a veces necesario en producción)
-    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.vercel.app";
+  // Nombres comunes de cookies de sesión
+  const cookieNames = ['connect.sid', 'sid', 'session', 'jwt', 'auth_token'];
+
+  cookieNames.forEach(name => {
+    domainsToTry.forEach(d => {
+      pathsToTry.forEach(p => {
+        // Intentamos borrar con diferentes combinaciones
+        let cookieString = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${p}`;
+        if (d) cookieString += `;domain=${d}`;
+        
+        // Importante: Las cookies Secure solo se borran si se especifica Secure al borrar? 
+        // No necesariamente, pero probemos también sin atributos extra.
+        document.cookie = cookieString;
+        
+        // Versión explícita para producción HTTPS
+        if (window.location.protocol === 'https:') {
+           document.cookie = `${cookieString};secure`;
+        }
+      });
+    });
   });
+
+  localStorage.clear();
+  sessionStorage.clear();
 };
 
 export const AuthProvider = ({ children }) => {
@@ -33,8 +55,17 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState([]);
+  
+  // Estado para bloquear verificación tras logout manual
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
+    // Si estamos en proceso de logout, NO verificar sesión
+    if (isLoggingOut) {
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     
     const checkLogin = async () => {
@@ -59,12 +90,11 @@ export const AuthProvider = ({ children }) => {
     
     checkLogin();
     
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => { isMounted = false; };
+  }, [isLoggingOut]);
 
   const login = async (data) => {
+    setIsLoggingOut(false); // Resetear bloqueo
     try {
       const res = await loginRequest(data);
       setUser(res.data);
@@ -76,6 +106,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (data) => {
+    setIsLoggingOut(false);
     try {
       const res = await registerRequest(data);
       setUser(res.data);
@@ -87,28 +118,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try {
-      // 1. Intentar cerrar sesión en el backend (para invalidar la sesión en el servidor)
-      await logoutRequest();
-    } catch (err) {
-      console.error("Error al cerrar sesión en backend:", err);
-      // Continuamos incluso si falla el backend, por seguridad local
-    } finally {
-      // 2. LIMPIEZA LOCAL AGRESIVA
-      setUser(null);
-      setIsAuthenticated(false);
-      setErrors([]);
-      
-      // 3. BORRAR COOKIES MANUALMENTE (Crítico para seguridad)
-      clearCookies();
-      
-      // 4. LIMPIAR LOCALSTORAGE (por si acaso hay tokens residuales)
-      localStorage.clear();
-      sessionStorage.clear();
+    // 1. BLOQUEAR VERIFICACIÓN INMEDIATAMENTE
+    setIsLoggingOut(true);
+    
+    // 2. LIMPIEZA NUCLEAR ANTES DE LLAMAR AL BACKEND
+    // Limpiamos primero localmente para que si el backend falla, ya estamos "fuera"
+    nuclearCookieClear();
+    setUser(null);
+    setIsAuthenticated(false);
 
-      // 5. FORZAR RECARGA COMPLETA DEL NAVEGADOR
-      // Usamos window.location.replace para que no puedan usar el botón "Atrás"
-      window.location.replace('/login');
+    try {
+      // Llamamos al backend para limpieza formal (aunque ya limpiamos local)
+      await logoutRequest().catch(() => {}); 
+    } catch (err) {
+      console.error("Logout backend error:", err);
+    } finally {
+      // 3. SEGUNDA LIMPIEZA POR SEGURIDAD
+      nuclearCookieClear();
+
+      // 4. REDIRECCIÓN FORZADA SIN HISTORIAL
+      // Usamos un pequeño delay para asegurar que el navegador procese el borrado de cookies
+      setTimeout(() => {
+        window.location.replace('/login');
+      }, 200);
     }
   };
 

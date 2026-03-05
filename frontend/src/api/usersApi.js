@@ -1,5 +1,4 @@
 //API para usuarios
-
 // src/api/usersApi.js
 import axios from 'axios';
 
@@ -7,7 +6,7 @@ const getApiBaseUrl = () => {
   const envUrl = import.meta.env.REACT_APP_API_URL;
   if (envUrl) return envUrl.trim();
   return import.meta.env.MODE === 'production'
-    ? 'https://control-servicios-taller.onrender.com'
+    ? 'https://control-servicios-taller.onrender.com' // ✅ SIN ESPACIOS AL FINAL
     : 'http://localhost:4000';
 };
 

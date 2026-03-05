@@ -32,6 +32,7 @@
   color: #495057;
 }
 
+/* ✅ ESTILO UNIFICADO PARA TODOS LOS CAMPOS DE ENTRADA */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -40,8 +41,25 @@
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 1rem;
+  color: #495057;           /* Texto gris oscuro, legible */
+  background-color: white;  /* Fondo blanco, como en el textarea */
+  box-sizing: border-box;
+}
+
+/* Asegurar que inputs específicos (placa, identificación, km) también usen este estilo */
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
   color: #495057;
   background-color: white;
+}
+
+/* Placeholder más suave, pero no demasiado claro */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #6c757d;
+  opacity: 1;
 }
 
 .form-group input:focus,
@@ -72,6 +90,7 @@
 
 .plate-search input {
   flex: 1;
+  /* Hereda el estilo unificado arriba */
 }
 
 .btn-search {

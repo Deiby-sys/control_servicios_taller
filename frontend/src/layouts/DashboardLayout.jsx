@@ -1,39 +1,34 @@
-//Layout compartido
-
+// src/layouts/DashboardLayout.jsx
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import '../styles/Layout.css';
 
 function DashboardLayout() {
-  const navigate = useNavigate();
-  
-  // Estado para controlar si el sidebar está expandido
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
-  // Determinar si estamos en móvil muy pequeño
-  const isMobileSmall = () => window.innerWidth <= 480;
+  // Detecta móviles pequeños (portrait o landscape)
+  const isMobileSmall = () => {
+    return window.matchMedia('(max-width: 480px), (max-height: 500px)').matches;
+  };
 
-  // Inicializar el estado según el tamaño de pantalla
   useEffect(() => {
     const updateSidebarState = () => {
       if (isMobileSmall()) {
-        setIsSidebarExpanded(false); // Colapsado en móviles pequeños
+        setIsSidebarExpanded(false);
       } else {
-        setIsSidebarExpanded(true);  // Expandido en otros dispositivos
+        setIsSidebarExpanded(true);
       }
     };
 
-    // Establecer estado inicial
     updateSidebarState();
 
-    // Escuchar cambios de tamaño de ventana
-    window.addEventListener('resize', updateSidebarState);
-    
-    return () => {
-      window.removeEventListener('resize', updateSidebarState);
-    };
+    const mediaQuery = window.matchMedia('(max-width: 480px), (max-height: 500px)');
+    const handleMediaChange = () => updateSidebarState();
+
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => mediaQuery.removeEventListener('change', handleMediaChange);
   }, []);
 
   const toggleSidebar = () => {
@@ -50,7 +45,7 @@ function DashboardLayout() {
 
   return (
     <div className="dashboard-layout">
-      {/* Botón hamburguesa (solo en móviles muy pequeños) */}
+      {/* Botón hamburguesa: solo en móviles pequeños (portrait o landscape) */}
       {isMobileSmall() && (
         <button 
           className="hamburger-btn"

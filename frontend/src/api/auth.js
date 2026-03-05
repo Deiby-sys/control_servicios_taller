@@ -1,5 +1,6 @@
-// src/api/auth.js
 // Centraliza todas las llamadas HTTP relacionadas con autenticación
+
+// src/api/auth.js
 
 import axios from 'axios';
 
@@ -65,7 +66,3 @@ export const validateResetTokenRequest = (token) =>
   apiClient.post('/auth/validate-reset-token', { token });
 
 export const getReportsSummary = () => apiClient.get('/reports/summary');
-
-export const getUsersRequest = () => apiClient.get('/users');
-
-export const getResponsiblesListRequest = () => apiClient.get('/users/responsibles');

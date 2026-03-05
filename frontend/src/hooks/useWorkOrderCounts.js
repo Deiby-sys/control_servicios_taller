@@ -1,23 +1,8 @@
 //Hooks para el contador de las órdenes de trabajo
 
+// src/hooks/useWorkOrderCounts.js
 import { useState, useEffect } from "react";
-import { utils, writeFile } from 'xlsx';
-
-export const useExportToExcel = () => {
-  const exportToExcel = (data, filename, sheetName = 'Datos') => {
-    // Crear una hoja de trabajo
-    const worksheet = utils.json_to_sheet(data);
-    
-    // Crear un libro de trabajo
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, sheetName);
-    
-    // Guardar el archivo
-    writeFile(workbook, `${filename}.xlsx`);
-  };
-
-  return { exportToExcel };
-};
+import { getWorkOrderCountsRequest } from "../api/workOrder.api"; // Importa desde tu API
 
 export const useWorkOrderCounts = () => {
   const [counts, setCounts] = useState({
@@ -28,23 +13,18 @@ export const useWorkOrderCounts = () => {
     en_soporte: 0,
     en_proceso: 0, 
     completado: 0,
-    entregado: 0 // Añadido para que el backend pueda devolverlo
+    entregado: 0
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const response = await fetch('/api/work-orders/counts', {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setCounts(data);
-        }
+        const response = await getWorkOrderCountsRequest(); // Esto ya usa la URL correcta
+        setCounts(response.data); // Actualiza con los datos reales
       } catch (error) {
         console.error("Error al obtener conteos:", error);
+        // Opcional: podrías mostrar un mensaje de error aquí
       } finally {
         setLoading(false);
       }
@@ -53,7 +33,6 @@ export const useWorkOrderCounts = () => {
     fetchCounts();
   }, []);
 
-  // Calcular total en taller (todos menos entregado)
   const totalEnTaller = counts.por_asignar + 
                        counts.asignado + 
                        counts.en_aprobacion + 

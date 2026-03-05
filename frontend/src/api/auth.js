@@ -1,5 +1,4 @@
 // Centraliza todas las llamadas HTTP relacionadas con autenticación
-
 // src/api/auth.js
 
 import axios from 'axios';

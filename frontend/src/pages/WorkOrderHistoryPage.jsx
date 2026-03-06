@@ -1,11 +1,23 @@
 // Historial órdenes de trabajo
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { useWorkOrders } from "../context/WorkOrderContext";
 import Select from "react-select";
 import { Link } from "react-router-dom";
 import { utils, writeFile } from 'xlsx';
 import "../styles/WorkOrderHistoryPage.css";
+
+// Función de URL Base
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim();
+  return import.meta.env.MODE === 'production'
+    ? 'https://control-servicios-taller.onrender.com'
+    : 'http://localhost:4000';
+};
+
+const API_URL = getApiBaseUrl() + '/api';
 
 function WorkOrderHistoryPage() {
   const { workOrders, getWorkOrders, loading, error } = useWorkOrders();
@@ -27,16 +39,21 @@ function WorkOrderHistoryPage() {
       }
     };
 
+    // Función fetchUsers Corregida
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users', { credentials: 'include' });
-        const userData = await response.json();
+        const response = await axios.get(`${API_URL}/users`, {
+          withCredentials: true
+        });
+        const userData = response.data;
+        
         setUsers(userData.map(u => ({ 
           value: u._id, 
           label: `${u.name} ${u.lastName}` 
         })));
       } catch (error) {
         console.error("Error al cargar usuarios:", error);
+        setUsers([]);
       }
     };
 
@@ -124,6 +141,7 @@ function WorkOrderHistoryPage() {
             placeholder="Filtrar por responsable..."
             className="search-select"
             isClearable
+            noOptionsMessage={() => "No hay usuarios"}
           />
         </div>
       </div>

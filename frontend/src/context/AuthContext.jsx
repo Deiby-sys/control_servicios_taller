@@ -61,29 +61,39 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (data) => {
     setIsLoggingOut(false);
+    setErrors([]); // Limpiar errores previos
     try {
       const res = await axios.post(`${API_URL}/auth/login`, data, { 
         withCredentials: true 
       });
+      
+      // SOLO entramos si el backend respondió 200 OK
       setUser(res.data);
       setIsAuthenticated(true);
-      setErrors([]);
+      
     } catch (err) {
-      setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en login"]);
+      // SI HAY ERROR, MOSTRAMOS EL MENSAJE Y LANZAMOS EXCEPCIÓN
+      const msg = err.response?.data?.message || "Credenciales incorrectas";
+      setErrors([msg]);
+      
+      // IMPORTANTE: Lanzamos el error para que Login.jsx sepa que falló
+      throw new Error(msg); 
     }
   };
 
   const register = async (data) => {
     setIsLoggingOut(false);
+    setErrors([]);
     try {
       const res = await axios.post(`${API_URL}/auth/register`, data, { 
         withCredentials: true 
       });
       setUser(res.data);
       setIsAuthenticated(true);
-      setErrors([]);
     } catch (err) {
-      setErrors(err.response?.data?.message ? [err.response.data.message] : ["Error en registro"]);
+      const msg = err.response?.data?.message || "Error en registro";
+      setErrors([msg]);
+      throw new Error(msg);
     }
   };
 
@@ -94,14 +104,12 @@ export const AuthProvider = ({ children }) => {
     setErrors([]);
 
     try {
-      // El backend se encargará de destruir la sesión y borrar la cookie
       await axios.post(`${API_URL}/auth/logout`, {}, { 
         withCredentials: true 
-      });
+      }).catch(() => {}); // Ignorar errores de red en logout
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      // Redirección inmediata sin retrasos innecesarios
       window.location.replace('/login');
     }
   };

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import SignatureCanvas from 'react-signature-canvas';
 import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 // 1. Importamos la función de verificación desde la API
-import { checkActiveOrderByPlate } from '../api/workOrdersApi'; 
+import { checkActiveOrderByPlate } from '../api/workOrder.api'; 
 import "../styles/WorkOrderFormPage.css";
 
 function WorkOrderFormPage() {

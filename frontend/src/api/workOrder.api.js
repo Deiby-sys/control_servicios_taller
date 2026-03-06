@@ -1,18 +1,18 @@
 // src/api/workOrdersApi.js
-import axios from "axios";
 
 // Reutiliza la misma lógica de URL base
+import axios from "axios";
+
 const getApiBaseUrl = () => {
-  const envUrl = import.meta.env.REACT_APP_API_URL; //import.meta.env
+  const envUrl = import.meta.env.REACT_APP_API_URL;
   if (envUrl) return envUrl.trim();
-  return import.meta.env.MODE === 'production' //import.meta.env.MODE
-    ? 'https://control-servicios-taller.onrender.com'
+  return import.meta.env.MODE === 'production'
+    ? 'https://control-servicios-taller.onrender.com' // SIN ESPACIOS
     : 'http://localhost:4000';
 };
 
 const API_BASE = getApiBaseUrl();
 
-// Instancia reutilizable para la mayoría de las llamadas
 const apiClient = axios.create({
   baseURL: `${API_BASE}/api`,
   withCredentials: true,
@@ -28,6 +28,7 @@ export const getWorkOrderCountsRequest = () => apiClient.get("/work-orders/count
 export const getVehicleByPlateRequest = (plate) => apiClient.get(`/work-orders/vehicle/plate/${plate}`);
 export const getClientByIdentificationRequest = (identification) => apiClient.get(`/work-orders/client/${identification}`);
 export const addNoteToWorkOrderRequest = (id, noteData) => apiClient.post(`/work-orders/${id}/notes`, noteData);
+export const checkActiveOrderByPlate = (plate) => apiClient.get(`/orders/exists?plate=${plate}&t=${Date.now()}`);
 
 // FUNCIONES PARA ADJUNTOS (usamos axios directamente pero con URL completa)
 export const uploadAttachmentRequest = async (orderId, file) => {

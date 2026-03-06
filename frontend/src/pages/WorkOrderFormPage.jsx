@@ -1,5 +1,6 @@
 // Formulario para crear órdenes de trabajo
 
+// src/pages/WorkOrderFormPage.jsx
 import { useState, useEffect, useRef } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
 import { useClients } from "../context/ClientContext";
@@ -7,6 +8,8 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import SignatureCanvas from 'react-signature-canvas';
 import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
+// 1. Importamos la función de verificación desde la API
+import { checkActiveOrderByPlate } from '../api/workOrdersApi'; 
 import "../styles/WorkOrderFormPage.css";
 
 function WorkOrderFormPage() {
@@ -15,7 +18,7 @@ function WorkOrderFormPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Estados
+  // ... (estados son iguales, no cambian) ...
   const [formData, setFormData] = useState({
     plate: "",
     vehicle: "",
@@ -30,7 +33,6 @@ function WorkOrderFormPage() {
   const [searching, setSearching] = useState(false);
   const signatureRef = useRef();
 
-  // Cargar clientes al iniciar (vehículos se cargan dinámicamente por placa)
   useEffect(() => {
     const loadClients = async () => {
       try {
@@ -42,10 +44,8 @@ function WorkOrderFormPage() {
     loadClients();
   }, []);
 
-  // Validación del formulario
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.plate.trim()) newErrors.plate = "La placa es requerida";
     if (!formData.vehicle) newErrors.vehicle = "Debe buscar y seleccionar un vehículo válido";
     if (!formData.currentMileage) newErrors.currentMileage = "El kilometraje es requerido";
@@ -53,20 +53,16 @@ function WorkOrderFormPage() {
     if (!signatureRef.current || signatureRef.current.isEmpty()) {
       newErrors.signature = "Debe firmar digitalmente";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Buscar vehículo por placa
   const handleSearchVehicle = async () => {
     if (!formData.plate.trim()) return;
     const cleanPlate = formData.plate.trim().toUpperCase();
-
     setSearching(true);
     setVehicleData(null);
     setClientData(null);
-
     try {
       const vehicle = await getVehicleByPlate(cleanPlate);
       setVehicleData(vehicle);
@@ -85,14 +81,11 @@ function WorkOrderFormPage() {
     }
   };
 
-  // Buscar cliente por identificación
   const handleSearchClient = async () => {
     if (!clientIdentification.trim()) return;
-
     setSearching(true);
     setClientData(null);
     setVehicleData(null);
-
     try {
       const client = await getClientByIdentification(clientIdentification.trim());
       setClientData(client);
@@ -109,35 +102,28 @@ function WorkOrderFormPage() {
     }
   };
 
-  // Crear orden de trabajo
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setLoading(true);
     try {
-      // Validación: asegurar que se haya cargado vehicleData
       if (!vehicleData) {
         throw new Error("Debe buscar y seleccionar un vehículo válido");
       }
 
-      // Verificar órdenes activas usando vehicleData.plate &t=${Date.now()} añade un parámetro único en cada petición, evitando el caché
-      const checkResponse = await fetch(`/api/orders/exists?plate=${vehicleData.plate}&t=${Date.now()}`, {
-      credentials: 'include'
-      });
-
-      if (!checkResponse.ok) {
-        throw new Error("Error al verificar órdenes existentes");
-      }
-
-      const { exists } = await checkResponse.json();
+      // CORRECCIÓN CLAVE: Usar la función de API con URL absoluta
+      const checkResponse = await checkActiveOrderByPlate(vehicleData.plate);
+      
+      // Asumiendo que tu backend devuelve { exists: true/false }
+      const { exists } = checkResponse.data;
+      
       if (exists) {
         alert(`Ya existe una orden activa para la placa ${vehicleData.plate}. No se puede crear otra hasta que se entregue la actual.`);
         setLoading(false);
         return;
       }
 
-      // Crear orden
       const signatureData = signatureRef.current.getCanvas().toDataURL('image/png');
       const createdOrder = await createWorkOrder({
         vehicle: formData.vehicle,
@@ -146,7 +132,6 @@ function WorkOrderFormPage() {
         clientSignature: signatureData
       });
 
-      // Generar PDF
       setTimeout(() => {
         generateWorkOrderPDF(createdOrder);
       }, 1000);
@@ -160,21 +145,18 @@ function WorkOrderFormPage() {
     }
   };
 
-  // Limpiar firma
   const handleClearSignature = () => {
     if (signatureRef.current) {
       signatureRef.current.clear();
     }
   };
 
-  // Renderizado
   return (
     <div className="form-page">
       <div className="form-container">
         <h1>Nueva Orden de Trabajo</h1>
-
         <form onSubmit={handleSubmit} className="work-order-form">
-          {/* Búsqueda por placa */}
+          {/* Placa */}
           <div className="form-group">
             <label>Placa del Vehículo *</label>
             <div className="plate-search">
@@ -198,7 +180,7 @@ function WorkOrderFormPage() {
             {errors.plate && <span className="error-message">{errors.plate}</span>}
           </div>
 
-          {/* Sección de Búsqueda de Cliente (Visible si el vehículo no se encontró) */}
+          {/* Búsqueda Cliente */}
           {!vehicleData && (
             <div className="form-group client-search-section">
               <label>Identificación del Cliente</label>
@@ -217,7 +199,7 @@ function WorkOrderFormPage() {
             </div>
           )}
 
-          {/* Datos del vehículo/cliente */}
+          {/* Datos Vehículo/Cliente */}
           {(vehicleData || clientData) && (
             <div className="vehicle-info">
               <h3>Datos {vehicleData ? 'del Vehículo' : 'del Cliente'}</h3>
@@ -269,7 +251,7 @@ function WorkOrderFormPage() {
             {errors.serviceRequest && <span className="error-message">{errors.serviceRequest}</span>}
           </div>
 
-          {/* Firma digital */}
+          {/* Firma */}
           <div className="form-group">
             <label>Firma del Cliente *</label>
             <div className="signature-container">

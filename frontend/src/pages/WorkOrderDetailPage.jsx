@@ -1,13 +1,25 @@
 // Página detalle órdenes de trabajo
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { useWorkOrders } from "../context/WorkOrderContext";
 import { useAuth } from "../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 import "../styles/WorkOrderDetailPage.css";
-import { getStatusLabel } from "../utils/statusLabels"; //Función labels
+import { getStatusLabel } from "../utils/statusLabels";
+
+// FUNCIÓN DE URL BASE
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.REACT_APP_API_URL;
+  if (envUrl) return envUrl.trim();
+  return import.meta.env.MODE === 'production'
+    ? 'https://control-servicios-taller.onrender.com'
+    : 'http://localhost:4000';
+};
+
+const API_URL = getApiBaseUrl() + '/api';
 
 function WorkOrderDetailPage() {
   const { id } = useParams();
@@ -32,7 +44,7 @@ function WorkOrderDetailPage() {
   const [selectedAssignees, setSelectedAssignees] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Estados disponibles ACTUALIZADOS con nuevos labels
+  // Estados disponibles
   const statusOptions = [
     { value: 'por_asignar', label: 'Jefe' },
     { value: 'asignado', label: 'Técnico' },
@@ -46,50 +58,43 @@ function WorkOrderDetailPage() {
 
   useEffect(() => {
     const fetchWorkOrder = async () => {
-    try {
-      setLoading(true);
-      const order = await getWorkOrderById(id);
-      setWorkOrder(order);
-      setSelectedStatus(order.status);
-      
-      // Extraer solo los _id de los usuarios asignados
-      const assigneeIds = order.assignedTo?.map(user => user._id) || [];
-      setSelectedAssignees(assigneeIds);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        setLoading(true);
+        const order = await getWorkOrderById(id);
+        setWorkOrder(order);
+        setSelectedStatus(order.status);
+        
+        const assigneeIds = order.assignedTo?.map(u => u._id) || [];
+        setSelectedAssignees(assigneeIds);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Usa /api/users/public en lugar de /api/users para que todos los perfiles puedan asignar responsables
-  const fetchUsers = async () => {
-  try {
-    // Usa la ruta pública accesible para todos los perfiles autenticados
-    const response = await fetch('/api/users/public', {
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-    
-    const userData = await response.json();
-    
-    // Validación de seguridad: asegura que userData sea un array
-    if (!Array.isArray(userData)) {
-      throw new Error("La respuesta no es un array de usuarios");
-    }
+    const fetchUsers = async () => {
+      try {
+        // ✅ USA LA URL ABSOLUTA CORRECTA
+        const response = await axios.get(`${API_URL}/users/public`, {
+          withCredentials: true
+        });
+        
+        const userData = response.data;
+        
+        if (!Array.isArray(userData)) {
+          throw new Error("La respuesta no es un array de usuarios");
+        }
 
-    setUsers(userData.map(u => ({ 
-      value: u._id, 
-      label: `${u.name} ${u.lastName} (${u.profile})` 
-    })));
-  } catch (error) {
-    console.error("Error al cargar usuarios:", error);
-    setUsers([]); // Asegura que users sea un array vacío en caso de error
-  }
-};
+        setUsers(userData.map(u => ({ 
+          value: u._id, 
+          label: `${u.name} ${u.lastName} (${u.profile})` 
+        })));
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+        setUsers([]); 
+      }
+    };
 
     if (id) {
       fetchWorkOrder();
@@ -123,11 +128,10 @@ function WorkOrderDetailPage() {
     }
   };
 
-  // Funciones auxiliares para adjuntos
   const handleUploadAttachment = async (file) => {
     try {
       const updatedOrder = await uploadAttachment(workOrder._id, file);
-      setWorkOrder(updatedOrder); // Actualizar el estado local
+      setWorkOrder(updatedOrder);
       alert('Archivo subido correctamente');
     } catch (error) {
       alert('Error al subir archivo: ' + error.message);
@@ -135,23 +139,20 @@ function WorkOrderDetailPage() {
   };
 
   const handleDeleteAttachment = async (fileId) => {
-  if (window.confirm('¿Estás seguro de eliminar este archivo?')) {
-    try {
-      await deleteAttachment(workOrder._id, fileId);
-      
-      // Actualizar localmente sin recargar toda la orden
-      setWorkOrder(prevOrder => ({
-        ...prevOrder,
-        attachments: prevOrder.attachments.filter(att => att._id !== fileId)
-      }));
-      
-      alert('Archivo eliminado correctamente');
-    } catch (error) {
-      console.error('Error al eliminar archivo:', error);
-      alert('Error al eliminar archivo: ' + (error.message || 'Error desconocido'));
+    if (window.confirm('¿Estás seguro de eliminar este archivo?')) {
+      try {
+        await deleteAttachment(workOrder._id, fileId);
+        setWorkOrder(prevOrder => ({
+          ...prevOrder,
+          attachments: prevOrder.attachments.filter(att => att._id !== fileId)
+        }));
+        alert('Archivo eliminado correctamente');
+      } catch (error) {
+        console.error('Error al eliminar archivo:', error);
+        alert('Error al eliminar archivo: ' + (error.message || 'Error desconocido'));
+      }
     }
-  }
-};
+  };
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
@@ -161,7 +162,6 @@ function WorkOrderDetailPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Colores de estado (mantener igual - los colores no cambian)
   const getStatusColor = (status) => {
     const colors = {
       'por_asignar': '#6c757d',
@@ -182,7 +182,6 @@ function WorkOrderDetailPage() {
 
   return (
     <div className="page">
-      {/* Encabezado con botón de PDF */}
       <div className="page-header">
         <div>
           <h1>Orden de Trabajo</h1>
@@ -197,7 +196,6 @@ function WorkOrderDetailPage() {
             📄 Descargar PDF
           </button>
           
-          {/* Botón de entrega si está completada */}
           {workOrder.status === 'completado' && 
             ['admin', 'asesor', 'jefe'].includes(user?.profile) && (
             <button 
@@ -218,14 +216,12 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Información básica */}
       <div className="order-info">
         <div className="info-card">
           <h3>Información General</h3>
           <div className="info-grid">
             <div><strong>Fecha de Ingreso:</strong> {new Date(workOrder.entryDate).toLocaleString('es-CO')}</div>
             <div><strong>Estado:</strong> 
-              {/* ✅ USO DE TU FUNCIÓN getStatusLabel */}
               <span 
                 className={`status-badge status-${workOrder.status.replace(/_/g, '-')}`}
                 style={{ backgroundColor: getStatusColor(workOrder.status) }}
@@ -259,7 +255,6 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Solicitud del cliente */}
       <div className="order-section">
         <h3>Solicitud del Cliente</h3>
         <div className="solicitud-content">
@@ -267,14 +262,12 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Sección de gestión: ocultar si está entregada */}
       {workOrder.status !== 'entregado' && (
         <div className="order-section">
           <h3>Gestión de la Orden</h3>
           <div className="management-grid">
             <div className="form-group">
               <label>Estado Actual</label>
-              {/* ✅ Las opciones ya están actualizadas en statusOptions */}
               <Select
                 options={statusOptions}
                 value={statusOptions.find(option => option.value === selectedStatus)}
@@ -288,10 +281,10 @@ function WorkOrderDetailPage() {
               <Select
                 options={users}
                 isMulti
-                value={users.filter(user => selectedAssignees.includes(user.value))}
+                value={users.filter(u => selectedAssignees.includes(u.value))}
                 onChange={(selected) => setSelectedAssignees(selected.map(u => u.value))}
                 className="select-assignees"
-                noOptionsMessage={() => "Cargando usuarios..."} // ✅ Mensaje amigable
+                noOptionsMessage={() => "Cargando usuarios..."}
               />
             </div>
 
@@ -308,7 +301,6 @@ function WorkOrderDetailPage() {
         </div>
       )}
 
-      {/* Mostrar mensaje si está entregada */}
       {workOrder.status === 'entregado' && (
         <div className="order-section">
           <div className="info-card" style={{ backgroundColor: '#d4edda', border: '1px solid #c3e6cb' }}>
@@ -319,7 +311,6 @@ function WorkOrderDetailPage() {
         </div>
       )}
 
-      {/* Notas de seguimiento */}
       {workOrder.status !== 'entregado' && (
         <div className="order-section">
           <h3>Notas de Seguimiento</h3>
@@ -358,33 +349,30 @@ function WorkOrderDetailPage() {
         </div>
       )}
 
-{/* Mostrar notas existentes pero sin opción de agregar si está entregada */}
-{workOrder.status === 'entregado' && workOrder.notes && workOrder.notes.length > 0 && (
-  <div className="order-section">
-    <h3>Notas de Seguimiento</h3>
-    <div className="notes-list">
-      {workOrder.notes.map((note, index) => (
-        <div key={index} className="note-item">
-          <div className="note-header">
-            <strong>{note.author?.name} {note.author?.lastName}</strong>
-            <span className="note-date">
-              {new Date(note.createdAt).toLocaleString('es-CO')}
-            </span>
-          </div>
-          <div className="note-content">
-            {note.content}
+      {workOrder.status === 'entregado' && workOrder.notes && workOrder.notes.length > 0 && (
+        <div className="order-section">
+          <h3>Notas de Seguimiento</h3>
+          <div className="notes-list">
+            {workOrder.notes.map((note, index) => (
+              <div key={index} className="note-item">
+                <div className="note-header">
+                  <strong>{note.author?.name} {note.author?.lastName}</strong>
+                  <span className="note-date">
+                    {new Date(note.createdAt).toLocaleString('es-CO')}
+                  </span>
+                </div>
+                <div className="note-content">
+                  {note.content}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-)}
+      )}
 
-      {/* Sección de archivos adjuntos */}
       <div className="order-section">
         <h3>Archivos Adjuntos</h3>
         
-        {/* Formulario para subir archivos */}
         {workOrder.status !== 'entregado' && (
           <div className="attachments-upload">
             <input
@@ -404,7 +392,6 @@ function WorkOrderDetailPage() {
           </div>
         )}
 
-        {/* Lista de archivos adjuntos */}
         <div className="attachments-list">
           {workOrder.attachments && workOrder.attachments.length > 0 ? (
             workOrder.attachments.map((attachment) => (
@@ -440,26 +427,19 @@ function WorkOrderDetailPage() {
         </div>
       </div>
 
-      {/* Sección de entrega */}
       {workOrder.status === 'entregado' && workOrder.deliverySignature && (
         <div className="order-section">
           <h3>Entrega del Servicio</h3>
-          
-          {/* Firma de entrega */}
           <div className="signature-display">
             <span className="signature-label">Firma del Cliente - Entrega</span>
             <img src={workOrder.deliverySignature} alt="Firma de entrega" />
           </div>
-          
-          {/* Nota de entrega */}
           {workOrder.deliveryNote && (
             <div className="solicitud-content">
               <strong>Resumen de Actividades Realizadas:</strong><br />
               {workOrder.deliveryNote}
             </div>
           )}
-          
-          {/* Información de entrega */}
           <div className="info-card">
             <div className="info-grid">
               <div>
@@ -468,19 +448,18 @@ function WorkOrderDetailPage() {
               </div>
               <div>
                 <strong>Entregado por:</strong> 
-                {workOrder.deliveredBy?.name} {workOrder.deliveredBy?.lastName} {/* Mostrar nombre completo */}
+                {workOrder.deliveredBy?.name} {workOrder.deliveredBy?.lastName}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Firma del cliente */}
       {workOrder.clientSignature && workOrder.status !== 'entregado' && (
         <div className="order-section">
           <h3>Firma Digital del Cliente</h3>
           <div className="signature-display">
-            <span className="signature-label"></span> {/* Etiqueta */}
+            <span className="signature-label"></span>
             <img src={workOrder.clientSignature} alt="Firma del cliente" />
           </div>
         </div>

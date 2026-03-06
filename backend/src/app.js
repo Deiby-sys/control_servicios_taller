@@ -52,15 +52,17 @@ app.use(express.json());
 app.use(cookieParser());
 
 // 2. CONFIGURACIÓN DE SESIÓN (CRÍTICO PARA SEGURIDAD)
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'tu_secreto_muy_seguro_cambialo_en_produccion', // Usa variable de entorno en Render
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // true en producción (HTTPS), false en local
+    secure: isProduction, // true en prod, false en local
     httpOnly: true, // Evita acceso desde JS (XSS)
     maxAge: 24 * 60 * 60 * 1000, // 24 horas de duración máxima
-    sameSite: 'none' // Necesario para cookies entre dominios diferentes (Vercel -> Render)
+    sameSite: isProduction ? 'none' : 'lax' // Usar 'lax' en local, 'none' en prod
   }
 }));
 

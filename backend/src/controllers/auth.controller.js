@@ -122,18 +122,19 @@ export const login = async (req, res) => {
 
 // Logout
 export const logout = async (req, res) => {
-  // Destruir la sesión en el servidor
+  const isProduction = process.env.NODE_ENV === 'production';
+
   req.session.destroy((err) => {
     if (err) {
-      return res.status(500).json({ message: "No se pudo cerrar la sesión correctamente" });
+      console.error("Error al destruir sesión:", err);
+      return res.status(500).json({ message: "No se pudo cerrar la sesión" });
     }
     
-    // Limpiar la cookie en el navegador del cliente
     res.clearCookie('connect.sid', { 
       path: '/', 
       httpOnly: true, 
-      secure: true, // Debe coincidir con la config de app.js (true en prod)
-      sameSite: 'none'
+      secure: isProduction, 
+      sameSite: isProduction ? 'none' : 'lax' // DEBE COINCIDIR EXACTAMENTE CON APP.JS
     });
     
     res.json({ message: "Sesión cerrada exitosamente" });

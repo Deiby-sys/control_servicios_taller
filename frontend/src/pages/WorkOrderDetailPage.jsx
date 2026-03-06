@@ -76,7 +76,7 @@ function WorkOrderDetailPage() {
     const fetchUsers = async () => {
       try {
         // USA LA URL ABSOLUTA CORRECTA
-        const response = await axios.get(`${API_URL}/api/users/public`, {
+        const response = await axios.get(`${API_URL}/users/public`, {
           withCredentials: true
         });
         

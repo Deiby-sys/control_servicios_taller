@@ -42,18 +42,24 @@ function WorkOrderHistoryPage() {
     // Función fetchUsers Corregida
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${API_URL}/users`, {
+        // ✅ ASEGÚRATE DE QUE DIGA "/users/public" AL FINAL
+        const response = await axios.get(`${API_URL}/users/public`, {
           withCredentials: true
         });
+        
         const userData = response.data;
         
+        if (!Array.isArray(userData)) {
+          throw new Error("La respuesta no es un array");
+        }
+
         setUsers(userData.map(u => ({ 
           value: u._id, 
           label: `${u.name} ${u.lastName}` 
         })));
       } catch (error) {
-        console.error("Error al cargar usuarios:", error);
-        setUsers([]);
+        console.error("Error al cargar usuarios (Status:", error.response?.status, "):", error.message);
+        setUsers([]); 
       }
     };
 

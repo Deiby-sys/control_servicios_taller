@@ -402,51 +402,60 @@ export const updateWorkOrderStatus = async (req, res) => {
       .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
 
-// ENVIAR EMAIL DE NOTIFICACIÓN SI HAY RESPONSABLES ASIGNADOS CON EMAIL VÁLIDO
+// ENVIAR EMAIL DE NOTIFICACIÓN (MODO ASÍNCRONO NO BLOQUEANTE)
 if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
-  try {
-    const statusLabels = {
-      'por_asignar': 'Jefe',
-      'asignado': 'Técnico',
-      'en_aprobacion': 'Asesor',
-      'por_repuestos': 'Bodega',
-      'en_soporte': 'Soporte técnico',
-      'en_proceso': 'Proceso técnico',
-      'completado': 'Listo para entrega'
-    };
+  
+  const statusLabels = {
+    'por_asignar': 'Jefe',
+    'asignado': 'Técnico',
+    'en_aprobacion': 'Asesor',
+    'por_repuestos': 'Bodega',
+    'en_soporte': 'Soporte técnico',
+    'en_proceso': 'Proceso técnico',
+    'completado': 'Listo para entrega'
+  };
 
-    const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
+  const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
 
-    // Iterar sobre todos los usuarios asignados
-    for (const user of updatedOrder.assignedTo) {
-      const assignedUserEmail = user.email;
-      const assignedUserName = user.name;
+  console.log(`📧 Iniciando envío de ${updatedOrder.assignedTo.length} notificaciones en segundo plano...`);
 
-      if (!assignedUserEmail || !assignedUserEmail.trim()) {
-        console.log("📧 Usuario asignado no tiene email válido, omitiendo notificación");
-        continue; // pasa al siguiente usuario
-      }
+  // Iterar y disparar los envíos SIN AWAIT (Fire and Forget)
+  updatedOrder.assignedTo.forEach(user => {
+    const assignedUserEmail = user.email?.trim();
+    const assignedUserName = user.name || 'Usuario';
 
-      await sendOrderStatusNotification(
-        assignedUserEmail.trim(),
-        assignedUserName || 'Usuario',
-        {
-          placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
-          cliente: updatedOrder.client?.name || 'Cliente no especificado',
-          actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
-          orderId: updatedOrder._id,
-          nuevoEstado: statusDescription
-        }
-      );
-
-      console.log("📧 Email de notificación enviado a:", assignedUserEmail);
+    if (!assignedUserEmail) {
+      console.log(`⚠️ Usuario ${assignedUserName} no tiene email válido. Omitiendo.`);
+      return;
     }
 
-    console.log("📝 Nuevo estado:", statusDescription);
-  } catch (emailError) {
-    console.error("❌ Error enviando email de notificación:", emailError);
-  }
+    // Disparamos la promesa y manejamos el resultado luego, sin detener el flujo principal
+    sendOrderStatusNotification(
+      assignedUserEmail,
+      assignedUserName,
+      {
+        placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
+        cliente: updatedOrder.client?.name || 'Cliente no especificado',
+        actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
+        orderId: updatedOrder._id,
+        nuevoEstado: statusDescription
+      }
+    )
+    .then(() => {
+      console.log(`✅ [BG] Email enviado exitosamente a ${assignedUserEmail}`);
+    })
+    .catch(err => {
+      // Capturamos el error para que no rompa el proceso, pero lo logueamos para depurar
+      console.error(`❌ [BG] Falló envío de email a ${assignedUserEmail}:`, err.message);
+      // Aquí podrías guardar un registro en BD de "correo fallido" si quisieras reintentar luego
+    });
+  });
+  
+  console.log("📝 Notificaciones disparadas. Nuevo estado:", statusDescription);
 }
+
+// Respondemos al cliente INMEDIATAMENTE, sin esperar a que terminen los correos
+res.json(updatedOrder);
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar orden:", error);

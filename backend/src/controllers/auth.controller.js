@@ -180,11 +180,16 @@ export const forgotPassword = async (req, res) => {
       user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutos
       await user.save();
 
-      // Enviar email
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      // ✅ CORRECCIÓN: Usar fallback si FRONTEND_URL no está definida
+      const baseUrl = process.env.FRONTEND_URL || 'https://mytallerapp.vercel.app';
+      const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
       
+      // Log para depurar en Render
+      console.log("🔗 URL generada para recuperación:", resetUrl);
+
       try {
         await sendPasswordResetEmail(user.email, resetUrl);
+        console.log(`✅ Correo enviado a ${user.email}`);
       } catch (emailError) {
         console.error('Error al enviar email:', emailError);
         // No devolvemos error al cliente por seguridad

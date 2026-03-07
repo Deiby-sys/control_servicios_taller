@@ -402,14 +402,14 @@ export const updateWorkOrderStatus = async (req, res) => {
       .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
 
-// ENVIAR EMAIL DE NOTIFICACIÓN (MODO ASÍNCRONO NO BLOQUEANTE)
+// ENVIAR EMAIL DE NOTIFICACIÓN (CON LOGS DE AUDITORÍA)
 if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
   
   const statusLabels = {
     'por_asignar': 'Jefe',
     'asignado': 'Técnico',
     'en_aprobacion': 'Asesor',
-    'por_repuestos': 'Bodega',
+    'por_repuestos': 'Repuestos',
     'en_soporte': 'Soporte técnico',
     'en_proceso': 'Proceso técnico',
     'completado': 'Listo para entrega'
@@ -417,19 +417,27 @@ if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChan
 
   const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
 
-  console.log(`📧 Iniciando envío de ${updatedOrder.assignedTo.length} notificaciones en segundo plano...`);
+  console.log(`🕵️ [AUDITORÍA] Orden ${updatedOrder._id} actualizada.`);
+  console.log(`🕵️ [AUDITORÍA] Usuarios asignados encontrados: ${updatedOrder.assignedTo.length}`);
 
-  // Iterar y disparar los envíos SIN AWAIT (Fire and Forget)
-  updatedOrder.assignedTo.forEach(user => {
-    const assignedUserEmail = user.email?.trim();
+  // Iterar y auditar cada usuario
+  updatedOrder.assignedTo.forEach((user, index) => {
+    console.log(`👤 [USUARIO ${index}] ID: ${user._id}`);
+    console.log(`👤 [USUARIO ${index}] Nombre: ${user.name}`);
+    console.log(`👤 [USUARIO ${index}] Perfil: ${user.profile}`);
+    console.log(`👤 [USUARIO ${index}] Email RAW: "${user.email}"`); // Ver si viene undefined o null
+    
+    const assignedUserEmail = user.email ? String(user.email).trim() : null;
     const assignedUserName = user.name || 'Usuario';
 
     if (!assignedUserEmail) {
-      console.log(`⚠️ Usuario ${assignedUserName} no tiene email válido. Omitiendo.`);
+      console.error(`❌ [FALLO CRÍTICO] El usuario ${assignedUserName} (Perfil: ${user.profile}) NO TIENE EMAIL en la BD. Se omite el envío.`);
       return;
     }
 
-    // Disparamos la promesa y manejamos el resultado luego, sin detener el flujo principal
+    console.log(`📨 [ENVIANDO] Correo a: ${assignedUserEmail} (Perfil: ${user.profile})`);
+
+    // Disparamos la promesa
     sendOrderStatusNotification(
       assignedUserEmail,
       assignedUserName,
@@ -442,18 +450,16 @@ if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChan
       }
     )
     .then(() => {
-      console.log(`✅ [BG] Email enviado exitosamente a ${assignedUserEmail}`);
+      console.log(`✅ [ÉXITO] Email enviado a ${assignedUserEmail}`);
     })
     .catch(err => {
-      // Capturamos el error para que no rompa el proceso, pero lo logueamos para depurar
-      console.error(`❌ [BG] Falló envío de email a ${assignedUserEmail}:`, err.message);
-      // Aquí podrías guardar un registro en BD de "correo fallido" si quisieras reintentar luego
+      console.error(`❌ [ERROR SMTP] Falló envío a ${assignedUserEmail}:`, err.message);
     });
   });
   
   console.log("📝 Notificaciones disparadas. Nuevo estado:", statusDescription);
 }
-
+  
 // Respondemos al cliente INMEDIATAMENTE, sin esperar a que terminen los correos
 res.json(updatedOrder);
     res.json(updatedOrder);

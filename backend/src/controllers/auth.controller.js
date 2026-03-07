@@ -162,15 +162,21 @@ export const profile = async (req, res) => {
 };
 
 // Recuperar contraseña
-
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    
+    // Normalizar el email (minúsculas y sin espacios) para asegurar la búsqueda
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
+
+    console.log(`🔍 [RECUPERACIÓN] Buscando usuario con email: ${cleanEmail}`);
 
     // Buscar usuario
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: cleanEmail });
     
     if (user) {
+      console.log(`✅ [RECUPERACIÓN] Usuario encontrado: ${user.name} (${user.profile})`);
+
       // Generar token y hash
       const resetToken = generateResetToken();
       const hashedToken = hashResetToken(resetToken);
@@ -180,29 +186,35 @@ export const forgotPassword = async (req, res) => {
       user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutos
       await user.save();
 
-      // ✅ CORRECCIÓN: Usar fallback si FRONTEND_URL no está definida
-      const baseUrl = process.env.FRONTEND_URL || 'https://mytallerapp.vercel.app';
+      // ✅ CORRECCIÓN CRÍTICA: URL LIMPIA SIN ESPACIOS
+      const baseUrl = process.env.FRONTEND_URL 
+        ? process.env.FRONTEND_URL.trim() 
+        : 'https://mytallerapp.vercel.app';
+      
       const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
       
-      // Log para depurar en Render
-      console.log("🔗 URL generada para recuperación:", resetUrl);
+      console.log(`🔗 [RECUPERACIÓN] URL generada: ${resetUrl}`);
+      console.log(`📧 [RECUPERACIÓN] Intentando enviar correo a: ${user.email}`);
 
       try {
         await sendPasswordResetEmail(user.email, resetUrl);
-        console.log(`✅ Correo enviado a ${user.email}`);
+        console.log(`✅ [RECUPERACIÓN] Correo enviado EXITOSAMENTE a ${user.email}`);
       } catch (emailError) {
-        console.error('Error al enviar email:', emailError);
+        console.error('❌ [RECUPERACIÓN] Error AL ENVIAR el email:', emailError.message);
+        console.error('Detalles:', emailError);
         // No devolvemos error al cliente por seguridad
       }
+    } else {
+      console.log(`⚠️ [RECUPERACIÓN] Usuario NO encontrado con email: ${cleanEmail}`);
     }
 
-    // Mensaje genérico por seguridad
+    // Mensaje genérico por seguridad (siempre responde igual para no revelar si existe)
     res.json({
       message: "Si el correo está registrado, recibirás un enlace para recuperar tu contraseña."
     });
 
   } catch (error) {
-    console.error("Error en forgotPassword:", error);
+    console.error("❌ [RECUPERACIÓN] Error general:", error);
     res.status(500).json({ message: "Error al procesar la solicitud." });
   }
 };

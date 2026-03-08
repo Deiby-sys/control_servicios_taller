@@ -402,70 +402,73 @@ export const updateWorkOrderStatus = async (req, res) => {
       .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
 
-// ENVIAR EMAIL DE NOTIFICACIÓN (CON LOGS DE AUDITORÍA)
-if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
-  
-  const statusLabels = {
-    'por_asignar': 'Jefe',
-    'asignado': 'Técnico',
-    'en_aprobacion': 'Asesor',
-    'por_repuestos': 'Repuestos',
-    'en_soporte': 'Soporte técnico',
-    'en_proceso': 'Proceso técnico',
-    'completado': 'Listo para entrega'
-  };
+    // ... (Todo el código anterior de validación y actualización se mantiene igual) ...
 
-  const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
+    // ENVIAR EMAIL DE NOTIFICACIÓN (CON LOGS DE AUDITORÍA)
+    if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
+      
+      const statusLabels = {
+        'por_asignar': 'Jefe',
+        'asignado': 'Técnico',
+        'en_aprobacion': 'Asesor',
+        'por_repuestos': 'Repuestos',
+        'en_soporte': 'Soporte técnico',
+        'en_proceso': 'Proceso técnico',
+        'completado': 'Listo para entrega'
+      };
 
-  console.log(`🕵️ [AUDITORÍA] Orden ${updatedOrder._id} actualizada.`);
-  console.log(`🕵️ [AUDITORÍA] Usuarios asignados encontrados: ${updatedOrder.assignedTo.length}`);
+      const statusDescription = statusLabels[updatedOrder.status] || updatedOrder.status;
 
-  // Iterar y auditar cada usuario
-  updatedOrder.assignedTo.forEach((user, index) => {
-    console.log(`👤 [USUARIO ${index}] ID: ${user._id}`);
-    console.log(`👤 [USUARIO ${index}] Nombre: ${user.name}`);
-    console.log(`👤 [USUARIO ${index}] Perfil: ${user.profile}`);
-    console.log(`👤 [USUARIO ${index}] Email RAW: "${user.email}"`); // Ver si viene undefined o null
-    
-    const assignedUserEmail = user.email ? String(user.email).trim() : null;
-    const assignedUserName = user.name || 'Usuario';
+      console.log(`🕵️ [AUDITORÍA] Orden ${updatedOrder._id} actualizada.`);
+      console.log(`🕵️ [AUDITORÍA] Usuarios asignados encontrados: ${updatedOrder.assignedTo.length}`);
 
-    if (!assignedUserEmail) {
-      console.error(`❌ [FALLO CRÍTICO] El usuario ${assignedUserName} (Perfil: ${user.profile}) NO TIENE EMAIL en la BD. Se omite el envío.`);
-      return;
+      // Iterar y auditar cada usuario
+      updatedOrder.assignedTo.forEach((user, index) => {
+        console.log(`👤 [USUARIO ${index}] ID: ${user._id}`);
+        console.log(`👤 [USUARIO ${index}] Nombre: ${user.name}`);
+        console.log(`👤 [USUARIO ${index}] Perfil: ${user.profile}`);
+        console.log(`👤 [USUARIO ${index}] Email RAW: "${user.email}"`); 
+        
+        const assignedUserEmail = user.email ? String(user.email).trim() : null;
+        const assignedUserName = user.name || 'Usuario';
+
+        if (!assignedUserEmail) {
+          console.error(`❌ [FALLO CRÍTICO] El usuario ${assignedUserName} NO TIENE EMAIL en la BD. Se omite.`);
+          return;
+        }
+
+        console.log(`📨 [ENVIANDO] Correo a: ${assignedUserEmail}`);
+
+        // Disparamos la promesa CON SU PROPIO .CATCH PARA NO ROMPER EL FLUJO
+        sendOrderStatusNotification(
+          assignedUserEmail,
+          assignedUserName,
+          {
+            placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
+            cliente: updatedOrder.client?.name || 'Cliente no especificado',
+            actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
+            orderId: updatedOrder._id,
+            nuevoEstado: statusDescription
+          }
+        )
+        .then(() => {
+          console.log(`✅ [ÉXITO] Email enviado a ${assignedUserEmail}`);
+        })
+        .catch(err => {
+          // ESTO ES VITAL: Captura el error aquí para que NO llegue al catch principal de la función
+          console.error(`❌ [ERROR SMTP] Falló envío a ${assignedUserEmail}:`, err.message);
+        });
+      });
+      
+      console.log("📝 Notificaciones disparadas. Nuevo estado:", statusDescription);
     }
+    
+    // ✅ RESPUESTA ÚNICA AL CLIENTE
+    return res.json(updatedOrder);
 
-    console.log(`📨 [ENVIANDO] Correo a: ${assignedUserEmail} (Perfil: ${user.profile})`);
-
-    // Disparamos la promesa
-    sendOrderStatusNotification(
-      assignedUserEmail,
-      assignedUserName,
-      {
-        placa: updatedOrder.vehicle?.plate || 'Placa no disponible',
-        cliente: updatedOrder.client?.name || 'Cliente no especificado',
-        actividadSolicitada: updatedOrder.serviceRequest || 'Actividad no especificada',
-        orderId: updatedOrder._id,
-        nuevoEstado: statusDescription
-      }
-    )
-    .then(() => {
-      console.log(`✅ [ÉXITO] Email enviado a ${assignedUserEmail}`);
-    })
-    .catch(err => {
-      console.error(`❌ [ERROR SMTP] Falló envío a ${assignedUserEmail}:`, err.message);
-    });
-  });
-  
-  console.log("📝 Notificaciones disparadas. Nuevo estado:", statusDescription);
-}
-  
-// Respondemos al cliente INMEDIATAMENTE, sin esperar a que terminen los correos
-res.json(updatedOrder);
-    res.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar orden:", error);
-    res.status(500).json({ message: "Error al actualizar orden" });
+    return res.status(500).json({ message: "Error al actualizar orden" });
   }
 };
 

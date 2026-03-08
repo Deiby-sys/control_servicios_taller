@@ -5,22 +5,17 @@ import nodemailer from 'nodemailer';
 
 // Configuración del Transportador (Brevo SMTP)
 const createTransporter = () => {
-  const user = process.env.BREVO_USER;
-  const pass = process.env.BREVO_PASS;
-
-  if (!user || !pass) {
-    console.error("❌ ERROR CRÍTICO: Faltan variables de entorno BREVO_USER o BREVO_PASS");
-    throw new Error("Configuración de correo incompleta");
-  }
-
   return nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 465,
-    secure: true, // true para 465, false para otros puertos como 587
+    host: 'smtp.sendinblue.com', // <--- CAMBIO 1: Usar el host alternativo
+    port: 587,                   // <--- CAMBIO 2: Volver a 587 con este host
+    secure: false,
     auth: {
-      user: user,
-      pass: pass,
+      user: process.env.BREVO_USER,
+      pass: process.env.BREVO_PASS,
     },
+    tls: {
+      rejectUnauthorized: false // <--- CAMBIO 3: Ignorar errores de certificado estrictos
+    }
   });
 };
 

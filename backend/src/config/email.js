@@ -3,15 +3,10 @@
 // backend/src/config/email.js
 import nodemailer from 'nodemailer';
 
-// 1. Configuración del Transportador (Brevo SMTP)
+// Configuración del Transportador (Brevo SMTP)
 const createTransporter = () => {
   const user = process.env.BREVO_USER;
   const pass = process.env.BREVO_PASS;
-
-  
-  // LOG DE DEPURACIÓN CRÍTICA (Bórralo después de probar)
-  console.log("🔍 [DEBUG BREVO] User:", user ? user.substring(0, 3) + "..." : "UNDEFINED");
-  console.log("🔍 [DEBUG BREVO] Pass:", pass ? "DEFINIDA" : "UNDEFINED");
 
   if (!user || !pass) {
     console.error("❌ ERROR CRÍTICO: Faltan variables de entorno BREVO_USER o BREVO_PASS");
@@ -20,8 +15,8 @@ const createTransporter = () => {
 
   return nodemailer.createTransport({
     host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false, // true para 465, false para otros puertos como 587
+    port: 465,
+    secure: true, // true para 465, false para otros puertos como 587
     auth: {
       user: user,
       pass: pass,

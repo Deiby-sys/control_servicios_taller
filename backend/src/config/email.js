@@ -1,111 +1,68 @@
-//Notificaciones a correos electrónicos
+// Envío de emails para recuperar contraseñas y notificaciones
 
-// backend/src/config/email.js
 import nodemailer from 'nodemailer';
 
-// Configuración del Transportador (Brevo SMTP)
+// Función auxiliar para crear el transportador
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: 'smtp.sendinblue.com', // <--- CAMBIO 1: Usar el host alternativo
-    port: 587,                   // <--- CAMBIO 2: Volver a 587 con este host
+    host: 'smtp.gmail.com',
+    port: 587,
     secure: false,
     auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false // <--- CAMBIO 3: Ignorar errores de certificado estrictos
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
     }
   });
 };
 
-// Remitente oficial (Brevo te da uno tipo "tu_usuario@smtp-brevo.com" o usa tu dominio si lo verificas)
-// Usa el que te aparezca en tu dashboard de Brevo > Senders
-const FROM_EMAIL = 'My Taller App <a449b5001@smtp-brevo.com>'; 
-
-// 2. Función para Recuperar Contraseña
 export const sendPasswordResetEmail = async (email, resetUrl) => {
-  console.log(`📧 [BREVO] Enviando recuperación a: ${email}`);
+  console.log('📧 Enviando email a:', email);
   
+  // Crear transportador dentro de la función (después de que dotenv se ha cargado)
   const transporter = createTransporter();
-
+  
   const mailOptions = {
-    from: FROM_EMAIL,
+    from: process.env.EMAIL_USER,
     to: email,
     subject: 'Recuperación de contraseña - My Taller App',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #007bff;">Recuperación de contraseña</h2>
-        <p>Haz clic en el botón para restablecer tu contraseña:</p>
-        <p style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-            Restablecer contraseña
-          </a>
-        </p>
-        <p style="font-size: 12px; word-break: break-all;">${resetUrl}</p>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #999;">Este enlace expirará en 30 minutos.</p>
-        <p style="font-size: 12px; color: #999;">Si no solicitaste este cambio, ignora este correo.</p>
-      </div>
-    `,
+      <h2>Recuperación de contraseña</h2>
+      <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+      <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        Restablecer contraseña
+      </a>
+      <p>Este enlace expirará en 30 minutos.</p>
+      <p>Si no solicitaste este cambio, ignora este correo.</p>
+    `
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ [BREVO] Email de recuperación enviado! Message ID: ${info.messageId}`);
-    return info;
-  } catch (error) {
-    console.error("❌ [BREVO] Error crítico enviando recuperación:", error.message);
-    throw error;
-  }
+  await transporter.sendMail(mailOptions);
 };
 
-// 3. Función para Notificaciones de Estado
 export const sendOrderStatusNotification = async (assignedUserEmail, assignedUserName, orderDetails) => {
-  const { 
-    placa = 'No disponible', 
-    cliente = 'No especificado', 
-    actividadSolicitada = 'Sin descripción', 
-    orderId = 'N/A', 
-    nuevoEstado = 'Desconocido' 
-  } = orderDetails || {};
+  const { placa, cliente, actividadSolicitada, orderId, nuevoEstado } = orderDetails;
   
-  console.log(`📧 [BREVO] Enviando notificación a: ${assignedUserEmail} para orden ${orderId}`);
-
+  // Crear transportador dentro de la función
   const transporter = createTransporter();
-
+  
   const mailOptions = {
-    from: FROM_EMAIL,
+    from: process.env.EMAIL_USER,
     to: assignedUserEmail,
-    subject: `🔧 Actualización de Orden #${orderId} - Placa ${placa}`,
+    subject: `Actualización de orden - Placa ${placa}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h2 style="color: #28a745;">¡Hola ${assignedUserName || 'Usuario'}!</h2>
-        <p>Se ha actualizado una orden de trabajo asignada a ti:</p>
-        
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin: 20px 0;">
-          <p style="margin: 5px 0;"><strong>🚗 Placa:</strong> ${placa}</p>
-          <p style="margin: 5px 0;"><strong>👤 Cliente:</strong> ${cliente}</p>
-          <p style="margin: 5px 0;"><strong>📝 Actividad:</strong> ${actividadSolicitada}</p>
-          <p style="margin: 5px 0;"><strong>🔄 Nuevo Estado:</strong> <span style="color: #007bff; font-weight: bold; font-size: 1.1em;">${nuevoEstado}</span></p>
-          <p style="margin: 5px 0;"><strong>🆔 ID Orden:</strong> ${orderId}</p>
-        </div>
-        
-        <p>Por favor ingresa al sistema para revisar los detalles completos y continuar con el proceso.</p>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 0.9em;">
-          <p>Saludos,<br/><strong>Equipo de Gestión - My Taller App</strong></p>
-        </div>
+      <h2>¡Hola ${assignedUserName}!</h2>
+      <p>La orden de trabajo ha sido actualizada:</p>
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <strong>Placa:</strong> ${placa}<br/>
+        <strong>Cliente:</strong> ${cliente}<br/>
+        <strong>Actividad:</<strong> ${actividadSolicitada}<br/>
+        <strong>Nuevo estado:</strong> ${nuevoEstado}<br/>
+        <strong>ID Orden:</strong> ${orderId}
       </div>
-    `,
+      <p>Por favor revisa el sistema para más detalles.</p>
+      <p>Saludos,<br/>Equipo de Gestión</p>
+    `
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ [BREVO] Notificación enviada! Message ID: ${info.messageId}`);
-    return info;
-  } catch (error) {
-    console.error("❌ [BREVO] Error crítico enviando notificación:", error.message);
-    throw error;
-  }
+  await transporter.sendMail(mailOptions);
 };

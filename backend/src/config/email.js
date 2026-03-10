@@ -11,7 +11,7 @@ apiInstance.setApiKey(TransactionalEmailsApi.keys.apiKey, process.env.BREVO_API_
 // Remitente por defecto (Usa el dominio verificado o el por defecto de Brevo)
 const DEFAULT_SENDER = {
   name: "My Taller App",
-  email: "a449b5001@smtp-brevo.com" // <--- ¡CAMBIA ESTO por el remitente que veas en Brevo > Senders!
+  email: "deibyleandro@hotmail.com" // <--- ¡CAMBIA ESTO por el remitente que veas en Brevo > Senders!
 };
 
 // 2. Función para Recuperar Contraseña

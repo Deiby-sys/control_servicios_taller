@@ -4,14 +4,21 @@ import { TransactionalEmailsApi, SendSmtpEmail } from '@getbrevo/brevo';
 // 1. Inicializar la API de Brevo
 const apiInstance = new TransactionalEmailsApi();
 
-// Configurar la clave API (La misma que usabas o una nueva de API Keys)
-// IMPORTANTE: Usa tu API KEY (la que empieza por 'xkeysib-...' o similar), NO la contraseña SMTP.
-apiInstance.setApiKey(TransactionalEmailsApi.keys.apiKey, process.env.BREVO_API_KEY);
+// Configurar la clave API
+// Asegúrate de que la variable en Render se llame BREVO_API_KEY
+const apiKey = process.env.BREVO_API_KEY;
 
-// Remitente por defecto (Usa el dominio verificado o el por defecto de Brevo)
+if (!apiKey) {
+  console.error("❌ ERROR CRÍTICO: Falta la variable de entorno BREVO_API_KEY");
+  throw new Error("Configuración de API Key incompleta");
+}
+
+apiInstance.setApiKey(TransactionalEmailsApi.keys.apiKey, apiKey);
+
+// Remitente por defecto
 const DEFAULT_SENDER = {
   name: "My Taller App",
-  email: "deibyleandro@hotmail.com" // <--- ¡CAMBIA ESTO por el remitente que veas en Brevo > Senders!
+  email: "deibyleandro@hotmail.com" // <--- ¡VERIFICA ESTE CORREO EN BREVO > SENDERS!
 };
 
 // 2. Función para Recuperar Contraseña

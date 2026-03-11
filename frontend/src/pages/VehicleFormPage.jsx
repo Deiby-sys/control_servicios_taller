@@ -153,7 +153,7 @@ function VehicleFormPage() {
   };
 
   return (
-    <div className="form-page">
+    <div className="form-page vehicle-form-page">
       <div className="form-container">
         <h1>{isEditing ? "Editar Vehículo" : "Registrar Vehículo"}</h1>
         

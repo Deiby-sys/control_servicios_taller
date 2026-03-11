@@ -1,12 +1,17 @@
-/* Estilo formulario vehículos */
+/* ========================================
+   FORMULARIO DE VEHÍCULOS - CSS AISLADO
+   Prefijo: .vehicle-form-page
+   ======================================== */
 
-.form-page {
+/* Contenedor principal - Aislado con prefijo */
+.vehicle-form-page {
   padding: 2rem;
   background-color: #f8f9fa;
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.form-container {
+.vehicle-form-page .form-container {
   max-width: 800px;
   margin: 0 auto;
   background: white;
@@ -15,132 +20,266 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.form-container h1 {
+.vehicle-form-page .form-container h1 {
   margin-bottom: 2rem;
   color: #333;
   text-align: center;
   font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.vehicle-form {
+/* Grid del formulario */
+.vehicle-form-page .vehicle-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
-.form-group {
+/* Grupos de formulario */
+.vehicle-form-page .form-group {
   display: flex;
   flex-direction: column;
+  gap: 0.25rem;
 }
 
-.form-group label {
-  margin-bottom: 0.5rem;
+.vehicle-form-page .form-group label {
+  margin-bottom: 0.25rem;
   font-weight: 600;
   color: #495057;
+  font-size: 0.95rem;
 }
 
-.form-group input {
-  padding: 0.75rem;
+/* ========================================
+   INPUTS - ESTILOS ESPECÍFICOS Y AISLADOS
+   ======================================== */
+
+/* Estilo base para inputs DENTRO de vehicle-form-page */
+.vehicle-form-page .form-group input[type="text"],
+.vehicle-form-page .form-group input[type="number"],
+.vehicle-form-page .form-group input[type="tel"],
+.vehicle-form-page .form-group input[type="email"] {
+  padding: 0.75rem 1rem;
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 1rem;
-}
-
-.form-group input.error {
-  border-color: #dc3545;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.client-search-container {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  width: 100%; /* Asegura que use todo el ancho disponible */
-  align-items: center; /* Alinea verticalmente input y botón */
-}
-
-.client-search-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 1rem;
-  color: #212529 !important;       /* Texto negro/gris muy oscuro */
-  background-color: #ffffff !important; /* Fondo blanco explícito */
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Sutil sombra interna para profundidad */
-}
-
-/* Asegurar que al hacer foco también se mantenga el color */
-.client-search-input:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-  color: #212529 !important; /* Refuerzo de color al enfocar */
+  line-height: 1.5;
+  
+  /* ✅ CORRECCIÓN DEFINITIVA: Color y fondo */
+  color: #212529 !important;
   background-color: #ffffff !important;
+  -webkit-text-fill-color: #212529 !important; /* Para Safari/iOS */
+  
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.client-list {
+/* Focus state */
+.vehicle-form-page .form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  background-color: #ffffff !important;
+  color: #212529 !important;
+}
+
+/* Placeholder */
+.vehicle-form-page .form-group input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+/* Input con error */
+.vehicle-form-page .form-group input.error {
+  border-color: #dc3545 !important;
+  background-color: #fff5f5 !important;
+}
+
+.vehicle-form-page .form-group input.error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+}
+
+/* Mensajes de error */
+.vehicle-form-page .error-message {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* ========================================
+   BUSCADOR DE CLIENTE - ESTILOS ESPECÍFICOS
+   ======================================== */
+
+.vehicle-form-page .client-search-container {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Input de búsqueda de cliente - FORZAR ESTILOS */
+.vehicle-form-page .client-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  
+  /* ✅ CORRECCIÓN CRÍTICA: Texto visible SIEMPRE */
+  color: #212529 !important;
+  background-color: #ffffff !important;
+  -webkit-text-fill-color: #212529 !important;
+  caret-color: #212529 !important; /* Color del cursor */
+  
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  transition: border-color 0.15s ease-in-out;
+}
+
+.vehicle-form-page .client-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  background-color: #ffffff !important;
+  color: #212529 !important;
+}
+
+.vehicle-form-page .client-search-input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+/* Botón secundario */
+.vehicle-form-page .btn-secondary {
+  padding: 0.75rem 1.25rem;
+  background-color: #6c757d;
+  color: white !important;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.vehicle-form-page .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.vehicle-form-page .btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* Lista de resultados de búsqueda */
+.vehicle-form-page .client-list {
   border: 1px solid #dee2e6;
   border-radius: 4px;
   max-height: 200px;
   overflow-y: auto;
   margin-top: 0.5rem;
-  position: absolute;
-  z-index: 100;
-  width: 100%;
   background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+  position: relative;
 }
 
-.client-item {
-  padding: 0.75rem;
+.vehicle-form-page .client-item {
+  padding: 0.75rem 1rem;
   cursor: pointer;
   border-bottom: 1px solid #eee;
+  color: #212529 !important;
+  background-color: #ffffff !important;
+  transition: background-color 0.15s ease;
 }
 
-.client-item:hover {
-  background-color: #f8f9fa;
+.vehicle-form-page .client-item:hover {
+  background-color: #f8f9fa !important;
 }
 
-.client-item:last-child {
+.vehicle-form-page .client-item:last-child {
   border-bottom: none;
 }
 
-.selected-client {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background-color: #e8f5e8;
-  border-radius: 4px;
-  border: 1px solid #c3e6c3;
+.vehicle-form-page .client-item strong {
+  color: #212529 !important;
 }
 
-.form-actions {
+/* Cliente seleccionado */
+.vehicle-form-page .selected-client {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+  border: 1px solid #c8e6c9;
+  color: #1b5e20 !important;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.vehicle-form-page .selected-client strong {
+  color: #1b5e20 !important;
+}
+
+/* ========================================
+   ACCIONES DEL FORMULARIO
+   ======================================== */
+
+.vehicle-form-page .form-actions {
   display: flex;
   gap: 1rem;
   justify-content: center;
   margin-top: 2rem;
+  grid-column: 1 / -1; /* Ocupar todo el ancho en grid */
 }
 
-.btn-secondary {
-  padding: 0.5rem 1rem;
-  background-color: #6c757d;
-  color: white;
+.vehicle-form-page .btn-primary {
+  padding: 0.75rem 2rem;
+  background-color: #007bff;
+  color: white !important;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
 }
 
-.btn-secondary:hover {
+.vehicle-form-page .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.vehicle-form-page .btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.vehicle-form-page .btn-cancel {
+  padding: 0.75rem 2rem;
+  background-color: #6c757d;
+  color: white !important;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.vehicle-form-page .btn-cancel:hover {
   background-color: #5a6268;
 }
 
-/* Modal */
-.modal-overlay {
+/* ========================================
+   MODAL - ESTILOS AISLADOS
+   ======================================== */
+
+.vehicle-form-page .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -151,397 +290,278 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 1rem;
 }
 
-.modal {
+.vehicle-form-page .modal {
   background: white;
   border-radius: 8px;
-  width: 90%;
+  width: 100%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.modal-header {
+.vehicle-form-page .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
 }
 
-.modal-header h3 {
+.vehicle-form-page .modal-header h3 {
   margin: 0;
+  color: #333;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.modal-close {
+.vehicle-form-page .modal-close {
   background: none;
   border: none;
   font-size: 2rem;
   cursor: pointer;
   color: #6c757d;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.modal-form {
-  padding: 1.5rem;
+.vehicle-form-page .modal-close:hover {
+  background-color: #f8f9fa;
+  color: #333;
 }
 
-.modal-form .form-group {
+.vehicle-form-page .modal-form {
+  padding: 1.25rem 1.5rem;
+}
+
+.vehicle-form-page .modal-form .form-group {
   margin-bottom: 1rem;
 }
 
-.modal-form .form-group label {
+.vehicle-form-page .modal-form .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   font-weight: 600;
   color: #495057;
+  font-size: 0.95rem;
 }
 
-.modal-form .form-group input,
-.modal-form .form-group select {
+.vehicle-form-page .modal-form .form-group input,
+.vehicle-form-page .modal-form .form-group select {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #ced4da;
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
+  color: #212529 !important;
+  background-color: #ffffff !important;
 }
 
-/* Estilo específico para el select */
-.modal-form .form-select {
+.vehicle-form-page .modal-form .form-group select {
   appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
+  background-position: right 1rem center;
   background-size: 16px 12px;
-  cursor: pointer;
-  font-family: inherit;
-  line-height: 1.5;
-  height: calc(2.25em + 0.75rem + 2px);
-  padding: 0.5rem 0.75rem;
+  padding-right: 2.5rem;
 }
 
-.modal-form .form-select::-moz-focus-inner {
-  border: 0;
-  padding: 0;
+.vehicle-form-page .modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
 }
 
-.modal-form .form-select:focus {
-  outline: none;
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-}
-
-.modal-form .form-select option[value=""] {
-  color: #6c757d;
-  font-style: italic;
-}
-
-/* ====================== RESPONSIVIDAD ====================== */
+/* ========================================
+   RESPONSIVIDAD - MEDIA QUERIES AISLADAS
+   ======================================== */
 
 @media (max-width: 768px) {
-  .form-page {
+  .vehicle-form-page {
     padding: 1rem;
   }
   
-  .form-container {
+  .vehicle-form-page .form-container {
     padding: 1.5rem;
   }
   
-  .form-container h1 {
+  .vehicle-form-page .form-container h1 {
     font-size: 1.3rem;
     margin-bottom: 1.5rem;
   }
   
-  /* Formulario en una columna en móviles */
-  .vehicle-form {
+  .vehicle-form-page .vehicle-form {
     grid-template-columns: 1fr;
   }
   
-  .form-group input,
-  .client-search-input {
-    font-size: 16px; /* ← Evita zoom en iOS */
-    padding: 0.8rem;
+  .vehicle-form-page .form-group input,
+  .vehicle-form-page .client-search-input {
+    font-size: 16px; /* Evita zoom en iOS */
+    padding: 0.8rem 1rem;
   }
   
-  .form-actions {
+  .vehicle-form-page .form-actions {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   
-  .btn-secondary {
+  .vehicle-form-page .btn-primary,
+  .vehicle-form-page .btn-cancel,
+  .vehicle-form-page .btn-secondary {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.875rem;
     font-size: 1rem;
   }
   
-  /* Modal más compacto */
-  .modal {
+  .vehicle-form-page .client-search-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .vehicle-form-page .modal {
     width: 95%;
-    margin: 1rem;
-  }
-  
-  .modal-header,
-  .modal-form {
-    padding: 1rem;
-  }
-  
-  .modal-form .form-group input,
-  .modal-form .form-select {
-    font-size: 16px;
-    padding: 0.6rem;
-  }
-  
-  .modal-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .modal-actions button {
-    width: 100%;
-    padding: 0.6rem;
-    font-size: 1rem;
-  }
-}
-
-/* Móviles medianos */
-@media (max-width: 576px) {
-  .form-page {
-    padding: 0.75rem;
-  }
-  
-  .form-container {
-    padding: 1.25rem;
-    margin: 0 0.75rem;
-  }
-  
-  .form-container h1 {
-    font-size: 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-  
-  .form-group input,
-  .client-search-input {
-    padding: 0.75rem;
-    font-size: 16px;
-  }
-  
-  .btn-secondary {
-    padding: 0.7rem;
-    font-size: 0.95rem;
-  }
-  
-  .modal {
-    width: 96%;
-    margin: 0.75rem;
-  }
-  
-  .modal-header h3 {
-    font-size: 1.15rem;
-  }
-  
-  .modal-close {
-    font-size: 1.75rem;
-  }
-  
-  .modal-form .form-group input,
-  .modal-form .form-select {
-    padding: 0.55rem;
-    font-size: 16px;
-  }
-}
-
-/* Móviles muy pequeños (iPhone SE) */
-@media (max-width: 480px) {
-  .form-page {
-    padding: 0.5rem;
-  }
-  
-  .form-container {
-    padding: 1rem;
-    margin: 0 0.5rem;
-  }
-  
-  .form-container h1 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-  }
-  
-  .form-group {
-    margin-bottom: 1.25rem;
-  }
-  
-  .form-group label {
-    margin-bottom: 0.4rem;
-    font-size: 0.95rem;
-  }
-  
-  .form-group input,
-  .client-search-input {
-    width: 100%; /* Asegurar ancho completo en móvil */
-    box-sizing: border-box; /* Para que el padding no rompa el 100% */
-  }
-  
-  .client-search-container {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .selected-client {
-    padding: 0.6rem;
-    margin-top: 0.75rem;
-  }
-  
-  .form-actions {
-    margin-top: 1.5rem;
-    gap: 0.4rem;
-  }
-  
-  .btn-secondary {
-    width: 100%; /* Botón de ancho completo en móviles pequeños */
-    padding: 0.75rem;
-    text-align: center;
-  }
-  
-  .modal {
-    width: 98%;
     margin: 0.5rem;
   }
   
-  .modal-header {
-    padding: 0.8rem;
+  .vehicle-form-page .modal-header,
+  .vehicle-form-page .modal-form {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .vehicle-form-page {
+    padding: 0.75rem;
   }
   
-  .modal-header h3 {
+  .vehicle-form-page .form-container {
+    padding: 1.25rem;
+    margin: 0 0.5rem;
+  }
+  
+  .vehicle-form-page .form-container h1 {
+    font-size: 1.2rem;
+  }
+  
+  .vehicle-form-page .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .vehicle-form-page .form-group input,
+  .vehicle-form-page .client-search-input {
+    padding: 0.7rem 0.9rem;
+    font-size: 16px;
+  }
+  
+  .vehicle-form-page .client-search-container {
+    gap: 0.5rem;
+  }
+  
+  .vehicle-form-page .modal {
+    width: 98%;
+    margin: 0.25rem;
+  }
+  
+  .vehicle-form-page .modal-header h3 {
     font-size: 1.1rem;
   }
   
-  .modal-close {
-    font-size: 1.5rem;
-  }
-  
-  .modal-form {
-    padding: 0.8rem;
-  }
-  
-  .modal-form .form-group {
-    margin-bottom: 0.75rem;
-  }
-  
-  .modal-form .form-group label {
-    margin-bottom: 0.4rem;
-    font-size: 0.9rem;
-  }
-  
-  .modal-form .form-group input,
-  .modal-form .form-select {
-    padding: 0.5rem;
-    font-size: 16px;
+  .vehicle-form-page .modal-close {
+    font-size: 1.75rem;
   }
 }
 
-/* Móviles en horizontal - Formulario de vehículos */
 @media (max-height: 500px) and (orientation: landscape) {
-  .form-page {
+  .vehicle-form-page {
     padding: 0.75rem;
   }
   
-  .form-container {
+  .vehicle-form-page .form-container {
     padding: 1rem;
-    margin: 0 0.5rem;
   }
   
-  .form-container h1 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-  }
-  
-  /* Formulario más compacto */
-  .vehicle-form {
+  .vehicle-form-page .vehicle-form {
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
   
-  .form-group {
-    margin-bottom: 1rem;
+  .vehicle-form-page .form-group {
+    margin-bottom: 0.75rem;
   }
   
-  .form-group label {
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-  }
-  
-  .form-group input,
-  .client-search-input {
-    padding: 0.6rem;
+  .vehicle-form-page .form-group input,
+  .vehicle-form-page .client-search-input {
+    padding: 0.6rem 0.8rem;
     font-size: 14px;
     height: auto;
   }
   
-  .client-search-container {
-    gap: 0.3rem;
-  }
-  
-  .selected-client {
-    padding: 0.5rem;
-    margin-top: 0.7rem;
-    font-size: 0.9rem;
-  }
-  
-  .form-actions {
-    margin-top: 1.2rem;
-    gap: 0.3rem;
-  }
-  
-  .btn-secondary {
-    padding: 0.5rem;
-    font-size: 0.85rem;
-    height: auto;
-  }
-  
-  /* Modal más compacto */
-  .modal {
-    width: 95%;
-    margin: 0.5rem;
+  .vehicle-form-page .modal {
     max-height: 85vh;
   }
   
-  .modal-header {
-    padding: 0.7rem;
+  .vehicle-form-page .modal-form .form-group {
+    margin-bottom: 0.5rem;
   }
-  
-  .modal-header h3 {
-    font-size: 1rem;
-  }
-  
-  .modal-close {
-    font-size: 1.4rem;
-  }
-  
-  .modal-form {
-    padding: 0.7rem;
-  }
-  
-  .modal-form .form-group {
-    margin-bottom: 0.6rem;
-  }
-  
-  .modal-form .form-group label {
-    margin-bottom: 0.3rem;
-    font-size: 0.85rem;
-  }
-  
-  .modal-form .form-group input,
-  .modal-form .form-select {
-    padding: 0.45rem;
-    font-size: 14px;
-    height: auto;
-  }
-  
-  .error-message {
-    font-size: 0.8rem;
-    margin-top: 0.2rem;
-  }
+}
+
+/* ========================================
+   UTILIDADES - SCROLL Y ACCESIBILIDAD
+   ======================================== */
+
+/* Scroll personalizado para listas */
+.vehicle-form-page .client-list::-webkit-scrollbar,
+.vehicle-form-page .modal::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vehicle-form-page .client-list::-webkit-scrollbar-track,
+.vehicle-form-page .modal::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.vehicle-form-page .client-list::-webkit-scrollbar-thumb,
+.vehicle-form-page .modal::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.vehicle-form-page .client-list::-webkit-scrollbar-thumb:hover,
+.vehicle-form-page .modal::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Accesibilidad: Focus visible para teclado */
+.vehicle-form-page .form-group input:focus-visible,
+.vehicle-form-page .client-search-input:focus-visible,
+.vehicle-form-page .btn-secondary:focus-visible,
+.vehicle-form-page .btn-primary:focus-visible,
+.vehicle-form-page .btn-cancel:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Animación suave para carga */
+.vehicle-form-page .form-group input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.7;
 }

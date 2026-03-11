@@ -51,7 +51,8 @@ export const sendOrderStatusNotification = async (assignedUserEmail, assignedUse
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: assignedUserEmail,
-      subject: `🔧 Actualización de Orden #${orderId} - Placa ${placa}`,
+      //subject: `🔧 Actualización de Orden #${orderId} - Placa ${placa}`,
+      subject: `🔧 Orden #${orderId} - ${nuevoEstado} - Responsable: ${assignedUserName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #28a745;">¡Hola ${assignedUserName}!</h2>

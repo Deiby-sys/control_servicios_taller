@@ -104,7 +104,7 @@ function WorkOrdersByStatusPage() {
             placeholder="Filtrar por responsable..."
             className="search-select"
             isClearable
-            noOptionsMessage={() => "No hay usuarios"}
+            noOptionsMessage={() => "No hay responsables disponibles"}
           />
         </div>
 

@@ -7,13 +7,13 @@ import '../styles/ReportsPage.css';
 
 const ReportsPage = () => {
   const [reports, setReports] = useState({
-    last6Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } },
-    last29Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } }
+    last7Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } },
+    last30Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } }
   });
   const [vehiclesByLine, setVehiclesByLine] = useState([]);
   const [totalInWorkshop, setTotalInWorkshop] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("last6Days");
+  const [activeTab, setActiveTab] = useState("last7Days");
   const [showLineReport, setShowLineReport] = useState(false);
   const { user } = useAuth();
 
@@ -246,12 +246,12 @@ const ReportsPage = () => {
   return (
     <div className="reports-container">
       <div className="reports-tabs">
-        <button className={`tab-button ${!showLineReport && activeTab === "last6Days" ? "active" : ""}`}
-          onClick={() => { setShowLineReport(false); setActiveTab("last6Days"); }}>
+        <button className={`tab-button ${!showLineReport && activeTab === "last7Days" ? "active" : ""}`}
+          onClick={() => { setShowLineReport(false); setActiveTab("last7Days"); }}>
           Últimos 7 Días
         </button>
-        <button className={`tab-button ${!showLineReport && activeTab === "last29Days" ? "active" : ""}`}
-          onClick={() => { setShowLineReport(false); setActiveTab("last29Days"); }}>
+        <button className={`tab-button ${!showLineReport && activeTab === "last30Days" ? "active" : ""}`}
+          onClick={() => { setShowLineReport(false); setActiveTab("last30Days"); }}>
           Últimos 30 Días
         </button>
         <button className={`tab-button ${showLineReport ? "active" : ""}`}
@@ -263,10 +263,10 @@ const ReportsPage = () => {
       {!showLineReport ? (
         <>
           <h2 className="reports-title">
-            📊 Rotación {activeTab === "last6Days" ? "Últimos 7 Días" : "Últimos 30 Días"}
+            📊 Rotación {activeTab === "last7Days" ? "Últimos 7 Días" : "Últimos 30 Días"}
           </h2>
-          {activeTab === "last6Days" && renderReportBlock(reports.last6Days)}
-          {activeTab === "last29Days" && renderReportBlock(reports.last29Days)}
+          {activeTab === "last7Days" && renderReportBlock(reports.last7Days)}
+          {activeTab === "last30Days" && renderReportBlock(reports.last30Days)}
         </>
       ) : (
         <>

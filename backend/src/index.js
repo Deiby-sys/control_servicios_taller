@@ -39,7 +39,3 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
-app.use(cors({
-  origin: ['https://mytallerapp.vercel.app', 'http://localhost:5173', 'http://localhost:10000'],
-  credentials: true
-}));

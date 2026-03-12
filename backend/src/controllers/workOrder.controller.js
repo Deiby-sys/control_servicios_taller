@@ -79,8 +79,7 @@ export const getClientByIdentification = async (req, res) => {
 export const getWorkOrders = async (req, res) => {
   try {
     const workOrders = await WorkOrder.find()
-      .populate('vehicle', 'plate') // Solo placa del vehículo
-      .populate('vehicle', 'line model brand') // Solo por línea  
+      .populate('vehicle', 'plate brand model line color') // Placa, modelo, línea, colo
       .populate('client', 'name lastName') // Solo nombre del cliente
       .populate('createdBy', 'name lastName') // Solo creador
       .populate('assignedTo', 'name lastName') // Solo responsables

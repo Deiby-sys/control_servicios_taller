@@ -1,48 +1,64 @@
 // Página de listado por estado
 
+// WorkOrdersByStatusPage.jsx - CORREGIDO
+
 import { useState, useEffect } from "react";
 import { useWorkOrders } from "../context/WorkOrderContext";
 import { useParams } from "react-router-dom";
 import Select from "react-select";
 import "../styles/WorkOrdersByStatusPage.css";
-import { getStatusLabel } from "../utils/statusLabels"; //Función labels
+import { getStatusLabel } from "../utils/statusLabels";
 
 function WorkOrdersByStatusPage() {
   const { status } = useParams();
   const { workOrders, getWorkOrders, loading, error } = useWorkOrders();
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchAssignee, setSearchAssignee] = useState(null); // Nuevo estado
-  const [users, setUsers] = useState([]); // Usuarios para responsable
+  const [searchAssignee, setSearchAssignee] = useState(null);
+  
+  // ✅ CAMBIO: Ahora se llena desde workOrders, no desde API directa
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     getWorkOrders();
-    
-    // Cargar usuarios para responsable
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users', {
-          credentials: 'include'
-        });
-        const userData = await response.json();
-        setUsers(userData.map(u => ({ 
-          value: u._id, 
-          label: `${u.name} ${u.lastName}` 
-        })));
-      } catch (error) {
-        console.error("Error al cargar usuarios:", error);
-      }
-    };
-
-    fetchUsers();
   }, []);
+
+  // ✅ NUEVO useEffect: Extraer responsables desde workOrders (igual que WorkOrdersPage)
+  useEffect(() => {
+    if (!workOrders.length) {
+      setUsers([]);
+      return;
+    }
+
+    const responsiblesMap = new Map();
+
+    workOrders.forEach(order => {
+      if (order.assignedTo && order.assignedTo.length > 0) {
+        order.assignedTo.forEach(user => {
+          if (user?._id && user?.name && user?.lastName) {
+            if (!responsiblesMap.has(user._id)) {
+              responsiblesMap.set(user._id, {
+                value: user._id,
+                label: `${user.name} ${user.lastName}`
+              });
+            }
+          }
+        });
+      }
+    });
+
+    const responsiblesList = Array.from(responsiblesMap.values())
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    console.log('👥 Responsibles cargados:', responsiblesList); // Debug
+    setUsers(responsiblesList);
+  }, [workOrders]); // ← Dependencia clave
 
   useEffect(() => {
     if (!workOrders.length) return;
     
     let filtered = workOrders.filter(order => order.status === status);
     
-    // Filtrar por texto general (placa, cliente, solicitud)
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -53,7 +69,6 @@ function WorkOrdersByStatusPage() {
       );
     }
     
-    // Filtrar por responsable
     if (searchAssignee) {
       filtered = filtered.filter(order =>
         order.assignedTo?.some(user => user._id === searchAssignee.value)
@@ -74,7 +89,6 @@ function WorkOrdersByStatusPage() {
   return (
     <div className="page">
       <div className="page-header">
-        {/* USO DE FUNCIÓN getStatusLabel para el título */}
         <h1>Órdenes - {getStatusLabel(status)} ({filteredOrders.length})</h1>
         <button 
           onClick={() => window.history.back()}
@@ -84,7 +98,6 @@ function WorkOrdersByStatusPage() {
         </button>
       </div>
 
-      {/* Formulario de búsqueda avanzada */}
       <div className="search-container">
         <div className="search-bar">
           <input
@@ -98,13 +111,15 @@ function WorkOrdersByStatusPage() {
 
         <div className="advanced-search">
           <Select
-            options={users}
+            options={users}  // ← Ahora viene de workOrders, no de API directa
             value={searchAssignee}
             onChange={setSearchAssignee}
             placeholder="Filtrar por responsable..."
             className="search-select"
             isClearable
-            noOptionsMessage={() => "No hay responsables disponibles"}
+            noOptionsMessage={() => 
+              users.length === 0 ? "Cargando..." : "No hay responsables"
+            }
           />
         </div>
 
@@ -117,6 +132,8 @@ function WorkOrdersByStatusPage() {
           </button>
         )}
       </div>
+
+export default WorkOrdersByStatusPage;
 
       <div className="table-container">
         <table className="data-table">

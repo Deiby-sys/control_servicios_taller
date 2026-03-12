@@ -36,45 +36,73 @@ const ReportsPage = () => {
 
 const fetchVehiclesByLine = async () => {
   try {
-    // Obtener todas las órdenes CON POPULATE del vehículo
-    const response = await fetch('/api/work-orders', {
-      credentials: 'include'
-    });
-    const orders = await response.json();
+    console.log('📊 [REPORT] Iniciando carga de vehículos por línea...');
     
-    // ✅ CORRECCIÓN: Incluir 'completado' en los estados que cuentan como "en taller"
-    // Un vehículo está en taller desde que ingresa HASTA que se entrega
+    const response = await fetch('/api/work-orders', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('📊 [REPORT] Status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const orders = await response.json();
+    console.log('📊 [REPORT] Total órdenes recibidas:', orders.length);
+    console.log('📊 [REPORT] Primera orden:', orders[0]);
+    
+    // Filtrar estados en taller
     const workshopStates = [
-      'por_asignar',      // Ingresó, esperando asignación
-      'asignado',         // Asignado a técnico
-      'en_aprobacion',    // Esperando aprobación
-      'por_repuestos',    // Esperando repuestos
-      'en_soporte',       // En soporte técnico
-      'en_proceso',       // En proceso de reparación
-      'completado'        // ✅ Listo por entrega (pero aún en el taller)
+      'por_asignar', 'asignado', 'en_aprobacion', 
+      'por_repuestos', 'en_soporte', 'en_proceso', 'completado'
     ];
     
-    const workshopOrders = orders.filter(order => workshopStates.includes(order.status));
+    const workshopOrders = orders.filter(order => {
+      const isInWorkshop = workshopStates.includes(order.status);
+      if (isInWorkshop) {
+        console.log(`📊 [REPORT] Orden en taller: ${order._id}, Estado: ${order.status}, Vehicle:`, order.vehicle);
+      }
+      return isInWorkshop;
+    });
     
-    // Agrupar por línea del vehículo
+    console.log('📊 [REPORT] Órdenes en taller:', workshopOrders.length);
+    
+    if (workshopOrders.length === 0) {
+      console.warn('⚠️ [REPORT] No hay órdenes en taller');
+    }
+    
+    // Agrupar por línea
     const lineCount = {};
     workshopOrders.forEach(order => {
-      const line = order.vehicle?.line || order.vehicle?.model || 'Sin Línea';
+      // Verificar si vehicle existe y es un objeto (no solo un ID)
+      if (!order.vehicle) {
+        console.warn('⚠️ [REPORT] Orden sin vehículo:', order._id);
+        return;
+      }
+      
+      const line = typeof order.vehicle === 'object' 
+        ? (order.vehicle.line || order.vehicle.model || 'Sin Línea')
+        : 'Sin Línea';
+      
+      console.log(`📊 [REPORT] Línea encontrada: ${line}`);
       lineCount[line] = (lineCount[line] || 0) + 1;
     });
     
-    // Convertir a array y ordenar de mayor a menor
     const sortedLines = Object.entries(lineCount)
       .map(([line, count]) => ({ line, count }))
       .sort((a, b) => b.count - a.count);
     
-    console.log('📊 Vehículos en taller por línea:', sortedLines);
-    console.log('📊 Total vehículos en taller:', workshopOrders.length);
+    console.log('📊 [REPORT] Resultado final:', sortedLines);
+    console.log('📊 [REPORT] Total:', workshopOrders.length);
     
     setVehiclesByLine(sortedLines);
     setTotalInWorkshop(workshopOrders.length);
   } catch (error) {
-    console.error('Error al cargar vehículos por línea:', error);
+    console.error('❌ [REPORT] Error crítico:', error);
   }
 };
 

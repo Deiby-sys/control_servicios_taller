@@ -110,10 +110,11 @@ export const sendOrderStatusNotification = async (assignedUserEmail, assignedUse
   const msg = {
     from: DEFAULT_FROM,
     to: assignedUserEmail,
-    subject: `🔧 Orden #${orderId} - ${nuevoEstado} - Placa ${placa}`,
+    subject: `Actualización Orden de Trabajo - My Taller App`,
+    //subject: `🔧 Orden #${orderId} - ${nuevoEstado} - Placa ${placa}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h2 style="color: #28a745; text-align: center;">✅ Actualización de Orden</h2>
+        <h2 style="color: #28a745; text-align: center;">✅ Actualización Orden de Trabajo</h2>
         
         <p>¡Hola <strong>${assignedUserName || 'Usuario'}</strong>!</p>
         <p>Se ha actualizado una orden de trabajo asignada a ti:</p>

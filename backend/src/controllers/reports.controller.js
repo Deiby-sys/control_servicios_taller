@@ -76,8 +76,8 @@ export const getReports = async (req, res) => {
     };
 
     res.json({
-      last7Days: sevenDayReports,
-      last30Days: thirtyDayReports
+      last6Days: sevenDayReports,
+      last29Days: thirtyDayReports
     });
 
   } catch (error) {

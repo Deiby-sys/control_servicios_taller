@@ -133,8 +133,6 @@ function WorkOrdersByStatusPage() {
         )}
       </div>
 
-export default WorkOrdersByStatusPage;
-
       <div className="table-container">
         <table className="data-table">
           <thead>

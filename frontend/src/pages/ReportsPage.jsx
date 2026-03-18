@@ -1,5 +1,5 @@
-// src/pages/ReportsPage.jsx - Página Informes
-
+// Página Informes
+// src/pages/ReportsPage.jsx
 import React, { useState, useEffect } from 'react';
 import { getReportsSummary } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
@@ -7,13 +7,14 @@ import '../styles/ReportsPage.css';
 
 const ReportsPage = () => {
   const [reports, setReports] = useState({
+    today: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } },
     last7Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } },
     last30Days: { ingresos: 0, completados: 0, entregados: 0, period: { from: '', to: '' } }
   });
   const [vehiclesByLine, setVehiclesByLine] = useState([]);
   const [totalInWorkshop, setTotalInWorkshop] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("last7Days");
+  const [activeTab, setActiveTab] = useState("today"); // ✅ Default: Hoy
   const [showLineReport, setShowLineReport] = useState(false);
   const { user } = useAuth();
 
@@ -35,13 +36,11 @@ const ReportsPage = () => {
     }
   };
 
-  // ✅ FUNCIÓN ÚNICA Y CORRECTA
   const fetchVehiclesByLine = async () => {
     try {
-      console.log('📊 [PROD] Iniciando carga...');
+      console.log('📊 [PROD] Iniciando carga de vehículos por línea...');
       setLoading(true);
       
-      // Determinar URL del backend
       const API_URL = import.meta.env.VITE_API_URL || 
         (window.location.hostname === 'localhost' 
           ? 'http://localhost:10000' 
@@ -49,16 +48,13 @@ const ReportsPage = () => {
       
       console.log('📊 [PROD] API URL:', API_URL);
       
-      // Paso 1: Obtener órdenes
       const ordersResponse = await fetch(`${API_URL}/api/work-orders`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
       
       console.log('📊 [PROD] Status órdenes:', ordersResponse.status);
-      console.log('📊 [PROD] Content-Type:', ordersResponse.headers.get('content-type'));
       
-      // Verificar si es HTML (error de autenticación o 404)
       const contentType = ordersResponse.headers.get('content-type');
       if (contentType && contentType.includes('text/html')) {
         const htmlText = await ordersResponse.text();
@@ -74,7 +70,6 @@ const ReportsPage = () => {
       const orders = await ordersResponse.json();
       console.log('📊 [PROD] Total órdenes:', orders.length);
       
-      // Paso 2: Obtener vehículos como backup
       let vehiclesMap = {};
       try {
         const vehiclesResponse = await fetch(`${API_URL}/api/vehicles`, {
@@ -98,7 +93,6 @@ const ReportsPage = () => {
         console.warn('⚠️ [PROD] Error cargando vehículos:', err.message);
       }
       
-      // Paso 3: Filtrar órdenes en taller
       const workshopStates = [
         'por_asignar', 'asignado', 'en_aprobacion', 
         'por_repuestos', 'en_soporte', 'en_proceso', 'completado'
@@ -117,7 +111,6 @@ const ReportsPage = () => {
         return;
       }
       
-      // Paso 4: Agrupar por línea
       const lineCount = {};
       workshopOrders.forEach(order => {
         let line = 'Sin Línea';
@@ -132,7 +125,6 @@ const ReportsPage = () => {
         lineCount[line] = (lineCount[line] || 0) + 1;
       });
       
-      // Paso 5: Convertir a array y ordenar
       const sortedLines = Object.entries(lineCount)
         .map(([line, count]) => ({ line, count }))
         .sort((a, b) => b.count - a.count);
@@ -152,12 +144,12 @@ const ReportsPage = () => {
     }
   };
 
-  const renderReportBlock = (data) => {
+  const renderReportBlock = (data, periodLabel) => {
     const maxValue = Math.max(data.ingresos, data.completados, data.entregados, 1);
     return (
       <div className="reports-block">
         <p className="reports-period">
-          Periodo: {data.period.from} a {data.period.to}
+          Periodo: {periodLabel}
         </p>
         <div className="reports-cards">
           <div className="report-card report-card--ingresos">
@@ -245,16 +237,25 @@ const ReportsPage = () => {
 
   return (
     <div className="reports-container">
+      {/* Tabs actualizados con 4 opciones */}
       <div className="reports-tabs">
-        <button className={`tab-button ${!showLineReport && activeTab === "last7Days" ? "active" : ""}`}
+        <button 
+          className={`tab-button ${!showLineReport && activeTab === "today" ? "active" : ""}`}
+          onClick={() => { setShowLineReport(false); setActiveTab("today"); }}>
+          📅 Hoy
+        </button>
+        <button 
+          className={`tab-button ${!showLineReport && activeTab === "last7Days" ? "active" : ""}`}
           onClick={() => { setShowLineReport(false); setActiveTab("last7Days"); }}>
           Últimos 7 Días
         </button>
-        <button className={`tab-button ${!showLineReport && activeTab === "last30Days" ? "active" : ""}`}
+        <button 
+          className={`tab-button ${!showLineReport && activeTab === "last30Days" ? "active" : ""}`}
           onClick={() => { setShowLineReport(false); setActiveTab("last30Days"); }}>
           Últimos 30 Días
         </button>
-        <button className={`tab-button ${showLineReport ? "active" : ""}`}
+        <button 
+          className={`tab-button ${showLineReport ? "active" : ""}`}
           onClick={() => setShowLineReport(true)}>
           📈 En Taller por Línea
         </button>
@@ -263,10 +264,15 @@ const ReportsPage = () => {
       {!showLineReport ? (
         <>
           <h2 className="reports-title">
-            📊 Rotación {activeTab === "last7Days" ? "Últimos 7 Días" : "Últimos 30 Días"}
+            📊 Rotación {
+              activeTab === "today" ? "Hoy" : 
+              activeTab === "last7Days" ? "Últimos 7 Días" : "Últimos 30 Días"
+            }
           </h2>
-          {activeTab === "last7Days" && renderReportBlock(reports.last7Days)}
-          {activeTab === "last30Days" && renderReportBlock(reports.last30Days)}
+          
+          {activeTab === "today" && renderReportBlock(reports.today, reports.today.period.from)}
+          {activeTab === "last7Days" && renderReportBlock(reports.last7Days, `${reports.last7Days.period.from} a ${reports.last7Days.period.to}`)}
+          {activeTab === "last30Days" && renderReportBlock(reports.last30Days, `${reports.last30Days.period.from} a ${reports.last30Days.period.to}`)}
         </>
       ) : (
         <>

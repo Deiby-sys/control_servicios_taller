@@ -501,3 +501,49 @@
     font-size: 0.9rem;
   }
 }
+
+/* Estilo especial para el tab "Hoy" */
+.tab-button:first-child {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.tab-button:first-child:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6639b5 100%);
+}
+
+.tab-button:first-child.active {
+  background: linear-gradient(135deg, #5568d3 0%, #6639b5 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Animación para destacar el tab Hoy */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.tab-button:first-child.active {
+  animation: pulse 2s infinite;
+}
+
+/* Responsive para el nuevo tab */
+@media (max-width: 768px) {
+  .reports-tabs {
+    flex-wrap: wrap;
+  }
+  
+  .tab-button {
+    flex: 1 1 45%;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-button {
+    flex: 1 1 100%;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}

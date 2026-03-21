@@ -1,5 +1,4 @@
 //index.js se encarga de arrancar la aplicación (server)
-
 // Cargar dotenv PRIMERO, antes de cualquier otro import
 // backend/src/index.js
 import dotenv from "dotenv";

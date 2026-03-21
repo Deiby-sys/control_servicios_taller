@@ -21,6 +21,8 @@ import reportsRoutes from "./routes/reports.routes.js";
 import { securityLogger } from './middlewares/securityLogger.js';
 
 const app = express();
+app.set('trust proxy', 1);
+
 
 // Rate limiting para endpoints sensibles
 const authLimiter = rateLimit({

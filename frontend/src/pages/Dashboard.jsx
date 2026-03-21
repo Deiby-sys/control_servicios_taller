@@ -62,7 +62,7 @@ function Dashboard() {
           onClick={() => handleCardClick("/ordenes/status/asignado")}
         >
           <img src={asignados} alt="Diagnóstico Técnico" />
-          <h3>Técnico</h3>
+          <h3>Diagnóstico</h3>
           {!loading && <div className="card-count">{counts.asignado}</div>}
         </div>
         

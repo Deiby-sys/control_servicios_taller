@@ -5,7 +5,7 @@ export const getStatusLabel = (status) => {
     case 'por_asignar':
       return 'Jefe';
     case 'asignado':
-      return 'Técnico';
+      return 'Diagnóstico';
     case 'en_aprobacion':
       return 'Asesor';
     case 'por_repuestos':

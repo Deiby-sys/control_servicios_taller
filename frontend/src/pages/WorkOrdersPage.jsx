@@ -21,7 +21,7 @@ function WorkOrdersPage() {
   // Opciones de estado ACTUALIZADAS con nuevos labels
   const statusOptions = [
     { value: 'por_asignar', label: 'Jefe' },
-    { value: 'asignado', label: 'Técnico' },
+    { value: 'asignado', label: 'Diagnóstico' },
     { value: 'en_aprobacion', label: 'Asesor' },
     { value: 'por_repuestos', label: 'Repuestos' },
     { value: 'en_soporte', label: 'Soporte Técnico' },

@@ -47,7 +47,7 @@ function WorkOrderDetailPage() {
   // Estados disponibles
   const statusOptions = [
     { value: 'por_asignar', label: 'Jefe' },
-    { value: 'asignado', label: 'Técnico' },
+    { value: 'asignado', label: 'Diagnóstico' },
     { value: 'en_aprobacion', label: 'Asesor' },
     { value: 'por_repuestos', label: 'Repuestos' },
     { value: 'en_soporte', label: 'Soporte Técnico' },

@@ -7,7 +7,7 @@ import axios from "axios";
 // CONFIGURACIÓN DE BREVO
 // ========================================
 const brevoApiKey = process.env.BREVO_API_KEY;
-const DEFAULT_FROM = process.env.FROM_EMAIL || "tu-correo-verificado@dominio.com";
+const DEFAULT_FROM = process.env.FROM_EMAIL || "mytallerapp@gmail.com";
 
 // Función genérica para enviar con Brevo API HTTP
 const sendWithBrevo = async (msg) => {

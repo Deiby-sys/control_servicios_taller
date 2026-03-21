@@ -409,7 +409,7 @@ export const updateWorkOrderStatus = async (req, res) => {
       
       const statusLabels = {
         'por_asignar': 'Jefe',
-        'asignado': 'Técnico',
+        'asignado': 'Diagnóstico',
         'en_aprobacion': 'Asesor',
         'por_repuestos': 'Repuestos',
         'en_soporte': 'Soporte técnico',

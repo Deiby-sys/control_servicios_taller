@@ -124,12 +124,12 @@ function HistoryPage() {
 
   const getStatusLabel = (status) => {
     const labels = {
-      'por_asignar': 'Por Asignar',
-      'asignado': 'Asignado',
-      'en_aprobacion': 'En Aprobación',
-      'por_repuestos': 'Por Repuestos',
-      'en_soporte': 'En Soporte',
-      'completado': 'Completado',
+      'por_asignar': 'Jefe',
+      'asignado': 'Diagnóstico',
+      'en_aprobacion': 'Asesor',
+      'por_repuestos': 'Repuestos',
+      'en_soporte': 'Soporte Técnico',
+      'completado': 'Listo para Entrega',
       'entregado': 'Entregado'
     };
     return labels[status] || status;

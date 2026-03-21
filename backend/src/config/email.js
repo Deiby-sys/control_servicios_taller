@@ -1,35 +1,37 @@
-// Envío de emails con Resend (Producción) + Mock (Desarrollo)
+//Email.js para Brevo
 // backend/src/config/email.js
 
-import { Resend } from 'resend';
+import axios from "axios";
 
 // ========================================
-// CONFIGURACIÓN DE RESEND CON FALLBACK
+// CONFIGURACIÓN DE BREVO
 // ========================================
-const resendApiKey = process.env.RESEND_API_KEY;
-const useMock = process.env.USE_MOCK_EMAIL === 'true';
+const brevoApiKey = process.env.BREVO_API_KEY;
+const DEFAULT_FROM = process.env.FROM_EMAIL || "tu-correo-verificado@dominio.com";
 
-// Remitente por defecto (puede sobrescribirse con FROM_EMAIL en .env)
-const DEFAULT_FROM = process.env.FROM_EMAIL || 'My Taller App <onboarding@resend.dev>';
-
-// Crear instancia de Resend o mock para desarrollo
-const resend = (resendApiKey && !useMock)
-  ? new Resend(resendApiKey)
-  : {
-      emails: {
-        send: async (options) => {
-          console.log(`📧 [MOCK EMAIL] No se envió correo real (modo desarrollo):`, {
-            to: options.to,
-            from: options.from,
-            subject: options.subject,
-            // No mostrar el HTML completo para no saturar la consola
-            preview: options.html?.substring(0, 100) + '...'
-          });
-          // Simular respuesta exitosa para que el flujo continúe
-          return { data: { id: 'mock-' + Date.now() }, error: null };
-        }
+// Función genérica para enviar con Brevo API HTTP
+const sendWithBrevo = async (msg) => {
+  try {
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: { name: "My Taller App", email: DEFAULT_FROM },
+        to: [{ email: msg.to }],
+        subject: msg.subject,
+        htmlContent: msg.html,
+      },
+      {
+        headers: {
+          "api-key": brevoApiKey,
+          "Content-Type": "application/json",
+        },
       }
-    };
+    );
+    return { data: response.data, error: null };
+  } catch (error) {
+    return { data: null, error: error.response?.data || error.message };
+  }
+};
 
 // ========================================
 // FUNCIÓN: Recuperar Contraseña
@@ -38,9 +40,8 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
   console.log(`📧 [EMAIL] Recuperación solicitada para: ${email}`);
 
   const msg = {
-    from: DEFAULT_FROM,
     to: email,
-    subject: 'Recuperación de contraseña - My Taller App',
+    subject: "Recuperación de contraseña - My Taller App",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <h2 style="color: #007bff; text-align: center;">🔐 Recuperación de contraseña</h2>
@@ -61,8 +62,8 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
         <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;" />
         
         <p style="font-size: 12px; color: #6c757d;">
-          🔹 Este enlace expirará en <strong>30 minutos</strong>.<br/>
-          🔹 Si no solicitaste este cambio, ignora este correo.<br/>
+          🔹 Este enlace expirará en <strong>30 minutos</strong>.<br/> 
+          🔹 Si no solicitaste este cambio, ignora este correo.<br/> 
           🔹 Por seguridad, no compartas este enlace con nadie.
         </p>
         
@@ -73,52 +74,33 @@ export const sendPasswordResetEmail = async (email, resetUrl) => {
     `,
   };
 
-  try {
-    const { data, error } = await resend.emails.send(msg);
+  const result = await sendWithBrevo(msg);
 
-    if (error) {
-      console.error('❌ [RESEND] Error enviando recuperación:', error);
-      throw new Error(error.message || 'Error desconocido de Resend');
-    }
-
-    const mode = useMock ? '[MOCK]' : '[RESEND]';
-    console.log(`✅ ${mode} Email de recuperación enviado a ${email} | ID: ${data?.id}`);
-    return data;
-
-  } catch (error) {
-    console.error('❌ [EMAIL] Error crítico en sendPasswordResetEmail:', error.message);
-    // No lanzamos el error para no romper el flujo de forgotPassword
-    // (el usuario recibe mensaje genérico por seguridad)
+  if (result.error) {
+    console.error("❌ [BREVO] Error enviando recuperación:", result.error);
     return null;
   }
+
+  console.log(`✅ [BREVO] Email de recuperación enviado a ${email}`);
+  return result.data;
 };
 
 // ========================================
 // FUNCIÓN: Notificación de Cambio de Estado
 // ========================================
 export const sendOrderStatusNotification = async (assignedUserEmail, assignedUserName, orderDetails) => {
-  // Desestructuración con valores por defecto
-  const { 
-    placa = 'No disponible', 
-    cliente = 'No especificado', 
-    actividadSolicitada = 'Sin descripción', 
-    orderId = 'N/A', 
-    nuevoEstado = 'Desconocido' 
-  } = orderDetails || {};
+  const { placa = "No disponible", cliente = "No especificado", actividadSolicitada = "Sin descripción", orderId = "N/A", nuevoEstado = "Desconocido" } = orderDetails || {};
 
   console.log(`📧 [EMAIL] Notificación para orden #${orderId} → ${assignedUserEmail}`);
 
   const msg = {
-    from: DEFAULT_FROM,
     to: assignedUserEmail,
     subject: `🔧 Actualización Orden de Trabajo - My Taller App`,
-    //subject: `🔧 Orden #${orderId} - ${nuevoEstado} - Placa ${placa}`,
-    //<p>¡Hola <strong>${assignedUserName || 'Usuario'}</strong>!</p>
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <h2 style="color: #28a745; text-align: center;">✅ Actualización Orden de Trabajo</h2>
         
-        <p>¡Hola</p>
+        <p>¡Hola <strong>${assignedUserName || "Usuario"}</strong>!</p>
         <p>Se ha actualizado una orden de trabajo asignada a ti:</p>
         
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid #007bff; margin: 25px 0;">
@@ -143,21 +125,13 @@ export const sendOrderStatusNotification = async (assignedUserEmail, assignedUse
     `,
   };
 
-  try {
-    const { data, error } = await resend.emails.send(msg);
+  const result = await sendWithBrevo(msg);
 
-    if (error) {
-      console.error('❌ [RESEND] Error enviando notificación:', error);
-      throw new Error(error.message || 'Error desconocido de Resend');
-    }
-
-    const mode = useMock ? '[MOCK]' : '[RESEND]';
-    console.log(`✅ ${mode} Notificación enviada a ${assignedUserEmail} | ID: ${data?.id}`);
-    return data;
-
-  } catch (error) {
-    console.error('❌ [EMAIL] Error crítico en sendOrderStatusNotification:', error.message);
-    // No lanzamos el error para no interrumpir el flujo principal de la orden
+  if (result.error) {
+    console.error("❌ [BREVO] Error enviando notificación:", result.error);
     return null;
   }
+
+  console.log(`✅ [BREVO] Notificación enviada a ${assignedUserEmail}`);
+  return result.data;
 };

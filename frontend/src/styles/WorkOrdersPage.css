@@ -64,7 +64,7 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 900px; /* ✅ Aumentado de 800px a 900px para acomodar la nueva columna */
 }
 
 .data-table th,
@@ -145,6 +145,13 @@
   border: 1px solid #bee5eb;
 }
 
+/* ✅ NUEVO: Estilo para Baterías - Naranja/Ámbar */
+.status-baterias {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
 .status-completado {
   background-color: #d4edda;
   color: #155724;
@@ -173,10 +180,14 @@
   font-size: 0.875rem;
   transition: background-color 0.2s;
   white-space: nowrap;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn-view:hover {
   background-color: #138496;
+  color: white;
+  text-decoration: none;
 }
 
 .btn-edit {
@@ -209,9 +220,9 @@
   background-color: #c82333;
 }
 
-/* Estilo para la columna de Días en Taller (última columna - posición 8) */
+/* Estilo para la columna de Días en Taller (columna 8) y Acciones (columna 9) */
 
-/* Fecha (columna 7) - GRIS NORMAL */
+/* Fecha Ingreso (columna 7) - AZUL */
 .data-table td:nth-child(7) {
   color: #0d6efd !important;
   text-align: left;
@@ -224,13 +235,23 @@
   font-weight: bold;
 }
 
-/* Encabezados - ambos en gris */
+/* Acciones (columna 9) - Centrado */
+.data-table td:nth-child(9) {
+  text-align: center;
+}
+
+/* Encabezados */
 .data-table th:nth-child(7),
-.data-table th:nth-child(8) {
+.data-table th:nth-child(8),
+.data-table th:nth-child(9) {
   color: #495057 !important;
 }
 
 .data-table th:nth-child(8) {
+  text-align: center;
+}
+
+.data-table th:nth-child(9) {
   text-align: center;
 }
 
@@ -307,7 +328,9 @@
   }
   
   .data-table td:nth-child(8),
-  .data-table th:nth-child(8) {
+  .data-table th:nth-child(8),
+  .data-table td:nth-child(9),
+  .data-table th:nth-child(9) {
     text-align: center;
   }
   
@@ -340,7 +363,7 @@
   
   .data-table {
     font-size: 0.8rem;
-    min-width: 700px;
+    min-width: 750px; /* ✅ Ajustado para 9 columnas */
   }
   
   .data-table th,
@@ -403,7 +426,7 @@
   
   .data-table {
     font-size: 0.75rem;
-    min-width: 600px;
+    min-width: 650px; /* ✅ Ajustado para 9 columnas */
   }
   
   .data-table th,
@@ -491,7 +514,7 @@
   
   .data-table {
     font-size: 0.7rem;
-    min-width: 550px; /* ← Reducido para horizontal */
+    min-width: 600px; /* ✅ Ajustado para 9 columnas */
   }
   
   .data-table th,
@@ -523,14 +546,16 @@
     height: auto;
   }
   
-  /* Columnas de fechas y días en azul */
+  /* Columnas de fechas, días y acciones */
   .data-table td:nth-child(7),
-  .data-table td:nth-child(8) {
+  .data-table td:nth-child(8),
+  .data-table td:nth-child(9) {
     font-size: 0.75rem;
     padding: 0.35rem;
   }
   
-  .data-table th:nth-child(8) {
+  .data-table th:nth-child(8),
+  .data-table th:nth-child(9) {
     font-size: 0.8rem;
   }
   

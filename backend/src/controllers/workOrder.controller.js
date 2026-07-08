@@ -187,6 +187,7 @@ export const getWorkOrderCounts = async (req, res) => {
       por_repuestos: 0,
       en_soporte: 0,
       en_proceso: 0,
+      baterias: 0, //nuevo estado en controlador
       completado: 0
     };
 

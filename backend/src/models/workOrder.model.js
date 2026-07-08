@@ -91,7 +91,8 @@ const workOrderSchema = new mongoose.Schema({
       'en_aprobacion', 
       'por_repuestos', 
       'en_soporte', 
-      'en_proceso', 
+      'en_proceso',
+      'baterias', //nuevo estado en el modelo
       'completado',
       'entregado'
     ],

@@ -14,6 +14,8 @@ export const getStatusLabel = (status) => {
       return 'Soporte Técnico';
     case 'en_proceso':
       return 'Proceso Técnico';
+    case 'baterias':
+      return 'Baterías'; // ✅ NUEVO ESTADO
     case 'completado':
       return 'Listo para Entrega';
     case 'entregado':

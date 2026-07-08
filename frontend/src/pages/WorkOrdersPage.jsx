@@ -26,6 +26,7 @@ function WorkOrdersPage() {
     { value: 'por_repuestos', label: 'Repuestos' },
     { value: 'en_soporte', label: 'Soporte Técnico' },
     { value: 'en_proceso', label: 'Proceso Técnico' },
+    { value: 'baterias', label: 'Baterías' },
     { value: 'completado', label: 'Listo para Entrega' },
     { value: 'entregado', label: 'Entregado' }
   ];
@@ -170,6 +171,7 @@ function WorkOrdersPage() {
               <th>Responsable</th>
               <th>Fecha Ingreso</th>
               <th>Días en Taller</th>
+              <th>Acciones</th> {/* ✅ NUEVA COLUMNA */}
             </tr>
           </thead>
           <tbody>
@@ -222,12 +224,18 @@ function WorkOrdersPage() {
                     </td>
                     <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                     <td>{diasEnTaller}</td>
+                    {/* ✅ NUEVO BOTÓN VER DETALLE */}
+                    <td>
+                      <Link to={`/ordenes/${order._id}`} className="btn-view">
+                        Ver Detalle
+                      </Link>
+                    </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan="8" className="no-data">
+                <td colSpan="9" className="no-data"> {/* ✅ Cambiado de 8 a 9 */}
                   No se encontraron órdenes
                 </td>
               </tr>

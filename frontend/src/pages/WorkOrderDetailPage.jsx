@@ -52,8 +52,9 @@ function WorkOrderDetailPage() {
     { value: 'por_repuestos', label: 'Repuestos' },
     { value: 'en_soporte', label: 'Soporte Técnico' },
     { value: 'en_proceso', label: 'Proceso Técnico' },
-    { value: 'completado', label: 'Listo para Entrega' },
-    { value: 'entregado', label: 'Entregado' }
+    { value: 'baterias', label: 'Baterías' }, // ✅ NUEVO ESTADO
+    { value: 'completado', label: 'Listo para Entrega' }
+    // ❌ ELIMINADO: { value: 'entregado', label: 'Entregado' }
   ];
 
   useEffect(() => {
@@ -170,6 +171,7 @@ function WorkOrderDetailPage() {
       'por_repuestos': '#fd7e14',
       'en_soporte': '#20c997',
       'en_proceso': '#20c997',
+      'baterias': '#f39c12', // ✅ NUEVO COLOR - Naranja/Ámbar
       'completado': '#198754',
       'entregado': '#28a745'
     };

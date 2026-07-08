@@ -127,7 +127,7 @@
   border: 1px solid #b8daff;
 }
 
-/* En Aprobación - Azul/Info (mismo que Asignado) */
+/* En Aprobación - Azul/Info */
 .dashboard-card--en-aprobacion {
   background-color: #cce5ff;
   color: #004085;
@@ -148,11 +148,18 @@
   border: 1px solid #bee5eb;
 }
 
-/* En Proceso - Cian/Info (mismo que En Soporte) */
+/* En Proceso - Cian/Info */
 .dashboard-card--en-proceso {
   background-color: #d1ecf1;
   color: #0c5460;
   border: 1px solid #bee5eb;
+}
+
+/* ✅ NUEVO: Baterías - Amarillo/Ámbar */
+.dashboard-card--baterias {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
 }
 
 /* Completado - Verde/Éxito */
@@ -160,6 +167,56 @@
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
+}
+
+/* Estilos para texto e íconos dentro de las tarjetas coloreadas */
+.dashboard-card--ingreso h3,
+.dashboard-card--ingreso img,
+.dashboard-card--ingreso .card-count {
+  color: #383d41;
+}
+
+.dashboard-card--por-asignar h3,
+.dashboard-card--por-asignar img,
+.dashboard-card--por-asignar .card-count {
+  color: #856404;
+}
+
+.dashboard-card--asignado h3,
+.dashboard-card--asignado img,
+.dashboard-card--asignado .card-count,
+.dashboard-card--en-aprobacion h3,
+.dashboard-card--en-aprobacion img,
+.dashboard-card--en-aprobacion .card-count {
+  color: #004085;
+}
+
+.dashboard-card--por-repuestos h3,
+.dashboard-card--por-repuestos img,
+.dashboard-card--por-repuestos .card-count {
+  color: #721c24;
+}
+
+.dashboard-card--en-soporte h3,
+.dashboard-card--en-soporte img,
+.dashboard-card--en-soporte .card-count,
+.dashboard-card--en-proceso h3,
+.dashboard-card--en-proceso img,
+.dashboard-card--en-proceso .card-count {
+  color: #0c5460;
+}
+
+/* ✅ NUEVO: Estilos de texto para Baterías */
+.dashboard-card--baterias h3,
+.dashboard-card--baterias img,
+.dashboard-card--baterias .card-count {
+  color: #856404;
+}
+
+.dashboard-card--completado h3,
+.dashboard-card--completado img,
+.dashboard-card--completado .card-count {
+  color: #155724;
 }
 
 /* Estilos para texto e íconos dentro de las tarjetas coloreadas */

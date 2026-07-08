@@ -8,6 +8,7 @@ import aprobacion from "../images/aprobacion.png";
 import repuestos from "../images/repuestos.png";
 import soporte from "../images/soporte.png";
 import proceso from "../images/proceso.png";
+import baterias from "../images/baterias.png"; // ✅ Icono nueva tarjeta
 import listos from "../images/listos.png";
 import { useWorkOrderCounts } from "../hooks/useWorkOrderCounts";
 import { useAuth } from "../context/AuthContext";
@@ -100,6 +101,16 @@ function Dashboard() {
           <img src={proceso} alt="Proceso Técnico" />
           <h3>Proceso Técnico</h3>
           {!loading && <div className="card-count">{counts.en_proceso}</div>}
+        </div>
+
+        {/* ✅ NUEVA TARJETA: BATERÍAS */}
+        <div 
+          className="dashboard-card dashboard-card--baterias"
+          onClick={() => handleCardClick("/ordenes/status/baterias")}
+        >
+          <img src={baterias} alt="Baterías" />
+          <h3>Baterías</h3>
+          {!loading && <div className="card-count">{counts.baterias}</div>}
         </div>
         
         <div 

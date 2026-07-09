@@ -11,7 +11,8 @@ export const useWorkOrderCounts = () => {
     en_aprobacion: 0,
     por_repuestos: 0,
     en_soporte: 0,
-    en_proceso: 0, 
+    en_proceso: 0,
+    baterias: 0, // ✅ AGREGADO
     completado: 0,
     entregado: 0
   });
@@ -39,6 +40,7 @@ export const useWorkOrderCounts = () => {
                        counts.por_repuestos + 
                        counts.en_soporte + 
                        counts.en_proceso + 
+                       counts.baterias + // ✅ AGREGADO
                        counts.completado;
 
   return { counts, totalEnTaller, loading };

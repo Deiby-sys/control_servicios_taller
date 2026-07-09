@@ -359,6 +359,7 @@ export const updateWorkOrderStatus = async (req, res) => {
       'por_repuestos', 
       'en_soporte', 
       'en_proceso', 
+      'baterias', // ✅ AGREGADO AQUÍ
       'completado'
     ];
 
@@ -403,8 +404,6 @@ export const updateWorkOrderStatus = async (req, res) => {
       .populate('assignedTo', 'name lastName email')
       .populate('notes.author', 'name lastName');
 
-    // ... (Todo el código anterior de validación y actualización se mantiene igual) ...
-
     // ENVIAR EMAIL DE NOTIFICACIÓN (CON LOGS DE AUDITORÍA)
     if (updatedOrder.assignedTo && updatedOrder.assignedTo.length > 0 && (statusChanged || assignmentChanged)) {
       
@@ -415,6 +414,7 @@ export const updateWorkOrderStatus = async (req, res) => {
         'por_repuestos': 'Repuestos',
         'en_soporte': 'Soporte técnico',
         'en_proceso': 'Proceso técnico',
+        'baterias': 'Baterías', // ✅ AGREGADO AQUÍ
         'completado': 'Listo para entrega'
       };
 
@@ -456,7 +456,6 @@ export const updateWorkOrderStatus = async (req, res) => {
           console.log(`✅ [ÉXITO] Email enviado a ${assignedUserEmail}`);
         })
         .catch(err => {
-          // ESTO ES VITAL: Captura el error aquí para que NO llegue al catch principal de la función
           console.error(`❌ [ERROR SMTP] Falló envío a ${assignedUserEmail}:`, err.message);
         });
       });

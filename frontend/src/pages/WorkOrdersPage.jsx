@@ -5,8 +5,10 @@ import { useWorkOrders } from "../context/WorkOrderContext";
 import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import Select from "react-select";
+import { utils, writeFile } from 'xlsx'; // ✅ NUEVO: Librería para Excel
 import "../styles/WorkOrdersPage.css";
-import { getStatusLabel } from "../utils/statusLabels"; //Función labels
+import { getStatusLabel } from "../utils/statusLabels";
+import { parseDateSafe } from '../utils/dateHelpers';
 
 function WorkOrdersPage() {
   const { workOrders, getWorkOrders, loading, error } = useWorkOrders();
@@ -18,7 +20,6 @@ function WorkOrdersPage() {
   const [searchAssignee, setSearchAssignee] = useState(null);
   const [users, setUsers] = useState([]);
 
-  // Opciones de estado ACTUALIZADAS con nuevos labels
   const statusOptions = [
     { value: 'por_asignar', label: 'Jefe' },
     { value: 'asignado', label: 'Diagnóstico' },
@@ -31,44 +32,31 @@ function WorkOrdersPage() {
     { value: 'entregado', label: 'Entregado' }
   ];
 
-  // Genera la lista de responsables desde las órdenes
   useEffect(() => {
     if (!workOrders.length) {
       setUsers([]);
       return;
     }
-
     const responsiblesMap = new Map();
-
-     workOrders.forEach(order => {
+    workOrders.forEach(order => {
       if (order.assignedTo && order.assignedTo.length > 0) {
-        order.assignedTo.forEach(user => {
-          // Validación segura
-          if (user?._id && user?.name && user?.lastName) {
-            if (!responsiblesMap.has(user._id)) {
-              responsiblesMap.set(user._id, {
-                value: user._id,
-                label: `${user.name} ${user.lastName}`
-              });
+        order.assignedTo.forEach(u => {
+          if (u?._id && u?.name && u?.lastName) {
+            if (!responsiblesMap.has(u._id)) {
+              responsiblesMap.set(u._id, { value: u._id, label: `${u.name} ${u.lastName}` });
             }
           }
         });
       }
     });
-
-    // Ordenar alfabéticamente
-    const responsiblesList = Array.from(responsiblesMap.values())
-      .sort((a, b) => a.label.localeCompare(b.label));
-
+    const responsiblesList = Array.from(responsiblesMap.values()).sort((a, b) => a.label.localeCompare(b.label));
     setUsers(responsiblesList);
   }, [workOrders]);
    
   useEffect(() => {
     if (!workOrders.length) return;
-    
     let filtered = workOrders;
     
-    // Filtrar por texto general (placa, cliente, solicitud)
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(order =>
@@ -77,19 +65,14 @@ function WorkOrdersPage() {
         order.serviceRequest.toLowerCase().includes(term)
       );
     }
-    
-    // Filtrar por estado
     if (searchStatus) {
       filtered = filtered.filter(order => order.status === searchStatus.value);
     }
-    
-    // Filtrar por responsable
     if (searchAssignee) {
       filtered = filtered.filter(order =>
-        order.assignedTo?.some(user => user._id === searchAssignee.value)
+        order.assignedTo?.some(u => u._id === searchAssignee.value)
       );
     }
-    
     setFilteredOrders(filtered);
   }, [searchTerm, searchStatus, searchAssignee, workOrders]);
 
@@ -97,6 +80,57 @@ function WorkOrdersPage() {
     setSearchTerm("");
     setSearchStatus(null);
     setSearchAssignee(null);
+  };
+
+  // ✅ NUEVO: Función para exportar a Excel
+  const exportToExcel = () => {
+    if (filteredOrders.length === 0) {
+      alert("No hay datos para exportar con los filtros actuales");
+      return;
+    }
+
+    const dataToExport = filteredOrders.map(order => {
+      const orderStatus = (order.status || '').toLowerCase();
+      let diasEnTaller = 0;
+      
+      try {
+        const entryDate = parseDateSafe(order.entryDate);
+        if (orderStatus === 'entregado' && order.deliveryDate) {
+          const deliveryDate = parseDateSafe(order.deliveryDate);
+          if (!isNaN(entryDate.getTime()) && !isNaN(deliveryDate.getTime())) {
+            diasEnTaller = Math.ceil((deliveryDate - entryDate) / (1000 * 60 * 60 * 24));
+          }
+        } else {
+          const today = new Date();
+          if (!isNaN(entryDate.getTime())) {
+            diasEnTaller = Math.ceil((today - entryDate) / (1000 * 60 * 60 * 24));
+          }
+        }
+      } catch (e) {
+        diasEnTaller = 0;
+      }
+
+      return {
+        'Fecha Ingreso': parseDateSafe(order.entryDate).toLocaleDateString('es-CO'),
+        'Placa': order.vehicle?.plate || '',
+        'Cliente': order.client ? `${order.client.name} ${order.client.lastName}` : 'No asignado',
+        'Kilometraje': order.currentMileage ? order.currentMileage.toLocaleString() : '0',
+        'Solicitud': order.serviceRequest || '',
+        'Estado': getStatusLabel(order.status),
+        'Responsable': order.assignedTo && order.assignedTo.length > 0 
+          ? order.assignedTo.map(u => `${u.name} ${u.lastName}`).join(', ') 
+          : 'Sin asignar',
+        'Días en Taller': diasEnTaller
+      };
+    });
+
+    const worksheet = utils.json_to_sheet(dataToExport);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Órdenes de Trabajo");
+    
+    // Nombre del archivo con la fecha de hoy
+    const fileName = `ordenes_trabajo_${new Date().toISOString().split('T')[0]}.xlsx`;
+    writeFile(workbook, fileName);
   };
 
   if (loading) return <div className="page">Cargando órdenes...</div>;
@@ -107,15 +141,29 @@ function WorkOrdersPage() {
       <div className="page-header">
         <h1>Órdenes de Trabajo</h1>
         
-        {/* SOLO admin, asesor y jefe ven "+ Nueva Orden" */}
+        {/* ✅ Contenedor de acciones para admin, asesor y jefe */}
         {(user?.profile === 'admin' || user?.profile === 'asesor' || user?.profile === 'jefe') && (
-          <Link to="/ordenes/new" className="btn-primary">
-            + Nueva Orden
-          </Link>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button 
+              onClick={exportToExcel} 
+              className="btn-primary" /* ← Cambiado a btn-primary para el fondo azul */
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                fontSize: '0.9rem', /* ← Texto un poco más pequeño */
+                padding: '0.6rem 1.2rem' /* ← Un poco más compacto */
+              }}
+            >
+              📊 Exportar a Excel
+            </button>
+            <Link to="/ordenes/new" className="btn-primary">
+              + Nueva Orden
+            </Link>
+          </div>
         )}
       </div>
 
-      {/* Formulario de búsqueda avanzada */}
       <div className="search-container">
         <div className="search-bar">
           <input
@@ -136,8 +184,6 @@ function WorkOrdersPage() {
             className="search-select"
             isClearable
           />
-          
-          {/* Filtro por responsable con datos cargados */}
           <Select
             options={users}
             value={searchAssignee}
@@ -150,10 +196,7 @@ function WorkOrdersPage() {
         </div>
 
         {(searchStatus || searchAssignee) && (
-          <button 
-            onClick={handleClearFilters}
-            className="btn-secondary clear-filters"
-          >
+          <button onClick={handleClearFilters} className="btn-secondary clear-filters">
             Limpiar Filtros
           </button>
         )}
@@ -171,60 +214,51 @@ function WorkOrdersPage() {
               <th>Responsable</th>
               <th>Fecha Ingreso</th>
               <th>Días en Taller</th>
-              <th>Acciones</th> {/* ✅ NUEVA COLUMNA */}
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => {
-              // Calcula días en  taller
-              const orderStatus = (order.status || '').toLowerCase();
-              
-              let diasEnTaller = 0;
-              
-              try {
-                const entryDate = new Date(order.entryDate);
+                const orderStatus = (order.status || '').toLowerCase();
+                let diasEnTaller = 0;
                 
-                if (orderStatus === 'entregado' && order.deliveryDate) {
-                  const deliveryDate = new Date(order.deliveryDate);
-                  // Asegura que las fechas sean válidas
-                  if (!isNaN(entryDate) && !isNaN(deliveryDate)) {
-                    diasEnTaller = Math.ceil((deliveryDate - entryDate) / (1000 * 60 * 60 * 24));
+                try {
+                  const entryDate = parseDateSafe(order.entryDate);
+                  if (orderStatus === 'entregado' && order.deliveryDate) {
+                    const deliveryDate = parseDateSafe(order.deliveryDate);
+                    if (!isNaN(entryDate.getTime()) && !isNaN(deliveryDate.getTime())) {
+                      diasEnTaller = Math.ceil((deliveryDate - entryDate) / (1000 * 60 * 60 * 24));
+                    }
+                  } else {
+                    const today = new Date();
+                    if (!isNaN(entryDate.getTime())) {
+                      diasEnTaller = Math.ceil((today - entryDate) / (1000 * 60 * 60 * 24));
+                    }
                   }
-                } else {
-                  diasEnTaller = Math.ceil((new Date() - entryDate) / (1000 * 60 * 60 * 24));
+                } catch (e) {
+                  console.error("Error calculando días en taller:", e);
+                  diasEnTaller = 0;
                 }
-              } catch (e) {
-                console.error("Error calculando días en taller:", e);
-                diasEnTaller = 0;
-              }
 
-                  return (
+                return (
                   <tr key={order._id}>
                     <td>{order.vehicle?.plate}</td>
-                    <td>
-                      {order.client 
-                        ? `${order.client.name} ${order.client.lastName}` 
-                        : "Cliente no asignado"}
-                    </td>
-                    <td>{order.currentMileage.toLocaleString()}</td>
+                    <td>{order.client ? `${order.client.name} ${order.client.lastName}` : "Cliente no asignado"}</td>
+                    <td>{order.currentMileage?.toLocaleString() || '0'}</td>
                     <td>{order.serviceRequest}</td>
                     <td>
-                      {/* USO FUNCIÓN getStatusLabel */}
                       <span className={`status status-${order.status.replace(/_/g, '-')}`}>
                         {getStatusLabel(order.status)}
                       </span>
                     </td>
                     <td>
                       {order.assignedTo && order.assignedTo.length > 0
-                        ? order.assignedTo.map(user => 
-                            `${user.name} ${user.lastName}`
-                          ).join(', ')
+                        ? order.assignedTo.map(u => `${u.name} ${u.lastName}`).join(', ')
                         : "Sin asignar"}
                     </td>
-                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>{parseDateSafe(order.createdAt).toLocaleDateString('es-CO')}</td>
                     <td>{diasEnTaller}</td>
-                    {/* ✅ NUEVO BOTÓN VER DETALLE */}
                     <td>
                       <Link to={`/ordenes/${order._id}`} className="btn-view">
                         Ver Detalle
@@ -235,7 +269,7 @@ function WorkOrdersPage() {
               })
             ) : (
               <tr>
-                <td colSpan="9" className="no-data"> {/* ✅ Cambiado de 8 a 9 */}
+                <td colSpan="9" className="no-data">
                   No se encontraron órdenes
                 </td>
               </tr>

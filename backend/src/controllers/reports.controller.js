@@ -33,8 +33,8 @@ export const getReports = async (req, res) => {
     const todayEnd = getEndOfDay(now);        // Hoy 23:59:59
     const todayStart = getStartOfDay(now);     // Hoy 00:00:00
     
-    const sevenDaysAgo = getStartOfDay(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
-    const thirtyDaysAgo = getStartOfDay(new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000));
+    const sevenDaysAgo = getStartOfDay(new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000));
+    const thirtyDaysAgo = getStartOfDay(new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000));
 
     // Pipeline base para contar ingresos (createdAt)
     const ingresosPipeline = (fromDate, toDate) => [

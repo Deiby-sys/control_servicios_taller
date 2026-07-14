@@ -697,3 +697,151 @@
     height: auto;
   }
 }
+
+/* =========================
+   Sección de Repuestos
+========================= */
+.parts-container {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.parts-input-row button.btn-primary {
+  width: 100%;
+  height: 38px; /* Coincide con la altura de los inputs */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 0;
+}
+
+/* Transición suave al pasar el mouse por las filas de la tabla */
+.parts-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.part-input {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.part-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.parts-table-wrapper {
+  overflow-x: auto;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.parts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.parts-table th {
+  background-color: #e9ecef;
+  color: #495057;
+  font-weight: 600;
+  padding: 0.6rem;
+  text-align: left;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.parts-table td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #f1f3f5;
+  color: #212529;
+}
+
+.parts-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.parts-save-btn {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .parts-input-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .part-detail {
+    grid-column: 1 / -1;
+  }
+  .parts-table {
+    font-size: 0.8rem;
+  }
+  .parts-table th, .parts-table td {
+    padding: 0.4rem;
+  }
+}
+
+/* Fila en modo edición */
+.editing-row {
+  background-color: #fffbeb;
+  border-left: 3px solid #ffc107;
+}
+
+/* Inputs inline para edición */
+.part-input-inline {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.part-input-inline:focus {
+  outline: none;
+  border-color: #0056b3;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.part-detail-inline {
+  min-width: 150px;
+}
+
+.part-qty-inline {
+  width: 60px !important;
+}
+
+.part-price-inline {
+  width: 80px !important;
+}
+
+/* Ajuste responsive para edición en móviles */
+@media (max-width: 768px) {
+  .part-input-inline {
+    font-size: 0.8rem;
+    padding: 0.3rem;
+  }
+  
+  .part-detail-inline {
+    min-width: 100px;
+  }
+}

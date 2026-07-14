@@ -44,7 +44,13 @@ function WorkOrderDetailPage() {
   const [selectedAssignees, setSelectedAssignees] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Estados disponibles
+   // ✅ NUEVO: Estados para el manejo de repuestos
+  const [showPartsForm, setShowPartsForm] = useState(false);
+  const [spareParts, setSpareParts] = useState([]);
+  const [newPart, setNewPart] = useState({ code: '', detail: '', quantity: 1, price: 0 });
+  const [savingParts, setSavingParts] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null); // ✅ Para saber qué fila se edita
+
   const statusOptions = [
     { value: 'por_asignar', label: 'Jefe' },
     { value: 'asignado', label: 'Diagnóstico' },
@@ -52,9 +58,8 @@ function WorkOrderDetailPage() {
     { value: 'por_repuestos', label: 'Repuestos' },
     { value: 'en_soporte', label: 'Soporte Técnico' },
     { value: 'en_proceso', label: 'Proceso Técnico' },
-    { value: 'baterias', label: 'Baterías' }, // ✅ NUEVO ESTADO
+    { value: 'baterias', label: 'Baterías' },
     { value: 'completado', label: 'Listo para Entrega' }
-    // ❌ ELIMINADO: { value: 'entregado', label: 'Entregado' }
   ];
 
   useEffect(() => {
@@ -64,6 +69,7 @@ function WorkOrderDetailPage() {
         const order = await getWorkOrderById(id);
         setWorkOrder(order);
         setSelectedStatus(order.status);
+        setSpareParts(order.spareParts || []); // ✅ Cargar repuestos existentes
         
         const assigneeIds = order.assignedTo?.map(u => u._id) || [];
         setSelectedAssignees(assigneeIds);
@@ -76,21 +82,10 @@ function WorkOrderDetailPage() {
 
     const fetchUsers = async () => {
       try {
-        // USA LA URL ABSOLUTA CORRECTA
-        const response = await axios.get(`${API_URL}/users/public`, {
-          withCredentials: true
-        });
-        
+        const response = await axios.get(`${API_URL}/users/public`, { withCredentials: true });
         const userData = response.data;
-        
-        if (!Array.isArray(userData)) {
-          throw new Error("La respuesta no es un array de usuarios");
-        }
-
-        setUsers(userData.map(u => ({ 
-          value: u._id, 
-          label: `${u.name} ${u.lastName} (${u.profile})` 
-        })));
+        if (!Array.isArray(userData)) throw new Error("La respuesta no es un array de usuarios");
+        setUsers(userData.map(u => ({ value: u._id, label: `${u.name} ${u.lastName} (${u.profile})` })));
       } catch (error) {
         console.error("Error al cargar usuarios:", error);
         setUsers([]); 
@@ -103,10 +98,10 @@ function WorkOrderDetailPage() {
     }
   }, [id]);
 
+  // ... (Mantén handleAddNote, handleUpdateStatus, handleUploadAttachment, handleDeleteAttachment, formatFileSize, getStatusColor igual que antes) ...
   const handleAddNote = async (e) => {
     e.preventDefault();
     if (!newNote.trim()) return;
-
     try {
       const updatedOrder = await addNoteToWorkOrder(id, { content: newNote });
       setWorkOrder(updatedOrder);
@@ -118,10 +113,7 @@ function WorkOrderDetailPage() {
 
   const handleUpdateStatus = async () => {
     try {
-      const updatedOrder = await updateWorkOrderStatus(id, {
-        status: selectedStatus,
-        assignedTo: selectedAssignees
-      });
+      const updatedOrder = await updateWorkOrderStatus(id, { status: selectedStatus, assignedTo: selectedAssignees });
       setWorkOrder(updatedOrder);
       alert("Orden actualizada correctamente");
     } catch (error) {
@@ -143,10 +135,7 @@ function WorkOrderDetailPage() {
     if (window.confirm('¿Estás seguro de eliminar este archivo?')) {
       try {
         await deleteAttachment(workOrder._id, fileId);
-        setWorkOrder(prevOrder => ({
-          ...prevOrder,
-          attachments: prevOrder.attachments.filter(att => att._id !== fileId)
-        }));
+        setWorkOrder(prevOrder => ({ ...prevOrder, attachments: prevOrder.attachments.filter(att => att._id !== fileId) }));
         alert('Archivo eliminado correctamente');
       } catch (error) {
         console.error('Error al eliminar archivo:', error);
@@ -165,17 +154,65 @@ function WorkOrderDetailPage() {
 
   const getStatusColor = (status) => {
     const colors = {
-      'por_asignar': '#6c757d',
-      'asignado': '#0d6efd',
-      'en_aprobacion': '#ffc107',
-      'por_repuestos': '#fd7e14',
-      'en_soporte': '#20c997',
-      'en_proceso': '#20c997',
-      'baterias': '#f39c12', // ✅ NUEVO COLOR - Naranja/Ámbar
-      'completado': '#198754',
-      'entregado': '#28a745'
+      'por_asignar': '#6c757d', 'asignado': '#0d6efd', 'en_aprobacion': '#ffc107',
+      'por_repuestos': '#fd7e14', 'en_soporte': '#20c997', 'en_proceso': '#20c997',
+      'baterias': '#f39c12', 'completado': '#198754', 'entregado': '#28a745'
     };
     return colors[status] || '#6c757d';
+  };
+
+  // ✅ NUEVO: Funciones para manejar repuestos
+  const handleAddPartRow = () => {
+    if (!newPart.detail.trim()) {
+      alert("El detalle del repuesto es obligatorio");
+      return;
+    }
+    setSpareParts([...spareParts, { ...newPart }]); 
+    setNewPart({ code: '', detail: '', quantity: 1, price: 0 });
+  };
+
+  const handleRemovePart = (index) => {
+    const updatedParts = spareParts.filter((_, i) => i !== index);
+    setSpareParts(updatedParts);
+  };
+
+  // ✅ NUEVO: Activar edición de una fila
+  const handleEditPart = (index) => {
+    setEditingIndex(index);
+  };
+
+  // ✅ NUEVO: Actualizar campo específico de una fila en edición
+  const handleUpdatePartField = (index, field, value) => {
+    const updatedParts = [...spareParts];
+    updatedParts[index] = {
+      ...updatedParts[index],
+      [field]: field === 'quantity' || field === 'price' ? parseFloat(value) || 0 : value
+    };
+    setSpareParts(updatedParts);
+  };
+
+  // ✅ NUEVO: Cancelar edición
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+  };
+
+  const handleSaveParts = async () => {
+    try {
+      setSavingParts(true);
+      const response = await axios.patch(`${API_URL}/work-orders/${id}/spare-parts`, 
+        { spareParts }, 
+        { withCredentials: true }
+      );
+      setWorkOrder(response.data);
+      setEditingIndex(null); // ✅ Salir del modo edición al guardar
+      alert("✅ Lista de repuestos guardada correctamente");
+      setShowPartsForm(false);
+    } catch (error) {
+      console.error("Error al guardar repuestos:", error);
+      alert("Error al guardar: " + (error.response?.data?.message || error.message));
+    } finally {
+      setSavingParts(false);
+    }
   };
 
   if (loading) return <div className="page">Cargando orden de trabajo...</div>;
@@ -184,37 +221,18 @@ function WorkOrderDetailPage() {
 
   return (
     <div className="page">
+      {/* ... (Mantén el page-header, order-info, solicitud del cliente y gestión de la orden igual que antes) ... */}
       <div className="page-header">
         <div>
           <h1>Orden de Trabajo</h1>
           <h2>{workOrder.orderNumber}</h2>
         </div>
         <div className="header-actions">
-          <button 
-            onClick={() => generateWorkOrderPDF(workOrder)}
-            className="btn-primary"
-            style={{ marginRight: '0.5rem' }}
-          >
-            📄 Descargar PDF
-          </button>
-          
-          {workOrder.status === 'completado' && 
-            ['admin', 'asesor', 'jefe'].includes(user?.profile) && (
-            <button 
-              onClick={() => navigate(`/ordenes/${workOrder._id}/entregar`)}
-              className="btn-primary"
-              style={{ marginRight: '0.5rem' }}
-            >
-              🚗 Entregar Vehículo
-            </button>
+          <button onClick={() => generateWorkOrderPDF(workOrder)} className="btn-primary" style={{ marginRight: '0.5rem' }}>📄 Descargar PDF</button>
+          {workOrder.status === 'completado' && ['admin', 'asesor', 'jefe'].includes(user?.profile) && (
+            <button onClick={() => navigate(`/ordenes/${workOrder._id}/entregar`)} className="btn-primary" style={{ marginRight: '0.5rem' }}>🚗 Entregar Vehículo</button>
           )}
-          
-          <button 
-            onClick={() => navigate('/ordenes')}
-            className="btn-secondary"
-          >
-            ← Volver a Órdenes
-          </button>
+          <button onClick={() => navigate('/ordenes')} className="btn-secondary">← Volver a Órdenes</button>
         </div>
       </div>
 
@@ -223,18 +241,10 @@ function WorkOrderDetailPage() {
           <h3>Información General</h3>
           <div className="info-grid">
             <div><strong>Fecha de Ingreso:</strong> {new Date(workOrder.entryDate).toLocaleString('es-CO')}</div>
-            <div><strong>Estado:</strong> 
-              <span 
-                className={`status-badge status-${workOrder.status.replace(/_/g, '-')}`}
-                style={{ backgroundColor: getStatusColor(workOrder.status) }}
-              >
-                {getStatusLabel(workOrder.status)}
-              </span>
-            </div>
+            <div><strong>Estado:</strong> <span className={`status-badge status-${workOrder.status.replace(/_/g, '-')}`} style={{ backgroundColor: getStatusColor(workOrder.status) }}>{getStatusLabel(workOrder.status)}</span></div>
             <div><strong>Creado por:</strong> {workOrder.createdBy?.name} {workOrder.createdBy?.lastName}</div>
           </div>
         </div>
-
         <div className="info-card">
           <h3>Vehículo</h3>
           <div className="info-grid">
@@ -246,7 +256,6 @@ function WorkOrderDetailPage() {
             <div><strong>Color:</strong> {workOrder.vehicle?.color}</div>
           </div>
         </div>
-
         <div className="info-card">
           <h3>Cliente</h3>
           <div className="info-grid">
@@ -259,9 +268,7 @@ function WorkOrderDetailPage() {
 
       <div className="order-section">
         <h3>Solicitud del Cliente</h3>
-        <div className="solicitud-content">
-          {workOrder.serviceRequest}
-        </div>
+        <div className="solicitud-content">{workOrder.serviceRequest}</div>
       </div>
 
       {workOrder.status !== 'entregado' && (
@@ -270,78 +277,36 @@ function WorkOrderDetailPage() {
           <div className="management-grid">
             <div className="form-group">
               <label>Estado Actual</label>
-              <Select
-                options={statusOptions}
-                value={statusOptions.find(option => option.value === selectedStatus)}
-                onChange={(option) => setSelectedStatus(option.value)}
-                className="select-status"
-              />
+              <Select options={statusOptions} value={statusOptions.find(option => option.value === selectedStatus)} onChange={(option) => setSelectedStatus(option.value)} className="select-status" />
             </div>
-
             <div className="form-group">
               <label>Asignar a</label>
-              <Select
-                options={users}
-                isMulti
-                value={users.filter(u => selectedAssignees.includes(u.value))}
-                onChange={(selected) => setSelectedAssignees(selected.map(u => u.value))}
-                className="select-assignees"
-                noOptionsMessage={() => "Cargando usuarios..."}
-              />
+              <Select options={users} isMulti value={users.filter(u => selectedAssignees.includes(u.value))} onChange={(selected) => setSelectedAssignees(selected.map(u => u.value))} className="select-assignees" noOptionsMessage={() => "Cargando usuarios..."} />
             </div>
-
             <div className="form-group">
-              <button 
-                onClick={handleUpdateStatus}
-                className="btn-primary"
-                style={{ height: '100%' }}
-              >
-                Actualizar Orden
-              </button>
+              <button onClick={handleUpdateStatus} className="btn-primary" style={{ height: '100%' }}>Actualizar Orden</button>
             </div>
           </div>
         </div>
       )}
 
-      {workOrder.status === 'entregado' && (
-        <div className="order-section">
-          <div className="info-card" style={{ backgroundColor: '#d4edda', border: '1px solid #c3e6cb' }}>
-            <div style={{ textAlign: 'center', color: '#155724', fontWeight: 'bold' }}>
-              📋 Esta orden ya ha sido entregada y no puede modificarse
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* ... (Mantén la sección de Notas de Seguimiento igual que antes) ... */}
       {workOrder.status !== 'entregado' && (
         <div className="order-section">
           <h3>Notas de Seguimiento</h3>
           <form onSubmit={handleAddNote} className="add-note-form">
-            <textarea
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Escribe una nota de seguimiento..."
-              rows="3"
-              required
-            />
-            <button type="submit" className="btn-primary">
-              Agregar Nota
-            </button>
+            <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Escribe una nota de seguimiento..." rows="3" required />
+            <button type="submit" className="btn-primary">Agregar Nota</button>
           </form>
-
           <div className="notes-list">
             {workOrder.notes && workOrder.notes.length > 0 ? (
               workOrder.notes.map((note, index) => (
                 <div key={index} className="note-item">
                   <div className="note-header">
                     <strong>{note.author?.name} {note.author?.lastName}</strong>
-                    <span className="note-date">
-                      {new Date(note.createdAt).toLocaleString('es-CO')}
-                    </span>
+                    <span className="note-date">{new Date(note.createdAt).toLocaleString('es-CO')}</span>
                   </div>
-                  <div className="note-content">
-                    {note.content}
-                  </div>
+                  <div className="note-content">{note.content}</div>
                 </div>
               ))
             ) : (
@@ -351,49 +316,216 @@ function WorkOrderDetailPage() {
         </div>
       )}
 
-      {workOrder.status === 'entregado' && workOrder.notes && workOrder.notes.length > 0 && (
+            {/* ✅ NUEVA SECCIÓN: REPUESTOS A SOLICITAR */}
+      {workOrder.status !== 'entregado' && (
         <div className="order-section">
-          <h3>Notas de Seguimiento</h3>
-          <div className="notes-list">
-            {workOrder.notes.map((note, index) => (
-              <div key={index} className="note-item">
-                <div className="note-header">
-                  <strong>{note.author?.name} {note.author?.lastName}</strong>
-                  <span className="note-date">
-                    {new Date(note.createdAt).toLocaleString('es-CO')}
-                  </span>
-                </div>
-                <div className="note-content">
-                  {note.content}
-                </div>
-              </div>
-            ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ margin: 0 }}>📦 Repuestos a Solicitar</h3>
+            <button 
+              onClick={() => setShowPartsForm(!showPartsForm)} 
+              className="btn-secondary"
+              style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
+            >
+              {showPartsForm ? 'Ocultar Lista' : '+ Listar Pedido'}
+            </button>
           </div>
+
+          {showPartsForm && (
+            <div className="parts-container">
+              {/* Fila para agregar nuevo repuesto */}
+              <div className="parts-input-row">
+                <input 
+                  type="text" 
+                  placeholder="Código" 
+                  value={newPart.code}
+                  onChange={(e) => setNewPart({...newPart, code: e.target.value})}
+                  className="part-input part-code"
+                />
+                <input 
+                  type="text" 
+                  placeholder="Detalle del repuesto y/o mano de obra*" 
+                  value={newPart.detail}
+                  onChange={(e) => setNewPart({...newPart, detail: e.target.value})}
+                  className="part-input part-detail"
+                />
+                <input 
+                  type="number" 
+                  placeholder="Cant." 
+                  min="1"
+                  value={newPart.quantity}
+                  onChange={(e) => setNewPart({...newPart, quantity: parseInt(e.target.value) || 1})}
+                  className="part-input part-qty"
+                />
+                <input 
+                  type="number" 
+                  placeholder="Precio" 
+                  min="0"
+                  step="0.01"
+                  value={newPart.price}
+                  onChange={(e) => setNewPart({...newPart, price: parseFloat(e.target.value) || 0})}
+                  className="part-input part-price"
+                />
+                <button 
+                  type="button"
+                  onClick={handleAddPartRow}
+                  className="btn-primary"
+                  style={{ padding: '0.5rem', minWidth: '40px', height: '38px' }}
+                  title="Agregar a la lista"
+                >
+                  +
+                </button>
+              </div>
+
+                            {/* Tabla de repuestos agregados */}
+              {spareParts.length > 0 && (
+                <>
+                  <div className="parts-table-wrapper">
+                    <table className="parts-table">
+                      <thead>
+                        <tr>
+                          <th>Código</th>
+                          <th>Detalle</th>
+                          <th style={{ textAlign: 'center' }}>Cant.</th>
+                          <th style={{ textAlign: 'right' }}>Precio</th>
+                          <th style={{ textAlign: 'center' }}>Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {spareParts.map((part, index) => (
+                          <tr key={part._id || index} className={editingIndex === index ? 'editing-row' : ''}>
+                            <td>
+                              {editingIndex === index ? (
+                                <input
+                                  type="text"
+                                  value={part.code}
+                                  onChange={(e) => handleUpdatePartField(index, 'code', e.target.value)}
+                                  className="part-input-inline"
+                                  placeholder="Código"
+                                />
+                              ) : (
+                                part.code || '-'
+                              )}
+                            </td>
+                            <td>
+                              {editingIndex === index ? (
+                                <input
+                                  type="text"
+                                  value={part.detail}
+                                  onChange={(e) => handleUpdatePartField(index, 'detail', e.target.value)}
+                                  className="part-input-inline part-detail-inline"
+                                />
+                              ) : (
+                                part.detail
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {editingIndex === index ? (
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={part.quantity}
+                                  onChange={(e) => handleUpdatePartField(index, 'quantity', e.target.value)}
+                                  className="part-input-inline part-qty-inline"
+                                  style={{ width: '60px', textAlign: 'center' }}
+                                />
+                              ) : (
+                                part.quantity
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              {editingIndex === index ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={part.price}
+                                  onChange={(e) => handleUpdatePartField(index, 'price', e.target.value)}
+                                  className="part-input-inline part-price-inline"
+                                  style={{ width: '80px', textAlign: 'right' }}
+                                />
+                              ) : (
+                                `$${Number(part.price).toLocaleString('es-CO', { minimumFractionDigits: 0 })}`
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {editingIndex === index ? (
+                                <div style={{ display: 'flex', gap: '0.3rem', justifyContent: 'center' }}>
+                                  <button 
+                                    type="button"
+                                    onClick={() => setEditingIndex(null)}
+                                    className="btn-secondary"
+                                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                    title="Cancelar"
+                                  >
+                                    ❌
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    onClick={() => setEditingIndex(null)}
+                                    className="btn-primary"
+                                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                    title="Listo"
+                                  >
+                                    ✅
+                                  </button>
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', gap: '0.3rem', justifyContent: 'center' }}>
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleEditPart(index)}
+                                    className="btn-view"
+                                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                    title="Editar"
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    onClick={() => handleRemovePart(index)}
+                                    className="btn-delete"
+                                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
+                                    title="Eliminar"
+                                  >
+                                    ️
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Botón para guardar en la base de datos */}
+                  <button 
+                    type="button"
+                    onClick={handleSaveParts}
+                    disabled={savingParts}
+                    className="btn-primary parts-save-btn"
+                    style={{ marginTop: '1rem', width: '100%' }}
+                  >
+                    {savingParts ? ' Guardando...' : '💾 Guardar Lista de Repuestos'}
+                  </button>
+                </>
+              )}
+              
+            </div>
+          )}
         </div>
       )}
 
+      
+      {/* ... (Mantén el resto del código: Archivos Adjuntos, Entrega, Firma) ... */}
       <div className="order-section">
         <h3>Archivos Adjuntos</h3>
-        
         {workOrder.status !== 'entregado' && (
           <div className="attachments-upload">
-            <input
-              type="file"
-              id="attachment-file"
-              className="attachment-input"
-              onChange={(e) => {
-                if (e.target.files[0]) {
-                  handleUploadAttachment(e.target.files[0]);
-                }
-              }}
-              accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-            />
-            <label htmlFor="attachment-file" className="btn-primary attachment-label">
-              + Adjuntar Archivo
-            </label>
+            <input type="file" id="attachment-file" className="attachment-input" onChange={(e) => { if (e.target.files[0]) handleUploadAttachment(e.target.files[0]); }} accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+            <label htmlFor="attachment-file" className="btn-primary attachment-label">+ Adjuntar Archivo</label>
           </div>
         )}
-
         <div className="attachments-list">
           {workOrder.attachments && workOrder.attachments.length > 0 ? (
             workOrder.attachments.map((attachment) => (
@@ -401,24 +533,12 @@ function WorkOrderDetailPage() {
                 <div className="attachment-info">
                   <span className="attachment-name">{attachment.originalName}</span>
                   <span className="attachment-size">({formatFileSize(attachment.size)})</span>
-                  <span className="attachment-uploader">
-                    Subido por {attachment.uploadedBy?.name} {attachment.uploadedBy?.lastName}
-                  </span>
+                  <span className="attachment-uploader">Subido por {attachment.uploadedBy?.name} {attachment.uploadedBy?.lastName}</span>
                 </div>
                 <div className="attachment-actions">
-                  <button
-                    className="btn-view"
-                    onClick={() => downloadAttachment(workOrder._id, attachment._id)}
-                  >
-                    Descargar
-                  </button>
+                  <button className="btn-view" onClick={() => downloadAttachment(workOrder._id, attachment._id)}>Descargar</button>
                   {attachment.uploadedBy?._id === user._id && workOrder.status !== 'entregado' && (
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDeleteAttachment(attachment._id)}
-                    >
-                      Eliminar
-                    </button>
+                    <button className="btn-delete" onClick={() => handleDeleteAttachment(attachment._id)}>Eliminar</button>
                   )}
                 </div>
               </div>
@@ -444,14 +564,8 @@ function WorkOrderDetailPage() {
           )}
           <div className="info-card">
             <div className="info-grid">
-              <div>
-                <strong>Fecha de Entrega:</strong> 
-                {new Date(workOrder.deliveryDate).toLocaleString('es-CO')}
-              </div>
-              <div>
-                <strong>Entregado por:</strong> 
-                {workOrder.deliveredBy?.name} {workOrder.deliveredBy?.lastName}
-              </div>
+              <div><strong>Fecha de Entrega:</strong> {new Date(workOrder.deliveryDate).toLocaleString('es-CO')}</div>
+              <div><strong>Entregado por:</strong> {workOrder.deliveredBy?.name} {workOrder.deliveredBy?.lastName}</div>
             </div>
           </div>
         </div>

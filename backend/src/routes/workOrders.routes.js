@@ -20,8 +20,9 @@ import {
   downloadAttachment,
   deleteAttachment,
   getWorkOrderHistory,
-  checkActiveOrderByPlate
-} from "../controllers/workOrder.controller.js";
+  checkActiveOrderByPlate,
+  updateWorkOrderSpareParts // ✅ 1. AGREGADO: Importar la función del controlador
+} from "../controllers/workOrder.controller.js"; // Nota: tu archivo se llama workOrder.controller.js (singular)
 
 const router = Router();
 
@@ -72,5 +73,8 @@ router.post("/:id/deliver", authRequired, requireRole(['admin', 'asesor', 'jefe'
 router.post("/:id/attachments", authRequired, upload.single('file'), uploadAttachment);
 router.get("/:id/attachments/:fileId", authRequired, downloadAttachment);
 router.delete("/:id/attachments/:fileId", authRequired, deleteAttachment);
+
+// ✅ 2. CORREGIDO: Usar 'authRequired' en lugar de 'verifyToken'
+router.patch('/:id/spare-parts', authRequired, updateWorkOrderSpareParts);
 
 export default router;

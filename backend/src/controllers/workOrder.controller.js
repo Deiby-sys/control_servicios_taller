@@ -764,3 +764,34 @@ export const checkActiveOrderByPlate = async (req, res) => {
     res.status(500).json({ message: "Error al verificar orden" });
   }
 };
+
+// backend/src/controllers/workOrders.controller.js
+
+export const updateWorkOrderSpareParts = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { spareParts } = req.body;
+
+    const workOrder = await WorkOrder.findById(id);
+    if (!workOrder) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    if (workOrder.status === 'entregado') {
+      return res.status(400).json({ message: "No se pueden modificar repuestos de una orden entregada" });
+    }
+
+    workOrder.spareParts = spareParts;
+    await workOrder.save();
+
+    const updatedOrder = await WorkOrder.findById(id)
+      .populate('vehicle', 'plate brand model')
+      .populate('client', 'name lastName')
+      .populate('assignedTo', 'name lastName email');
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error("Error al actualizar repuestos:", error);
+    res.status(500).json({ message: "Error al actualizar repuestos" });
+  }
+};

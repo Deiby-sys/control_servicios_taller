@@ -105,7 +105,15 @@ const workOrderSchema = new mongoose.Schema({
   
   // Seguimiento y notas
   notes: [noteSchema],
-  
+
+  // ✅ NUEVO: Lista de repuestos a solicitar
+  spareParts: [{
+    code: { type: String, default: '', trim: true },
+    detail: { type: String, required: true, trim: true },
+    quantity: { type: Number, default: 1, min: 1 },
+    price: { type: Number, default: 0, min: 0 }
+  }],
+
   // Archivos adjuntos
   attachments: [{
   cloudinaryId: { type: String }, // ID único en Cloudinary

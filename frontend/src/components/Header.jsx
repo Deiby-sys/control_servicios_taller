@@ -15,7 +15,7 @@ function Header() {
         <h1 className="header__title">My Taller App</h1>
       </div>
   
-      <span className="header__user">V_1.0.3</span>
+      <span className="header__user">V_1.0.4</span>
     </header>
   );
 }

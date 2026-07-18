@@ -582,7 +582,13 @@ function WorkOrderDetailPage() {
         <h3>Archivos Adjuntos</h3>
         {workOrder.status !== 'entregado' && (
           <div className="attachments-upload">
-            <input type="file" id="attachment-file" className="attachment-input" onChange={(e) => { if (e.target.files[0]) handleUploadAttachment(e.target.files[0]); }} accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+            <input 
+              type="file" 
+              id="attachment-file" 
+              className="attachment-input" 
+              onChange={(e) => { if (e.target.files[0]) handleUploadAttachment(e.target.files[0]); }} 
+              accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mov,.avi" 
+            />
             <label htmlFor="attachment-file" className="btn-primary attachment-label">+ Adjuntar Archivo</label>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 // src/hooks/useWorkOrderCounts.js
 import { useState, useEffect } from "react";
-import { getWorkOrderCountsRequest } from "../api/workOrder.api"; // Importa desde tu API
+import { getWorkOrderCountsRequest } from "../api/workOrder.api";
 
 export const useWorkOrderCounts = () => {
   const [counts, setCounts] = useState({
@@ -12,7 +12,7 @@ export const useWorkOrderCounts = () => {
     por_repuestos: 0,
     en_soporte: 0,
     en_proceso: 0,
-    baterias: 0, // ✅ AGREGADO
+    baterias: 0, 
     completado: 0,
     entregado: 0
   });
@@ -21,11 +21,17 @@ export const useWorkOrderCounts = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const response = await getWorkOrderCountsRequest(); // Esto ya usa la URL correcta
-        setCounts(response.data); // Actualiza con los datos reales
+        // ✅ SOLUCIÓN iOS: Generamos un timestamp único para cada petición.
+        // Esto engaña a Safari/Chrome en iOS y le obliga a descargar 
+        // los datos frescos en lugar de mostrar la caché en "0".
+        const timestamp = new Date().getTime();
+        
+        // Pasamos el timestamp como parámetro (?t=123456789)
+        const response = await getWorkOrderCountsRequest({ t: timestamp }); 
+        
+        setCounts(response.data);
       } catch (error) {
         console.error("Error al obtener conteos:", error);
-        // Opcional: podrías mostrar un mensaje de error aquí
       } finally {
         setLoading(false);
       }
@@ -40,7 +46,7 @@ export const useWorkOrderCounts = () => {
                        counts.por_repuestos + 
                        counts.en_soporte + 
                        counts.en_proceso + 
-                       counts.baterias + // ✅ AGREGADO
+                       counts.baterias + 
                        counts.completado;
 
   return { counts, totalEnTaller, loading };

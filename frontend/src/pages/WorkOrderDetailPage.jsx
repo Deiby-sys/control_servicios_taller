@@ -9,6 +9,7 @@ import Select from "react-select";
 import generateWorkOrderPDF from '../components/WorkOrderPDFGenerator';
 import "../styles/WorkOrderDetailPage.css";
 import { getStatusLabel } from "../utils/statusLabels";
+import { utils, writeFile } from 'xlsx';
 
 // FUNCIÓN DE URL BASE
 const getApiBaseUrl = () => {
@@ -215,6 +216,39 @@ function WorkOrderDetailPage() {
     }
   };
 
+    // ✅ NUEVO: Exportar repuestos a Excel
+  const exportPartsToExcel = () => {
+    if (spareParts.length === 0) {
+      alert("No hay repuestos para exportar");
+      return;
+    }
+
+    const dataToExport = spareParts.map(part => ({
+      'Código': part.code || 'N/A',
+      'Detalle': part.detail,
+      'Cantidad': part.quantity,
+      'Precio Unitario': `$${Number(part.price).toLocaleString('es-CO', { minimumFractionDigits: 0 })}`,
+      'Total': `$${Number(part.quantity * part.price).toLocaleString('es-CO', { minimumFractionDigits: 0 })}`
+    }));
+
+    // Agregar fila de subtotal
+    const subtotal = spareParts.reduce((sum, part) => sum + (part.quantity * part.price), 0);
+    dataToExport.push({
+      'Código': '',
+      'Detalle': 'SUBTOTAL',
+      'Cantidad': '',
+      'Precio Unitario': '',
+      'Total': `$${subtotal.toLocaleString('es-CO', { minimumFractionDigits: 0 })}`
+    });
+
+    const worksheet = utils.json_to_sheet(dataToExport);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Repuestos");
+    
+    const fileName = `repuestos_${workOrder.orderNumber || 'orden'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    writeFile(workbook, fileName);
+  };
+
   if (loading) return <div className="page">Cargando orden de trabajo...</div>;
   if (error) return <div className="page error">Error: {error}</div>;
   if (!workOrder) return <div className="page">Orden no encontrada</div>;
@@ -387,11 +421,14 @@ function WorkOrderDetailPage() {
                           <th>Detalle</th>
                           <th style={{ textAlign: 'center' }}>Cant.</th>
                           <th style={{ textAlign: 'right' }}>Precio</th>
+                          <th style={{ textAlign: 'right' }}>Total</th> {/* ✅ NUEVA COLUMNA */}
                           <th style={{ textAlign: 'center' }}>Acción</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {spareParts.map((part, index) => (
+                        {spareParts.map((part, index) => {
+                          const total = part.quantity * part.price;
+                          return (
                           <tr key={part._id || index} className={editingIndex === index ? 'editing-row' : ''}>
                             <td>
                               {editingIndex === index ? (
@@ -447,6 +484,9 @@ function WorkOrderDetailPage() {
                                 `$${Number(part.price).toLocaleString('es-CO', { minimumFractionDigits: 0 })}`
                               )}
                             </td>
+                            <td style={{ textAlign: 'right', fontWeight: '600' }}>
+                              ${Number(total).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                            </td>
                             <td style={{ textAlign: 'center' }}>
                               {editingIndex === index ? (
                                 <div style={{ display: 'flex', gap: '0.3rem', justifyContent: 'center' }}>
@@ -493,21 +533,41 @@ function WorkOrderDetailPage() {
                               )}
                             </td>
                           </tr>
-                        ))}
+                        )})}
                       </tbody>
+                      {/* ✅ FILA DE SUBTOTAL */}
+                      <tfoot>
+                        <tr style={{ backgroundColor: '#e3f2fd', fontWeight: 'bold' }}>
+                          <td colSpan="4" style={{ textAlign: 'right', padding: '0.8rem' }}>SUBTOTAL:</td>
+                          <td style={{ textAlign: 'right', padding: '0.8rem', color: '#0d6efd' }}>
+                            ${spareParts.reduce((sum, part) => sum + (part.quantity * part.price), 0).toLocaleString('es-CO', { minimumFractionDigits: 0 })}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                   
-                  {/* Botón para guardar en la base de datos */}
-                  <button 
-                    type="button"
-                    onClick={handleSaveParts}
-                    disabled={savingParts}
-                    className="btn-primary parts-save-btn"
-                    style={{ marginTop: '1rem', width: '100%' }}
-                  >
-                    {savingParts ? ' Guardando...' : '💾 Guardar Lista de Repuestos'}
-                  </button>
+                  {/* Botones de acción */}
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <button 
+                      type="button"
+                      onClick={exportPartsToExcel}
+                      className="btn-secondary"
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    >
+                      📊 Exportar a Excel
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={handleSaveParts}
+                      disabled={savingParts}
+                      className="btn-primary"
+                      style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    >
+                      {savingParts ? '⏳ Guardando...' : '💾 Guardar Lista de Repuestos'}
+                    </button>
+                  </div>
                 </>
               )}
               

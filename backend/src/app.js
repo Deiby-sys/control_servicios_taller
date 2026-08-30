@@ -42,7 +42,7 @@ app.use("/api/auth/register", authLimiter);
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://mytallerapp.vercel.app'],
+    'https://www.mytallerapp.com'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

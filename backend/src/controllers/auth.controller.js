@@ -189,7 +189,7 @@ export const forgotPassword = async (req, res) => {
       // ✅ CORRECCIÓN CRÍTICA: URL LIMPIA SIN ESPACIOS
       const baseUrl = process.env.FRONTEND_URL 
         ? process.env.FRONTEND_URL.trim() 
-        : 'https://mytallerapp.vercel.app';
+        : 'https://www.mytallerapp.com';
       
       const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
       

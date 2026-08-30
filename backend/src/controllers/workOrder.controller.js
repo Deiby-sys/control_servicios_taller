@@ -536,6 +536,7 @@ export const deliverWorkOrder = async (req, res) => {
 };
 
 // --- Adjuntos ---
+
 export const uploadAttachment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -550,53 +551,74 @@ export const uploadAttachment = async (req, res) => {
     }
 
     if (workOrder.status === 'entregado') {
-      return res.status(400).json({ 
-        message: "No se pueden adjuntar archivos a una orden ya entregada" 
-      });
+      return res.status(400).json({ message: "No se pueden adjuntar archivos a una orden ya entregada" });
     }
 
-    // Determinar tipo de recurso para Cloudinary
-    const isVideo = req.file.mimetype.startsWith('video/');
-    const resourceType = isVideo ? 'video' : 'image';
+    const mimetype = req.file.mimetype;
+    let resourceType = 'raw';
 
-    // Obtener instancia configurada de Cloudinary
+    if (mimetype.startsWith('image/')) {
+      resourceType = 'image';
+    } else if (mimetype.startsWith('video/')) {
+      resourceType = 'video';
+    } else if (mimetype === 'application/pdf' || mimetype.includes('word') || mimetype.includes('excel') || mimetype.includes('powerpoint') || mimetype.includes('officedocument')) {
+      resourceType = 'raw';
+    }
+
     const cloudinaryInstance = configureCloudinary();
+    const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
 
-    // Subir a Cloudinary con modo privado autenticado
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinaryInstance.uploader.upload_stream(
-        {
-          resource_type: resourceType,
-          folder: `work_orders/${id}`,
-          type: 'authenticated', // ← ESTA ES LA CLAVE
-          access_mode: 'authenticated',
-          quality: isVideo ? 'auto' : 'auto:good',
-          fetch_format: isVideo ? undefined : 'auto'
-        },
-        (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
+    let uploadResult;
+
+    // ✅ CORRECCIÓN CLAVE: Para archivos raw, usamos upload() con base64 en lugar de upload_stream()
+    if (resourceType === 'raw') {
+      // Convertir el buffer a base64 data URI
+      const base64File = `data:${mimetype};base64,${req.file.buffer.toString('base64')}`;
       
-      uploadStream.end(req.file.buffer);
-    });
+      // Generar un public_id único con la extensión incluida
+      const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      const publicId = `work_orders/${id}/${uniqueId}.${fileExtension}`;
+      
+      uploadResult = await cloudinaryInstance.uploader.upload(base64File, {
+        resource_type: 'raw',
+        public_id: publicId,
+        type: 'authenticated',
+        access_mode: 'authenticated',
+      });
+    } else {
+      // Para imágenes y videos, seguimos usando upload_stream (funciona bien)
+      const uploadOptions = {
+        resource_type: resourceType,
+        folder: `work_orders/${id}`,
+        type: 'authenticated',
+        access_mode: 'authenticated',
+        quality: resourceType === 'video' ? 'auto' : 'auto:good',
+        fetch_format: resourceType === 'video' ? undefined : 'auto'
+      };
+
+      uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinaryInstance.uploader.upload_stream(
+          uploadOptions,
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(req.file.buffer);
+      });
+    }
     
-    // 🔍 LOGS DE DEPURACIÓN
-    console.log('🔍 Upload result:', {
+    console.log('✅ Upload exitoso:', {
       public_id: uploadResult.public_id,
-      secure_url: uploadResult.secure_url,
-      resource_type: uploadResult.resource_type
+      resource_type: uploadResult.resource_type,
+      format: uploadResult.format,
+      bytes: uploadResult.bytes
     });
 
-    // Guardar solo la información esencial en MongoDB
     workOrder.attachments.push({
       cloudinaryId: uploadResult.public_id,
       url: uploadResult.secure_url,
-      type: resourceType,
+      type: resourceType === 'raw' ? 'document' : resourceType,
       originalName: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype,
@@ -617,13 +639,12 @@ export const uploadAttachment = async (req, res) => {
     res.status(201).json(populatedOrder);
     
   } catch (error) {
-    console.error("Error al subir archivo a Cloudinary:", error);
-    res.status(500).json({ 
-      message: "Error al subir archivo",
-      error: error.message 
-    });
+    console.error("❌ Error al subir archivo a Cloudinary:", error);
+    res.status(500).json({ message: "Error al subir archivo", error: error.message });
   }
 };
+
+// Descarga archivos adjuntos
 
 export const downloadAttachment = async (req, res) => {
   try {
@@ -639,7 +660,6 @@ export const downloadAttachment = async (req, res) => {
       return res.status(404).json({ message: "Archivo no encontrado" });
     }
 
-    // Verificar permisos
     const hasPermission = req.user._id.equals(workOrder.createdBy) || 
                          workOrder.assignedTo.some(user => user.equals(req.user._id)) ||
                          req.user.profile === 'admin';
@@ -648,24 +668,21 @@ export const downloadAttachment = async (req, res) => {
       return res.status(403).json({ message: "No autorizado" });
     }
 
-    // Obtener instancia configurada de Cloudinary
     const cloudinaryInstance = configureCloudinary();
+    const cloudinaryResourceType = attachment.type === 'document' ? 'raw' : attachment.type;
 
-    // Extraer el formato del mimetype
-    const format = attachment.mimetype.split('/')[1] || 'auto';
-    
-    // Generar URL firmada usando el public_id directamente
-    const signedUrl = cloudinaryInstance.url(attachment.cloudinaryId, {
+    // ✅ NO usamos 'format' porque ya está incluido en el public_id
+    const urlOptions = {
       type: 'authenticated',
-      resource_type: attachment.type,
+      resource_type: cloudinaryResourceType,
       sign_url: true,
-      expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hora
-      format: format
-    });
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+    };
+
+    const signedUrl = cloudinaryInstance.url(attachment.cloudinaryId, urlOptions);
 
     console.log('🔍 URL firmada generada:', signedUrl);
 
-    // Redirigir a la URL firmada
     res.redirect(signedUrl);
     
   } catch (error) {
@@ -674,6 +691,7 @@ export const downloadAttachment = async (req, res) => {
   }
 };
 
+// Eliminar adjuntos
 export const deleteAttachment = async (req, res) => {
   try {
     const { id, fileId } = req.params;

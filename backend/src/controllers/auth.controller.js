@@ -75,7 +75,14 @@ export const register = async (req, res) => {
     const savedUser = await newUser.save();
     const token = createAccessToken(savedUser);
 
-    res.cookie("token", token);
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
+
     res.json({
       id: savedUser._id,
       name: savedUser.name,
@@ -104,10 +111,12 @@ export const login = async (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: true,        // ← obligatorio en HTTPS
-      sameSite: 'none',    // ← obligatorio para cross-origin
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
     });
+
     res.json({
       id: userFound._id,
       name: userFound.name,       

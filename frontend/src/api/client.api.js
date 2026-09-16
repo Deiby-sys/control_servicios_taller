@@ -1,14 +1,16 @@
-// API para clientes
+// api para clientes
 
-// src/api/clientApi.js
+// src/api/client.api.js
 import axios from 'axios';
 
-// Reutiliza la misma lógica de URL base que en auth.js
+// Reutiliza la misma lógica de URL base que en AuthContext
 const getApiBaseUrl = () => {
-  const envUrl = import.meta.env.REACT_APP_API_URL; // import.meta.env
+  const envUrl = import.meta.env.VITE_API_URL;
+
   if (envUrl) return envUrl.trim();
-  return import.meta.env.MODE === 'production' // import.meta.env.MODE
-    ? 'https://control-servicios-taller.onrender.com'
+
+  return import.meta.env.MODE === 'production'
+    ? 'https://api.mytallerapp.com'
     : 'http://localhost:4000';
 };
 

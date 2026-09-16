@@ -4,10 +4,12 @@
 import axios from 'axios';
 
 const getApiBaseUrl = () => {
-  const envUrl = import.meta.env.REACT_APP_API_URL;
+  const envUrl = import.meta.env.VITE_API_URL;
+
   if (envUrl) return envUrl.trim();
+
   return import.meta.env.MODE === 'production'
-    ? 'https://control-servicios-taller.onrender.com'
+    ? 'https://api.mytallerapp.com'
     : 'http://localhost:4000';
 };
 
@@ -24,6 +26,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const path = window.location.pathname;
+
       // Evita redirigir en páginas públicas
       if (
         !path.includes('/login') &&
@@ -34,6 +37,7 @@ apiClient.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
     return Promise.reject(error);
   }
 );
@@ -64,4 +68,5 @@ export const resetPasswordRequest = (token, password) =>
 export const validateResetTokenRequest = (token) =>
   apiClient.post('/auth/validate-reset-token', { token });
 
-export const getReportsSummary = () => apiClient.get('/reports/summary');
+export const getReportsSummary = () =>
+  apiClient.get('/reports/summary');

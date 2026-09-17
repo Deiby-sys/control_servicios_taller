@@ -93,7 +93,7 @@ function UsersManagementPage() {
     try {
       // Aquí podrías crear una función updateUserRequest en usersApi.js más adelante
       // Por ahora, dejaremos este fetch pero asegurándonos de que la URL sea absoluta si falla
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://control-servicios-taller.onrender.com'}/api/users/${editingUser}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://api.mytallerapp.com'}/api/users/${editingUser}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
@@ -116,7 +116,7 @@ function UsersManagementPage() {
   const handleDelete = async (id, name) => {
     if (!window.confirm(`¿Eliminar a ${name}? Esta acción no se puede deshacer.`)) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://control-servicios-taller.onrender.com'}/api/users/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://api.mytallerapp.com'}/api/users/${id}`, {
         method: "DELETE",
         credentials: 'include',
       });

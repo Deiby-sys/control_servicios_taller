@@ -40,8 +40,10 @@ const ReportsPage = () => {
 
   const fetchWorkshopData = async () => {
     setLoading(true);
-    const API_URL = import.meta.env.VITE_API_URL || 
-      (window.location.hostname === 'localhost' ? 'http://localhost:10000' : 'https://control-servicios-taller.onrender.com');
+    const API_URL = import.meta.env.VITE_API_URL ||
+      (window.location.hostname === 'localhost'
+      ? 'http://localhost:4000'
+      : 'https://api.mytallerapp.com');
     
     const [ordersRes, vehiclesRes, clientsRes] = await Promise.all([
       fetch(`${API_URL}/api/work-orders`, { credentials: 'include', headers: { 'Content-Type': 'application/json' } }),

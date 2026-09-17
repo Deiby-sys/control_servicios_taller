@@ -9,10 +9,11 @@ import "../styles/LoginPage.css";
 
 // Función de URL Base local (independiente de auth.js)
 const getApiBaseUrl = () => {
-  const envUrl = import.meta.env.REACT_APP_API_URL;
+  const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl) return envUrl.trim();
+
   return import.meta.env.MODE === 'production'
-    ? 'https://control-servicios-taller.onrender.com'
+    ? 'https://api.mytallerapp.com'
     : 'http://localhost:4000';
 };
 

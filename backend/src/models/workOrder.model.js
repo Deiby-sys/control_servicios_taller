@@ -110,7 +110,7 @@ const workOrderSchema = new mongoose.Schema({
   spareParts: [{
     code: { type: String, default: '', trim: true },
     detail: { type: String, required: true, trim: true },
-    quantity: { type: Number, default: 1, min: 1 },
+    quantity: { type: Number, default: 1, min: 0 },
     price: { type: Number, default: 0, min: 0 }
   }],
 

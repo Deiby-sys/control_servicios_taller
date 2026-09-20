@@ -6,6 +6,7 @@ import { useWorkOrders } from "../context/WorkOrderContext";
 import Select from "react-select";
 import { Link } from "react-router-dom";
 import { utils, writeFile } from "xlsx";
+import { getStatusLabel } from "../utils/statusLabels";
 import "../styles/WorkOrderHistoryPage.css";
 
 // Cantidad de órdenes por página
@@ -434,7 +435,11 @@ function WorkOrderHistoryPage() {
                     </td>
 
                     <td>
-                      {order.status || ""}
+                      <span
+                        className={`status status-${order.status?.replace(/_/g, "-")}`}
+                      >
+                        {getStatusLabel(order.status)}
+                      </span>
                     </td>
 
                     <td>

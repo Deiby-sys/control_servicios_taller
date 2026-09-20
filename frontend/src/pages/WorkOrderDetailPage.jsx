@@ -49,7 +49,7 @@ function WorkOrderDetailPage() {
    // ✅ NUEVO: Estados para el manejo de repuestos
   const [showPartsForm, setShowPartsForm] = useState(false);
   const [spareParts, setSpareParts] = useState([]);
-  const [newPart, setNewPart] = useState({ code: '', detail: '', quantity: 1, price: 0 });
+  const [newPart, setNewPart] = useState({ code: '', detail: '', quantity: '', price: '' });
   const [savingParts, setSavingParts] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null); // ✅ Para saber qué fila se edita
 

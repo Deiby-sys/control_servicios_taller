@@ -87,7 +87,7 @@ export const getWorkOrders = async (req, res) => {
       // CAMPOS ESENCIALES INCLUYEN entryDate Y deliveryDate
       .select(
         'entryDate deliveryDate status orderNumber currentMileage serviceRequest ' +
-        'vehicle client createdBy assignedTo createdAt'
+        'vehicle client createdBy assignedTo createdAt notes spareParts'
       );
     
     res.json(workOrders);
